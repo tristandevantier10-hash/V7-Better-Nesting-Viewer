@@ -1,0 +1,164 @@
+{
+  "materials": [
+    {
+      "id": "ACM",
+      "name": "Aluminium Composite Material",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": 3,
+          "sheet_sizes_mm": [
+            { "width": 2440, "height": 1220 },
+            { "width": 3050, "height": 1525 }
+          ],
+          "colors": ["White", "Black", "Brushed"]
+        },
+        {
+          "thickness_mm": 4,
+          "sheet_sizes_mm": [
+            { "width": 2440, "height": 1220 },
+            { "width": 3050, "height": 1525 }
+          ],
+          "colors": ["White", "Black", "Brushed"]
+        },
+        {
+          "thickness_mm": 6,
+          "sheet_sizes_mm": [
+            { "width": 2440, "height": 1220 },
+            { "width": 3050, "height": 1525 }
+          ],
+          "colors": ["White", "Black", "Brushed"]
+        }
+      ]
+    },
+    {
+      "id": "VINYL",
+      "name": "Adhesive Vinyl",
+      "category": "Roll",
+      "variants": [
+        {
+          "types": ["Monomeric", "Polymer", "Cast"],
+          "roll_widths_mm": [610, 1220, 1370, 1524],
+          "applications": ["Indoor", "Outdoor", "Reflective", "General Print"]
+        }
+      ]
+    },
+    {
+      "id": "CORREX",
+      "name": "Corrugated Plastic (Correx)",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": 3,
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        },
+        {
+          "thickness_mm": 4,
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        },
+        {
+          "thickness_mm": 6,
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "FOAMEX",
+      "name": "PVC Foam Board",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": [3, 5, 10],
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ACRYLIC",
+      "name": "Acrylic (Plexiglass)",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": [3, 5, 10],
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ALUMINUM",
+      "name": "Solid Aluminium Sheet",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": [1, 2, 3],
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BACKLIT",
+      "name": "Backlit Sign Materials",
+      "category": "Specialty",
+      "variants": [
+        {
+          "types": [
+            "Acrylic Diffuser",
+            "Polycarbonate Diffuser",
+            "Lightbox Panel"
+          ],
+          "applications": ["Illuminated Signs", "Lightboxes"]
+        }
+      ]
+    },
+    {
+      "id": "STEEL_TUBING",
+      "name": "Steel Tubing",
+      "category": "Structural",
+      "variants": [
+        {
+          "sizes_mm": [
+            { "width": 25, "height": 25 },
+            { "width": 50, "height": 50 }
+          ],
+          "unit": "meter"
+        }
+      ]
+    },
+    {
+      "id": "FOAM_BOARD",
+      "name": "Foam Board",
+      "category": "Sheet",
+      "variants": [
+        {
+          "thickness_mm": [5, 10],
+          "sheet_sizes_mm": [
+            { "width": 1220, "height": 2440 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BANNER",
+      "name": "Digital Print Banner Material",
+      "category": "Roll",
+      "variants": [
+        {
+          "types": ["PVC Banner", "Mesh Banner"],
+          "roll_widths_mm": [1000, 1600]
+        }
+      ]
+    }
+  ]
+}

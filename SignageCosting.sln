@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11925.98
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SignageCosting", "SignageCosting\SignageCosting.vcxproj", "{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}"
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "Signage Costing Program", "Signage Costing Program.exe", "{8B824ABE-1D13-4AE7-90C4-59076C48C7B0}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = C:\Users\USER-PC\Documents\Visual Studio 18\Projects\Signage-Material-Costing-4\x64\Debug
+		RemoteMachine = GRAPHICS
+		StartingDirectory = C:\Users\USER-PC\Documents\Visual Studio 18\Projects\Signage-Material-Costing-4\x64\Debug
+		Environment = Default
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+		IORedirection = Auto
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Main Engine", "Main Engine", "{F8C39153-82A0-4875-90F6-DC4457BD2D48}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Debug|x64.ActiveCfg = Debug|x64
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Debug|x64.Build.0 = Debug|x64
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Debug|x86.ActiveCfg = Debug|Win32
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Debug|x86.Build.0 = Debug|Win32
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Release|x64.ActiveCfg = Release|x64
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Release|x64.Build.0 = Release|x64
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Release|x86.ActiveCfg = Release|Win32
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05}.Release|x86.Build.0 = Release|Win32
+		{8B824ABE-1D13-4AE7-90C4-59076C48C7B0}.Debug|x64.ActiveCfg = Release
+		{8B824ABE-1D13-4AE7-90C4-59076C48C7B0}.Debug|x86.ActiveCfg = Release|x86
+		{8B824ABE-1D13-4AE7-90C4-59076C48C7B0}.Release|x64.ActiveCfg = Release
+		{8B824ABE-1D13-4AE7-90C4-59076C48C7B0}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D9154BDE-C01D-4641-8FE3-FDCC9609CF05} = {F8C39153-82A0-4875-90F6-DC4457BD2D48}
+		{8B824ABE-1D13-4AE7-90C4-59076C48C7B0} = {F8C39153-82A0-4875-90F6-DC4457BD2D48}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D47A8CE6-483C-45E2-A1E3-DAE1BF662F7F}
+	EndGlobalSection
+EndGlobal

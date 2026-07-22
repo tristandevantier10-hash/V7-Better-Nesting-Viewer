@@ -1,0 +1,450 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{0e5aef81-22b3-49a3-836a-8f909ceeb201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Screens">
+      <UniqueIdentifier>{9a164092-0066-40af-b66c-56fb2e4fee81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{13ce5175-5b01-4ca1-bc65-d91d4ec31712}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Engine\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Screens\Header Files">
+      <UniqueIdentifier>{49c67c03-1aa4-497e-b836-99ac7db87e66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Screens\Source Files">
+      <UniqueIdentifier>{b102686a-b74f-4121-93fb-9071f6bebff6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Source Files">
+      <UniqueIdentifier>{ecc7cc40-2bfc-4a94-bcd7-0ad6fc21cac6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Header Files">
+      <UniqueIdentifier>{c7ab8592-5716-4cd4-a771-e748291a42ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Header Files\Window Layouts">
+      <UniqueIdentifier>{e2418846-48fb-409c-8e74-42e1d082d452}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Source Files\Window Layouts">
+      <UniqueIdentifier>{2eede99e-0440-4b67-8d7e-76fa6f9f7c71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels">
+      <UniqueIdentifier>{3cc1feeb-b4a6-455b-b96b-012223b23460}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels\Header Files">
+      <UniqueIdentifier>{b1ec1c73-25e7-4098-984d-49fa13d02ee7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels\Source Files">
+      <UniqueIdentifier>{0bcfd257-5a7e-4379-9514-5ac3cbfe6e88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Header Files\Fonts">
+      <UniqueIdentifier>{dfddd62e-5781-4ab0-946e-406053498d4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Header Files\Fonts\Header Files">
+      <UniqueIdentifier>{6064f2b0-bf71-40f5-8b61-9a33c750c505}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Header Files\Fonts\Source Files">
+      <UniqueIdentifier>{dd13a44c-efe3-42d1-a966-3f30d3f34428}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CostEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Job.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialDatabase.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PricingRules.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PricingDatabase.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NestingEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InvoicePrinter.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NestingCalculator.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RollOptimizer.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProductionPricingDatabase.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestJobFactory.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeWriter.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NestingCore.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NestingRender.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditorScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultsScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Header.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Toolbar.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StatusBar.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InvoicePanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyRow.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VerticalLayout.cpp">
+      <Filter>UI\Source Files\Window Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="InvoiceViewModelBuilder.cpp">
+      <Filter>ViewModels\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultsViewModelBuilder.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SheetPreviewPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizontalLayout.cpp">
+      <Filter>UI\Source Files\Window Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="Layout.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenuScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Screen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Label.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Panel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Theme.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIElement.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FontManager.cpp">
+      <Filter>UI\Header Files\Fonts\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextBox.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FormPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FocusManager.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComboBox.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewJobScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ListView.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JobSummaryPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScrollPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomerDatabase.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomerSelectionScreen.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomerEditorScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabaseManager.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NestingManager.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CostEngine.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialDatabase.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PricingRules.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PricingDatabase.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Format.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingEngine.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InvoicePrinter.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingResult.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingCalculator.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RollOptimizer.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProductionOptions.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProductionPricingDatabase.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestJobFactory.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeWriter.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingCore.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingRender.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppState.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RunMode.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditorScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultsScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Toolbar.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusBar.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InvoicePanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyRow.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutItem.h">
+      <Filter>UI\Header Files\Window Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="VerticalLayout.h">
+      <Filter>UI\Header Files\Window Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="InvoiceViewModel.h">
+      <Filter>ViewModels\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InvoiceViewModelBuilder.h">
+      <Filter>ViewModels\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultsViewModel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PendingResults.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultsViewModelBuilder.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SheetPreviewPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dock.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizontalLayout.h">
+      <Filter>UI\Header Files\Window Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="Layout.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenuScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Panel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Theme.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UIElement.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FontManager.h">
+      <Filter>UI\Header Files\Fonts\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Label.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextBox.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FormPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FocusManager.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComboBox.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewJobScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ListView.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JobSummaryPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JobSummaryViewModel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScrollPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteDocument.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomerDatabase.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomerSelectionScreen.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomerEditorScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Customer.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabaseManager.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestGroup.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingManager.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NestingJobResult.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlacementStrategy.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{d9154bde-c01d-4641-8fe3-fdcc9609cf05}</ProjectGuid>
+    <RootNamespace>SignageCosting</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <VCToolsVersion>14.44.35207</VCToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgInstalledDir>..\..\..\..\..\..\dev\vcpkg\installed\x64-windows</VcpkgInstalledDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\dev_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:\dev\vcpkg\installed\x64-windows\include;C:\Users\USER-PC\Documents\Visual Studio 18\Projects\Signage-Material-Costing-4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <AdditionalDependencies>libcurl.lib;SDL2.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\dev\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /D "C:\dev\vcpkg\installed\x64-windows\bin\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="ComboBox.cpp" />
+    <ClCompile Include="CostEngine.cpp" />
+    <ClCompile Include="CustomerDatabase.cpp" />
+    <ClCompile Include="CustomerEditorScreen.cpp" />
+    <ClCompile Include="CustomerSelectionScreen.cpp" />
+    <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="FocusManager.cpp" />
+    <ClCompile Include="FontManager.cpp" />
+    <ClCompile Include="FormPanel.cpp" />
+    <ClCompile Include="Header.cpp" />
+    <ClCompile Include="HorizontalLayout.cpp" />
+    <ClCompile Include="HttpClient.cpp" />
+    <ClCompile Include="InvoicePanel.cpp" />
+    <ClCompile Include="InvoicePrinter.cpp" />
+    <ClCompile Include="InvoiceViewModelBuilder.cpp" />
+    <ClCompile Include="Job.cpp" />
+    <ClCompile Include="JobEditorScreen.cpp" />
+    <ClCompile Include="JobSummaryPanel.cpp" />
+    <ClCompile Include="Label.cpp" />
+    <ClCompile Include="Layout.cpp" />
+    <ClCompile Include="ListView.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenuScreen.cpp" />
+    <ClCompile Include="MaterialDatabase.cpp" />
+    <ClCompile Include="NestingCalculator.cpp" />
+    <ClCompile Include="NestingCore.cpp" />
+    <ClCompile Include="NestingEngine.cpp" />
+    <ClCompile Include="NestingManager.cpp" />
+    <ClCompile Include="NestingRender.cpp" />
+    <ClCompile Include="NewJobScreen.cpp" />
+    <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="PricingDatabase.cpp" />
+    <ClCompile Include="PricingRules.cpp" />
+    <ClCompile Include="ProductionPricingDatabase.cpp" />
+    <ClCompile Include="PropertyRow.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ResultsScreen.cpp" />
+    <ClCompile Include="ResultsViewModelBuilder.cpp" />
+    <ClCompile Include="ScrollPanel.cpp" />
+    <ClCompile Include="TextBox.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
+    <ClCompile Include="Window.cpp" />
+    <ClInclude Include="Button.h" />
+    <ClInclude Include="ComboBox.h" />
+    <ClInclude Include="Customer.h" />
+    <ClInclude Include="CustomerDatabase.h" />
+    <ClInclude Include="CustomerEditorScreen.h" />
+    <ClInclude Include="CustomerSelectionScreen.h" />
+    <ClInclude Include="DatabaseManager.h" />
+    <ClInclude Include="Dock.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="FocusManager.h" />
+    <ClInclude Include="FontManager.h" />
+    <ClInclude Include="FormPanel.h" />
+    <ClInclude Include="HorizontalLayout.h" />
+    <ClInclude Include="JobSummaryPanel.h" />
+    <ClInclude Include="JobSummaryViewModel.h" />
+    <ClInclude Include="Label.h" />
+    <ClInclude Include="ListView.h" />
+    <ClInclude Include="MainMenuScreen.h" />
+    <ClInclude Include="NestGroup.h" />
+    <ClInclude Include="NestingJobResult.h" />
+    <ClInclude Include="NestingManager.h" />
+    <ClInclude Include="NewJobScreen.h" />
+    <ClInclude Include="Panel.h" />
+    <ClInclude Include="PlacementStrategy.h" />
+    <ClInclude Include="QuoteDocument.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ResultsViewModelBuilder.h" />
+    <ClCompile Include="RollOptimizer.cpp" />
+    <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="SheetPreviewPanel.cpp" />
+    <ClCompile Include="StatusBar.cpp" />
+    <ClCompile Include="TestJobFactory.cpp" />
+    <ClCompile Include="Theme.cpp" />
+    <ClCompile Include="Toolbar.cpp" />
+    <ClCompile Include="TypeWriter.cpp" />
+    <ClCompile Include="UIElement.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="VerticalLayout.cpp" />
+    <ClInclude Include="ScrollPanel.h" />
+    <ClInclude Include="TextBox.h" />
+    <ClInclude Include="TextRenderer.h" />
+    <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="AppState.h" />
+    <ClInclude Include="CostEngine.h" />
+    <ClInclude Include="Format.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="HttpClient.h" />
+    <ClInclude Include="InvoicePanel.h" />
+    <ClInclude Include="InvoicePrinter.h" />
+    <ClInclude Include="InvoiceViewModel.h" />
+    <ClInclude Include="InvoiceViewModelBuilder.h" />
+    <ClInclude Include="Job.h" />
+    <ClInclude Include="JobEditorScreen.h" />
+    <ClInclude Include="Layout.h" />
+    <ClInclude Include="LayoutItem.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialDatabase.h" />
+    <ClInclude Include="NestingCalculator.h" />
+    <ClInclude Include="NestingCore.h" />
+    <ClInclude Include="NestingEngine.h" />
+    <ClInclude Include="NestingRender.h" />
+    <ClInclude Include="NestingResult.h" />
+    <ClInclude Include="PendingResults.h" />
+    <ClInclude Include="PricingDatabase.h" />
+    <ClInclude Include="PricingRules.h" />
+    <ClInclude Include="ProductionOptions.h" />
+    <ClInclude Include="ProductionPricingDatabase.h" />
+    <ClInclude Include="PropertyRow.h" />
+    <ClInclude Include="ResultsScreen.h" />
+    <ClInclude Include="ResultsViewModel.h" />
+    <ClInclude Include="RollOptimizer.h" />
+    <ClInclude Include="RunMode.h" />
+    <ClInclude Include="Screen.h" />
+    <ClInclude Include="SheetPreviewPanel.h" />
+    <ClInclude Include="StatusBar.h" />
+    <ClInclude Include="TestJobFactory.h" />
+    <ClInclude Include="Theme.h" />
+    <ClInclude Include="Toolbar.h" />
+    <ClInclude Include="TypeWriter.h" />
+    <ClInclude Include="UIElement.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="VerticalLayout.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

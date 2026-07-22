@@ -1,0 +1,49 @@
+# Project: Signage Costing Program
+# Makefile created by Embarcadero Dev-C++ 6.3
+
+CPP      = g++.exe -D__DEBUG__
+CC       = gcc.exe -D__DEBUG__
+WINDRES  = windres.exe
+OBJ      = Job.o PricingRules.o main.o MaterialLoader.o HttpClient.o CostEngine.o MaterialDatabase.o Material.o
+LINKOBJ  = Job.o PricingRules.o main.o MaterialLoader.o HttpClient.o CostEngine.o MaterialDatabase.o Material.o
+LIBS     = -L"C:/dev_lib/SFML-2.6.1/lib" -L"C:/dev_lib/SDL2-2.28.3/i686-w64-mingw32/lib" -L"C:/dev_lib/SDL2_ttf-2.20.2/i686-w64-mingw32/lib" -L"C:/dev_lib/SDL2_image-2.6.3/i686-w64-mingw32/lib" -L"C:/dev_lib/tinyfiledialogs/dll_cs_lua_R_fortran_pascal" -L"C:/dev_lib/curl-8.14.1_2-win32-mingw/lib" -lcurl -m32 -g3
+INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include"
+CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++" -I"C:/dev_lib/SFML-2.6.1/include/SFML" -I"C:/dev_lib/SDL2-2.28.3/i686-w64-mingw32/include/SDL2" -I"C:/dev_lib/SDL2_image-2.6.3/i686-w64-mingw32/include/SDL2" -I"C:/dev_lib/SDL2_ttf-2.20.2/i686-w64-mingw32/include/SDL2" -I"C:/dev_lib/json-develop/include" -I"C:/dev_lib/json-develop/include/nlohmann" -I"C:/dev_lib/curl-8.14.1_2-win32-mingw/include"
+BIN      = "Signage Costing Program.exe"
+CXXFLAGS = $(CXXINCS) -ansi -m32 -g3 -std=c++11
+CFLAGS   = $(INCS) -ansi -m32 -g3 -std=c++11
+DEL      = C:\Program Files (x86)\Embarcadero\Dev-Cpp\devcpp.exe INTERNAL_DEL
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${DEL} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+Job.o: Job.cpp
+	$(CPP) -c Job.cpp -o Job.o $(CXXFLAGS)
+
+PricingRules.o: PricingRules.cpp
+	$(CPP) -c PricingRules.cpp -o PricingRules.o $(CXXFLAGS)
+
+main.o: main.cpp
+	$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
+
+MaterialLoader.o: MaterialLoader.cpp
+	$(CPP) -c MaterialLoader.cpp -o MaterialLoader.o $(CXXFLAGS)
+
+HttpClient.o: HttpClient.cpp
+	$(CPP) -c HttpClient.cpp -o HttpClient.o $(CXXFLAGS)
+
+CostEngine.o: CostEngine.cpp
+	$(CPP) -c CostEngine.cpp -o CostEngine.o $(CXXFLAGS)
+
+MaterialDatabase.o: MaterialDatabase.cpp
+	$(CPP) -c MaterialDatabase.cpp -o MaterialDatabase.o $(CXXFLAGS)
+
+Material.o: Material.cpp
+	$(CPP) -c Material.cpp -o Material.o $(CXXFLAGS)

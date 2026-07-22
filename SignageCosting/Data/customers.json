@@ -1,0 +1,16 @@
+{
+    "customers": [
+        {
+            "company": "Unik Civils",
+            "contact": "Barry",
+            "email": "pffft@gmail",
+            "phone": "088 666 7777"
+        },
+        {
+            "company": "E&G SIGNS",
+            "contact": "",
+            "email": "",
+            "phone": ""
+        }
+    ]
+}
