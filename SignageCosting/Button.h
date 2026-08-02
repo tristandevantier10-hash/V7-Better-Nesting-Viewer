@@ -22,9 +22,28 @@ public:
 
     void setOnClick(std::function<void()> callback);
 
+    enum class ButtonStyle
+    {
+        Normal,
+        Navigation
+    };
+
+    void setStyle(ButtonStyle style)
+    {
+        this->style = style;
+    }
+
+    void setSelected(bool value);
+
+    bool selected = false;
+
 private:
 
     std::string text;
 
     std::function<void()> onClick;
+
+    ButtonStyle style = ButtonStyle::Normal;
+
+    bool hovered = false;
 };

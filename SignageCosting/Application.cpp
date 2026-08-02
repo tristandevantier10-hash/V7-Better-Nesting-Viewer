@@ -102,6 +102,12 @@ bool Application::initialise()
             ui.setScreen(&customerSelectionScreen);
         });
 
+    customerSelectionScreen.setBackCallback(
+        [this]()
+        {
+            ui.setScreen(&mainMenu);
+        });
+
     customerEditorScreen.setSaveCallback(
         [this]()
         {

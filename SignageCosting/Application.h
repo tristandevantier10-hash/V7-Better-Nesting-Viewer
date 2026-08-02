@@ -22,6 +22,7 @@
 #include "NewJobScreen.h"
 #include "CustomerSelectionScreen.h"
 #include "CustomerEditorScreen.h"
+#include "ApplicationShell.h"
 
 class Application
 {
@@ -116,6 +117,8 @@ private:
     CustomerSelectionScreen customerSelectionScreen;
 
     CustomerEditorScreen customerEditorScreen;
+
+    ApplicationShell shell;
 
     //=================================================
     // Business Objects

@@ -6,152 +6,157 @@
 #include "TextBox.h"
 #include "ComboBox.h"
 #include "MaterialDatabase.h"
+#include "NavigationItem.h"
+#include "Metrics.h"
 
 MainMenuScreen::MainMenuScreen()
 {
 
     setLayout(std::make_unique<VerticalLayout>());
 
+    auto headerPanel = std::make_shared<Panel>();
+    headerPanel->setLayout(std::make_unique<HorizontalLayout>());
+    headerPanel->setHeaderStyle(true);
+    headerPanel->setBorderVisible(false);
+    headerPanel->setPadding(Metrics::HeaderPadding);
+    headerPanel->setSpacing(Metrics::SpaceM);
+
+    addLayoutElement(
+        headerPanel,
+        SizePolicy::Fixed,
+        Metrics::HeaderHeight);
+
+    auto dashboardLabel = std::make_shared<Label>();
+    dashboardLabel->setText("Dashboard");
+    dashboardLabel->setStyle(LabelStyle::Heading);
+    dashboardLabel->setTextColour(DefaultTheme.accent);
+
+    headerPanel->addLayoutElement(
+        dashboardLabel,
+        SizePolicy::Fill);
+
+    auto subtitleLabel = std::make_shared<Label>();
+    subtitleLabel->setText("Signage Costing Suite");
+    subtitleLabel->setStyle(LabelStyle::Small);
+
+    headerPanel->addLayoutElement(
+        subtitleLabel,
+        SizePolicy::Fixed,
+        Metrics::LargeRow);
+
     //==================================================
     // Header
     //==================================================
 
-    companyLabel = std::make_shared<Label>();
-    companyLabel->setText("E&G SIGNS");
+    contentPanel = std::make_shared<Panel>();
+    contentPanel->setLayout(std::make_unique<HorizontalLayout>());
 
     addLayoutElement(
-        companyLabel,
-        SizePolicy::Fixed,
-        35);
-
-    title = std::make_shared<Label>();
-    title->setText("Signage Costing System");
-
-    addLayoutElement(
-        title,
-        SizePolicy::Fixed,
-        45);
-
-    subtitleLabel = std::make_shared<Label>();
-    subtitleLabel->setText("Professional Costing - Nesting - Production");
-
-    addLayoutElement(
-        subtitleLabel,
-        SizePolicy::Fixed,
-        30);
-
-    bodyPanel = std::make_shared<Panel>();
-    bodyPanel->setLayout(std::make_unique<HorizontalLayout>());
-
-    addLayoutElement(
-        bodyPanel,
+        contentPanel,
         SizePolicy::Fill);
 
-    navigationPanel = std::make_shared<Panel>();
-    navigationPanel->setLayout(std::make_unique<VerticalLayout>());
+    sidebarPanel = std::make_shared<NavigationPanel>();
+    sidebarPanel->setLayout(std::make_unique<VerticalLayout>());
+    sidebarPanel->setSidebarStyle(true);
+    sidebarPanel->setBorderVisible(false);
+    sidebarPanel->setPadding(Metrics::SidebarPadding);
+    sidebarPanel->setSpacing(Metrics::SpaceS);
 
-    statusPanel = std::make_shared<Panel>();
-    statusPanel->setLayout(std::make_unique<VerticalLayout>());
+    auto rightPanel = std::make_shared<Panel>();
+    rightPanel->setLayout(std::make_unique<VerticalLayout>());
+    rightPanel->setPadding(20);
+    rightPanel->setSpacing(20);
 
-    bodyPanel->addLayoutElement(
-        navigationPanel,
-        SizePolicy::Fixed,
-        320);
+    statusPanel = std::make_shared<CardPanel>();
+    statusPanel->setTitle("System Status");
+    statusPanel->setBorderVisible(false);
+    statusPanel->setPadding(Metrics::PanelPadding);
+    statusPanel->setSpacing(Metrics::SpaceS);
 
-    bodyPanel->addLayoutElement(
+    rightPanel->addLayoutElement(
         statusPanel,
-        SizePolicy::Fill);
-
-    statusTitle = std::make_shared<Label>();
-    statusTitle->setText("System Status");
-
-    statusPanel->addLayoutElement(
-        statusTitle,
         SizePolicy::Fixed,
-        40);
+        260);
+
+    contentPanel->addLayoutElement(
+        sidebarPanel,
+        SizePolicy::Fixed,
+        Metrics::SidebarWidth);
+
+    contentPanel->addLayoutElement(
+        rightPanel,
+        SizePolicy::Fill);
 
     materialsStatus = std::make_shared<Label>();
     materialsStatus->setText("[OK] Materials Loaded");
+    materialsStatus->setStyle(LabelStyle::Small);
 
     statusPanel->addLayoutElement(
         materialsStatus,
         SizePolicy::Fixed,
-        30);
+        Metrics::NormalRow);
 
     pricingStatus = std::make_shared<Label>();
     pricingStatus->setText("[OK] Pricing Loaded");
+    pricingStatus->setStyle(LabelStyle::Small);
 
     statusPanel->addLayoutElement(
         pricingStatus,
         SizePolicy::Fixed,
-        30);
+        Metrics::NormalRow);
 
     productionStatus = std::make_shared<Label>();
     productionStatus->setText("[OK] Production Pricing Loaded");
+    productionStatus->setStyle(LabelStyle::Small);
 
     statusPanel->addLayoutElement(
         productionStatus,
         SizePolicy::Fixed,
-        30);
+        Metrics::NormalRow);
 
     materialCountLabel = std::make_shared<Label>();
     materialCountLabel->setText("Materials : 0");
+    materialCountLabel->setStyle(LabelStyle::Small);    
 
     statusPanel->addLayoutElement(
         materialCountLabel,
         SizePolicy::Fixed,
-        30);
+        Metrics::NormalRow);
 
     variantCountLabel = std::make_shared<Label>();
     variantCountLabel->setText("Variants : 0");
+    variantCountLabel->setStyle(LabelStyle::Small); 
 
     statusPanel->addLayoutElement(
         variantCountLabel,
         SizePolicy::Fixed,
-        30);
+        Metrics::NormalRow);
 
-    newJobButton = std::make_shared<Button>();
+    auto newJobItem =
+        sidebarPanel->addItem(
+            "NEW JOB",
+            [this]()
+            {
+                if (newJobCallback)
+                    newJobCallback();
+            });
 
-    newJobButton->setText("NEW JOB");
+    auto settingsItem =
+        sidebarPanel->addItem(
+            "SETTINGS",
+            []()
+            {
+                std::cout << "Settings clicked\n";
+            });
 
-    navigationPanel->addLayoutElement(
-        newJobButton,
-        SizePolicy::Fixed,
-        60);
+    auto exitItem =
+        sidebarPanel->addItem(
+            "EXIT",
+            []()
+            {
+                std::cout << "Exit clicked\n";
+            });
 
-    settingsButton = std::make_shared<Button>();
-
-    settingsButton->setText("SETTINGS");
-
-    navigationPanel->addLayoutElement(
-        settingsButton,
-        SizePolicy::Fixed,
-        60);
-
-    exitButton = std::make_shared<Button>();
-
-    exitButton->setText("EXIT");
-
-    navigationPanel->addLayoutElement(
-        exitButton,
-        SizePolicy::Fixed,
-        60);
-
-    newJobButton->setOnClick([this]()
-        {
-            if (newJobCallback)
-                newJobCallback();
-        });
-
-    settingsButton->setOnClick([]()
-        {
-            std::cout << "Settings clicked\n";
-        });
-
-    exitButton->setOnClick([]()
-        {
-            std::cout << "Exit clicked\n";
-        });
 }
 
 void MainMenuScreen::update(const SDL_Event& e)

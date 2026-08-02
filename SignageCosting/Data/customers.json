@@ -1,13 +1,22 @@
 {
     "customers": [
         {
+            "accountType": "Cash",
             "company": "Unik Civils",
             "contact": "Barry",
             "email": "pffft@gmail",
             "phone": "088 666 7777"
         },
         {
+            "accountType": "Cash",
             "company": "E&G SIGNS",
+            "contact": "",
+            "email": "",
+            "phone": ""
+        },
+        {
+            "accountType": "Cash",
+            "company": "",
             "contact": "",
             "email": "",
             "phone": ""

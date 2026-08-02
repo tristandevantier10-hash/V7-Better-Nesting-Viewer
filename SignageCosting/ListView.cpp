@@ -59,73 +59,75 @@ void ListView::setSelectedIndex(int index)
     }
 }
 
-void ListView::update(const SDL_Event& e)
-{
-    if (e.type != SDL_MOUSEBUTTONDOWN)
-        return;
+void ListView::update(const SDL_Event& e) {
+    // 1. Handle Mouse Hover Motion
+    if (e.type == SDL_MOUSEMOTION) {
+        int mx = e.motion.x;
+        int my = e.motion.y;
 
-    if (e.button.button != SDL_BUTTON_LEFT)
-        return;
+        // Check if mouse is within ListView boundaries
+        if (mx >= getX() && mx <= getX() + getWidth() &&
+            my >= getY() && my <= getY() + getHeight()) {
+
+            int index = (my - getY() - 4) / rowHeight;
+            if (index >= 0 && index < static_cast<int>(items.size())) {
+                hoveredIndex = index; // Update tracked hover row
+            }
+            else {
+                hoveredIndex = -1;
+            }
+        }
+        else {
+            hoveredIndex = -1; // Reset when mouse leaves component
+        }
+    }
+
+    // 2. Handle Mouse Clicks (Your Original Code)
+    if (e.type != SDL_MOUSEBUTTONDOWN) return;
+    if (e.button.button != SDL_BUTTON_LEFT) return;
 
     int mx = e.button.x;
     int my = e.button.y;
 
-    if (mx < getX() ||
-        mx > getX() + getWidth() ||
-        my < getY() ||
-        my > getY() + getHeight())
-    {
+    if (mx < getX() || mx > getX() + getWidth() || my < getY() || my > getY() + getHeight()) {
         return;
     }
 
-    int index =
-        (my - getY() - 4) / rowHeight;
-
-    if (index >= 0 &&
-        index < static_cast<int>(items.size()))
-    {
+    int index = (my - getY() - 4) / rowHeight;
+    if (index >= 0 && index < static_cast<int>(items.size())) {
         selectedIndex = index;
-
-        if (onSelectionChanged)
-        {
+        if (onSelectionChanged) {
             onSelectionChanged(selectedIndex);
         }
     }
 }
 
-void ListView::render(Renderer& renderer)
-{
-    renderer.fillRect(
-        bounds,
-        DefaultTheme.panelBackground);
-
-    renderer.drawRect(
-        bounds,
-        DefaultTheme.border);
+void ListView::render(Renderer& renderer) {
+    renderer.fillRect(bounds, DefaultTheme.panelBackground);
+    renderer.drawRect(bounds, DefaultTheme.border);
 
     int y = getY() + 4;
+    for (int i = 0; i < static_cast<int>(items.size()); i++) {
+        SDL_Rect row = { getX() + 2, y, getWidth() - 4, rowHeight };
 
-    for (int i = 0; i < static_cast<int>(items.size()); i++)
-    {
-        SDL_Rect row =
-        {
-            getX() + 2,
-            y,
-            getWidth() - 4,
-            rowHeight
-        };
-
-        if (i == selectedIndex)
-        {
-            renderer.fillRect(
-                row,
-                DefaultTheme.buttonHover);
+        // Draw selection background fill
+        if (i == selectedIndex) {
+            renderer.fillRect(row, DefaultTheme.buttonHover);
         }
 
-        renderer.drawText(
-            items[i],
-            row.x + 8,
-            row.y + 6);
+        // Save original color state
+        SDL_Color originalColor = DefaultTheme.text;
+
+        // Change text color on hover if not selected
+        if (i == hoveredIndex && i != selectedIndex) {
+            DefaultTheme.text = { 137, 243, 0, 255 }; // Your hover text color
+        }
+
+        // Draw text with matching signature
+        renderer.drawText(items[i], row.x + 8, row.y + 6);
+
+        // Restore theme color state for the next items/elements
+        DefaultTheme.text = originalColor;
 
         y += rowHeight;
     }

@@ -92,3 +92,13 @@ bool UIElement::isVisible() const
 {
     return visible;
 }
+
+void UIElement::setEnabled(bool value)
+{
+    enabled = value;
+}
+
+bool UIElement::isEnabled() const
+{
+    return enabled;
+}

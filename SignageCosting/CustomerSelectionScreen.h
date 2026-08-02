@@ -3,12 +3,13 @@
 #include "Screen.h"
 #include "Panel.h"
 #include "Button.h"
-#include "ListView.h"
+#include "DataGrid.h"
 #include "TextBox.h"
 #include "Label.h"
 #include <memory>
 #include <functional>
-
+#include "Customer.h"    // for AccountType
+#include "SegmentedControl.h"
 
 class CustomerSelectionScreen : public Screen
 {
@@ -27,6 +28,8 @@ public:
     void setDeleteCustomerCallback(
         std::function<void(int)> callback);
 
+    void setBackCallback(std::function<void()> callback);
+
     void refreshCustomers();
 
 private:
@@ -35,7 +38,11 @@ private:
 
     std::shared_ptr<TextBox> searchBox;
 
-    std::shared_ptr<ListView> customerList;
+    std::shared_ptr<SegmentedControl> accountSelector;
+
+    AccountType currentAccountType = AccountType::Cash;
+
+    std::shared_ptr<DataGrid> customerGrid;
 
     std::shared_ptr<Button> newCustomerButton;
 
@@ -52,5 +59,7 @@ private:
     std::function<void(int)> editCustomerCallback;
 
     std::function<void(int)> deleteCustomerCallback;
+
+    std::function<void()> backCallback;
 
 };

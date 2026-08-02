@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include "Button.h"
 
 using json = nlohmann::json;
 
@@ -19,6 +20,36 @@ void CustomerDatabase::add(const Customer& customer)
 const std::vector<Customer>& CustomerDatabase::getAll()
 {
     return customers;
+}
+
+std::vector<Customer> CustomerDatabase::getCashCustomers()
+{
+    std::vector<Customer> result;
+
+    for (const auto& customer : customers)
+    {
+        if (customer.accountType == AccountType::Cash)
+        {
+            result.push_back(customer);
+        }
+    }
+
+    return result;
+}
+
+std::vector<Customer> CustomerDatabase::getCreditCustomers()
+{
+    std::vector<Customer> result;
+
+    for (const auto& customer : customers)
+    {
+        if (customer.accountType == AccountType::Credit)
+        {
+            result.push_back(customer);
+        }
+    }
+
+    return result;
 }
 
 void CustomerDatabase::clear()
@@ -64,11 +95,13 @@ void CustomerDatabase::save()
     {
         j["customers"].push_back(
             {
+                { "accountType", customer.accountType == AccountType::Cash ? "Cash" : "Credit" },
                 { "company", customer.company },
                 { "contact", customer.contact },
                 { "phone", customer.phone },
                 { "email", customer.email }
-            });
+            }
+        );
     }
 
     std::string filename =
@@ -107,6 +140,15 @@ void CustomerDatabase::load(const std::string& jsonData)
     for (const auto& item : j["customers"])
     {
         Customer customer;
+
+        // Load account type first
+        std::string type =
+            item.value("accountType", "Cash");
+
+        customer.accountType =
+            (type == "Credit")
+            ? AccountType::Credit
+            : AccountType::Cash;
 
         customer.company =
             item.value("company", "");

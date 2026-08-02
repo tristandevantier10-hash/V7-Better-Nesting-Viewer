@@ -144,13 +144,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="ApplicationShell.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="CardPanel.cpp" />
     <ClCompile Include="ComboBox.cpp" />
     <ClCompile Include="CostEngine.cpp" />
     <ClCompile Include="CustomerDatabase.cpp" />
     <ClCompile Include="CustomerEditorScreen.cpp" />
     <ClCompile Include="CustomerSelectionScreen.cpp" />
     <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="DataGrid.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="FocusManager.cpp" />
     <ClCompile Include="FontManager.cpp" />
@@ -170,6 +173,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuScreen.cpp" />
     <ClCompile Include="MaterialDatabase.cpp" />
+    <ClCompile Include="NavigationItem.cpp" />
+    <ClCompile Include="NavigationPanel.cpp" />
     <ClCompile Include="NestingCalculator.cpp" />
     <ClCompile Include="NestingCore.cpp" />
     <ClCompile Include="NestingEngine.cpp" />
@@ -185,16 +190,21 @@
     <ClCompile Include="ResultsScreen.cpp" />
     <ClCompile Include="ResultsViewModelBuilder.cpp" />
     <ClCompile Include="ScrollPanel.cpp" />
+    <ClCompile Include="SegmentedControl.cpp" />
+    <ClCompile Include="ShapeRenderer.cpp" />
     <ClCompile Include="TextBox.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClInclude Include="ApplicationShell.h" />
     <ClInclude Include="Button.h" />
+    <ClInclude Include="CardPanel.h" />
     <ClInclude Include="ComboBox.h" />
     <ClInclude Include="Customer.h" />
     <ClInclude Include="CustomerDatabase.h" />
     <ClInclude Include="CustomerEditorScreen.h" />
     <ClInclude Include="CustomerSelectionScreen.h" />
     <ClInclude Include="DatabaseManager.h" />
+    <ClInclude Include="DataGrid.h" />
     <ClInclude Include="Dock.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -208,11 +218,15 @@
     <ClInclude Include="Label.h" />
     <ClInclude Include="ListView.h" />
     <ClInclude Include="MainMenuScreen.h" />
+    <ClInclude Include="Metrics.h" />
+    <ClInclude Include="NavigationItem.h" />
+    <ClInclude Include="NavigationPanel.h" />
     <ClInclude Include="NestGroup.h" />
     <ClInclude Include="NestingJobResult.h" />
     <ClInclude Include="NestingManager.h" />
     <ClInclude Include="NewJobScreen.h" />
     <ClInclude Include="Panel.h" />
+    <ClInclude Include="PanelStyle.h" />
     <ClInclude Include="PlacementStrategy.h" />
     <ClInclude Include="QuoteDocument.h" />
     <ClInclude Include="Renderer.h" />
@@ -229,6 +243,9 @@
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="VerticalLayout.cpp" />
     <ClInclude Include="ScrollPanel.h" />
+    <ClInclude Include="SegmentedControl.h" />
+    <ClInclude Include="ShadowRenderer.h" />
+    <ClInclude Include="ShapeRenderer.h" />
     <ClInclude Include="TextBox.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Window.h" />

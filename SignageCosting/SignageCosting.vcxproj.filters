@@ -37,9 +37,6 @@
     <Filter Include="UI\Header Files\Window Layouts">
       <UniqueIdentifier>{e2418846-48fb-409c-8e74-42e1d082d452}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\Source Files\Window Layouts">
-      <UniqueIdentifier>{2eede99e-0440-4b67-8d7e-76fa6f9f7c71}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ViewModels">
       <UniqueIdentifier>{3cc1feeb-b4a6-455b-b96b-012223b23460}</UniqueIdentifier>
     </Filter>
@@ -132,9 +129,6 @@
     <ClCompile Include="PropertyRow.cpp">
       <Filter>UI\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VerticalLayout.cpp">
-      <Filter>UI\Source Files\Window Layouts</Filter>
-    </ClCompile>
     <ClCompile Include="InvoiceViewModelBuilder.cpp">
       <Filter>ViewModels\Source Files</Filter>
     </ClCompile>
@@ -143,9 +137,6 @@
     </ClCompile>
     <ClCompile Include="SheetPreviewPanel.cpp">
       <Filter>UI\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HorizontalLayout.cpp">
-      <Filter>UI\Source Files\Window Layouts</Filter>
     </ClCompile>
     <ClCompile Include="Layout.cpp">
       <Filter>UI\Source Files</Filter>
@@ -227,6 +218,33 @@
     </ClCompile>
     <ClCompile Include="NestingManager.cpp">
       <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NavigationItem.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VerticalLayout.cpp">
+      <Filter>UI\Header Files\Window Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizontalLayout.cpp">
+      <Filter>UI\Header Files\Window Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="NavigationPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationShell.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CardPanel.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeRenderer.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegmentedControl.cpp">
+      <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataGrid.cpp">
+      <Filter>UI\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -444,6 +462,36 @@
       <Filter>UI\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlacementStrategy.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NavigationItem.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NavigationPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplicationShell.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Metrics.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CardPanel.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PanelStyle.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowRenderer.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeRenderer.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentedControl.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataGrid.h">
       <Filter>UI\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

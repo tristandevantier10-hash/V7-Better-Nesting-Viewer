@@ -26,11 +26,24 @@ public:
         int x,
         int y,
         int w,
-        int h) = 0;
+        int h,
+        int padding) = 0;
 
     void clear();
+
+    void setSpacing(int value);
+
+    int getSpacing() const;
+
+    void setTopInset(int value);
+
+    int getTopInset() const;
 
 protected:
 
     std::vector<LayoutItem> items;
+
+    int spacing = 0;
+
+    int topInset = 0;
 };

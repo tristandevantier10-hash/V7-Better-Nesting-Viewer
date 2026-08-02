@@ -10,5 +10,6 @@ public:
         int x,
         int y,
         int w,
-        int h) override;
+        int h,
+        int padding) override;
 };

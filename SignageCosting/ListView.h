@@ -49,4 +49,6 @@ private:
     int rowHeight = 28;
 
     std::function<void(int)> onSelectionChanged;
+
+    int hoveredIndex = -1;
 };

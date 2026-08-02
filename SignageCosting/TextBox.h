@@ -18,6 +18,8 @@ public:
 
     void setText(const std::string& value);
 
+    void setPlaceholder(const std::string& value);
+
     const std::string& getText() const;
 
     void setTextChangedCallback(
@@ -26,6 +28,8 @@ public:
 private:
 
     std::string text;
+
+    std::string placeholder;
 
     bool focused = false;
 

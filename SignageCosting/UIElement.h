@@ -38,6 +38,10 @@ public:
 
     bool isVisible() const;
 
+    void setEnabled(bool value);
+
+    bool isEnabled() const;
+
 protected:
 
     SDL_Rect bounds{ 0, 0, 0, 0 };

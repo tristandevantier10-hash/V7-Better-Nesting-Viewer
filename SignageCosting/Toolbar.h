@@ -3,6 +3,7 @@
 #include "Panel.h"
 #include "Button.h"
 #include <functional>
+#include <memory>
 
 class Renderer;
 
@@ -26,6 +27,8 @@ public:
 
     void render(Renderer& renderer) override;
 
+    void setBackCallback(std::function<void()> callback);
+
 protected:
 
     std::shared_ptr<Button> newJobButton;
@@ -39,4 +42,6 @@ protected:
     std::shared_ptr<Button> exportButton;
 
     std::shared_ptr<Button> settingsButton;
+
+    std::shared_ptr<Button> backButton;
 };

@@ -15,19 +15,20 @@ void Button::setOnClick(std::function<void()> callback)
     onClick = callback;
 }
 
-void Button::update(const SDL_Event& e)
-{
-    if (!visible || !enabled)
-        return;
+void Button::update(const SDL_Event& e) {
+    // Track mouse hover position
+    if (e.type == SDL_MOUSEMOTION) {
+        int mx = e.motion.x;
+        int my = e.motion.y;
 
-    if (e.type == SDL_MOUSEMOTION)
-    {
-        SDL_Point mouse{
-            e.motion.x,
-            e.motion.y
-        };
-
-        hovered = SDL_PointInRect(&mouse, &bounds);
+        // Check if mouse is inside the button bounding box
+        if (mx >= getX() && mx <= getX() + getWidth() &&
+            my >= getY() && my <= getY() + getHeight()) {
+            hovered = true;
+        }
+        else {
+            hovered = false;
+        }
     }
 
     if (e.type == SDL_MOUSEBUTTONDOWN)
@@ -52,58 +53,62 @@ void Button::update(const SDL_Event& e)
 
 void Button::render(Renderer& renderer)
 {
-
-    /*std::cout
-        << "Button '" << text
-        << "' at "
-        << getX()
-        << ", "
-        << getY()
-        << std::endl;
-        */
-
     if (!visible)
         return;
 
-    SDL_Color colour = DefaultTheme.buttonNormal;
+    // Navigation buttons
+    if (style == ButtonStyle::Navigation)
+    {
+        SDL_Color textColour = DefaultTheme.darkText;
 
-    if (pressed)
-        colour = DefaultTheme.buttonPressed;
+        if (selected)
+            textColour = DefaultTheme.accent;
+        else if (hovered)
+            textColour = DefaultTheme.navigationHover;
+
+        renderer.drawText(
+            text,
+            bounds.x + 18,
+            bounds.y + 10,
+            textColour);
+
+        return;
+    }
+
+    // Standard buttons
+    SDL_Color backgroundColour = DefaultTheme.buttonNormal;
+
+    if (selected)
+    {
+        backgroundColour = DefaultTheme.accent;
+    }
+    else if (pressed)
+    {
+        backgroundColour = DefaultTheme.buttonPressed;
+    }
     else if (hovered)
-        colour = DefaultTheme.buttonHover;
+    {
+        backgroundColour = DefaultTheme.buttonHover;
+    }
 
-    SDL_SetRenderDrawColor(
-        renderer.getSDLRenderer(),
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a
-    );
+    renderer.fillRoundedRect(
+        bounds,
+        backgroundColour,
+        5);
 
-    SDL_RenderFillRect(
-        renderer.getSDLRenderer(),
-        &bounds
-    );
-
-    SDL_SetRenderDrawColor(
-        renderer.getSDLRenderer(),
-        DefaultTheme.border.r,
-        DefaultTheme.border.g,
-        DefaultTheme.border.b,
-        DefaultTheme.border.a
-    );
-
-    SDL_RenderDrawRect(
-        renderer.getSDLRenderer(),
-        &bounds
-    );
+    SDL_Color textColour =
+        selected
+        ? DefaultTheme.lightText
+        : DefaultTheme.darkText;
 
     renderer.drawText(
         text,
         bounds.x + 12,
-        bounds.y + 10
-    );
+        bounds.y + 10,
+        textColour);
 }
 
-
-
+void Button::setSelected(bool value)
+{
+    selected = value;
+}

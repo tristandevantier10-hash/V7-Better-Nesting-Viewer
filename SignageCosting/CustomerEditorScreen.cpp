@@ -2,30 +2,106 @@
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
 #include "CustomerDatabase.h"
+#include "Metrics.h"
+#include "NavigationPanel.h"
 
 CustomerEditorScreen::CustomerEditorScreen()
 {
     setLayout(std::make_unique<VerticalLayout>());
 
-    auto title = std::make_shared<Label>();
-    title->setText("NEW CUSTOMER");
+    //==================================================
+// Header
+//==================================================
+
+    auto headerPanel = std::make_shared<Panel>();
+    headerPanel->setLayout(std::make_unique<HorizontalLayout>());
+    headerPanel->setHeaderStyle(true);
 
     addLayoutElement(
-        title,
+        headerPanel,
         SizePolicy::Fixed,
-        50);
+        Metrics::HeaderHeight);
+
+    auto title = std::make_shared<Label>();
+    title->setText("Customer & Invoice");
+    title->setStyle(LabelStyle::Heading);
+
+    headerPanel->addLayoutElement(
+        title,
+        SizePolicy::Fill);
+
+    auto subtitle = std::make_shared<Label>();
+    subtitle->setText("Customer Management");
+    subtitle->setStyle(LabelStyle::Small);
+
+    headerPanel->addLayoutElement(
+        subtitle,
+        SizePolicy::Fixed,
+        220);
+
+    //==================================================
+    // Main Content
+    //==================================================
+
+    auto contentPanel = std::make_shared<Panel>();
+    contentPanel->setLayout(std::make_unique<HorizontalLayout>());
+    contentPanel->setBorderVisible(false);
+
+    addLayoutElement(
+        contentPanel,
+        SizePolicy::Fill);
+
+    auto sidebarPanel = std::make_shared<NavigationPanel>();
+    sidebarPanel->setLayout(std::make_unique<VerticalLayout>());
+    sidebarPanel->setSidebarStyle(true);
+
+    sidebarPanel->addItem(
+        "CUSTOMER",
+        []() {});
+
+    sidebarPanel->addItem(
+        "INVOICE",
+        []() {});
+
+    sidebarPanel->addItem(
+        "SAVE",
+        [this]()
+        {
+            if (saveCallback)
+                saveCallback();
+        });
+
+    sidebarPanel->addItem(
+        "CANCEL",
+        [this]()
+        {
+            if (cancelCallback)
+                cancelCallback();
+        });
+
+    contentPanel->addLayoutElement(
+        sidebarPanel,
+        SizePolicy::Fixed,
+        Metrics::SidebarWidth);
+
+    auto editorPanel = std::make_shared<Panel>();
+    editorPanel->setLayout(std::make_unique<VerticalLayout>());
+
+    contentPanel->addLayoutElement(
+        editorPanel,
+        SizePolicy::Fill);
 
     auto companyLabel = std::make_shared<Label>();
     companyLabel->setText("Company");
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(   
         companyLabel,
         SizePolicy::Fixed,
         25);
 
     company = std::make_shared<TextBox>();
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         company,
         SizePolicy::Fixed,
         40);
@@ -33,14 +109,14 @@ CustomerEditorScreen::CustomerEditorScreen()
     auto contactLabel = std::make_shared<Label>();
     contactLabel->setText("Contact Person");
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         contactLabel,
         SizePolicy::Fixed,
         25);
 
     contact = std::make_shared<TextBox>();
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         contact,
         SizePolicy::Fixed,
         40);
@@ -48,14 +124,14 @@ CustomerEditorScreen::CustomerEditorScreen()
     auto phoneLabel = std::make_shared<Label>();
     phoneLabel->setText("Phone");
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         phoneLabel,
         SizePolicy::Fixed,
         25);
 
     phone = std::make_shared<TextBox>();
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         phone,
         SizePolicy::Fixed,
         40);
@@ -63,51 +139,17 @@ CustomerEditorScreen::CustomerEditorScreen()
     auto emailLabel = std::make_shared<Label>();
     emailLabel->setText("Email");
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         emailLabel,
         SizePolicy::Fixed,
         25);
 
     email = std::make_shared<TextBox>();
 
-    addLayoutElement(
+    editorPanel->addLayoutElement(
         email,
         SizePolicy::Fixed,
         40);
-
-    saveButton = std::make_shared<Button>();
-    saveButton->setText("SAVE");
-
-    cancelButton = std::make_shared<Button>();
-    cancelButton->setText("CANCEL");
-
-    auto buttonPanel = std::make_shared<Panel>();
-    buttonPanel->setLayout(std::make_unique<HorizontalLayout>());
-
-    buttonPanel->addLayoutElement(
-        saveButton,
-        SizePolicy::Fill);
-
-    buttonPanel->addLayoutElement(
-        cancelButton,
-        SizePolicy::Fill);
-
-    addLayoutElement(
-        buttonPanel,
-        SizePolicy::Fixed,
-        50);
-
-    saveButton->setOnClick([this]()
-        {
-            if (saveCallback)
-                saveCallback();
-        });
-
-    cancelButton->setOnClick([this]()
-        {
-            if (cancelCallback)
-                cancelCallback();
-        });
 }
 
 void CustomerEditorScreen::setSaveCallback(std::function<void()> callback)

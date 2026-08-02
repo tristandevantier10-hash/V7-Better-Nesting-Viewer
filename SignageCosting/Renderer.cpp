@@ -1,5 +1,7 @@
 #include "Renderer.h"
 #include "TextRenderer.h"
+#include "Label.h"
+#include <cmath>
 
 Renderer::Renderer(
     SDL_Renderer* renderer,
@@ -8,50 +10,71 @@ Renderer::Renderer(
     :
     sdlRenderer(renderer),
     fontManager(fonts),
-    theme(theme)
+    theme(theme),
+    shapeRenderer(renderer)
+
 {}
 
 void Renderer::fillRect(
     const SDL_Rect& rect,
     SDL_Color colour)
 {
-    SDL_SetRenderDrawColor(
-        sdlRenderer,
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a);
-
     SDL_Rect translated = rect;
 
     translated.x += offsetX;
     translated.y += offsetY;
 
-    SDL_RenderFillRect(
-        sdlRenderer,
-        &translated);
+    shapeRenderer.fillRect(
+        translated,
+        colour);
+}
+
+void Renderer::fillRoundedRect(
+    const SDL_Rect& rect,
+    SDL_Color colour,
+    int radius)
+{
+    SDL_Rect translated = rect;
+
+    translated.x += offsetX;
+    translated.y += offsetY;
+
+    shapeRenderer.fillRoundedRect(
+        translated,
+        colour,
+        radius);
+}
+
+void Renderer::fillCircle(
+    int cx,
+    int cy,
+    int radius,
+    SDL_Color colour)
+{
+    shapeRenderer.fillCircle(
+        cx + offsetX,
+        cy + offsetY,
+        radius,
+        colour);
 }
 
 void Renderer::drawRect(
     const SDL_Rect& rect,
     SDL_Color colour)
 {
-    SDL_SetRenderDrawColor(
-        sdlRenderer,
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a
-    );
-
     SDL_Rect translated = rect;
 
     translated.x += offsetX;
     translated.y += offsetY;
 
-    SDL_RenderDrawRect(
-        sdlRenderer,
-        &translated);
+    shapeRenderer.drawRect(
+        translated,
+        colour);
+}
+
+FontManager& Renderer::getFontManager()
+{
+    return fontManager;
 }
 
 void Renderer::drawText(
@@ -68,6 +91,73 @@ void Renderer::drawText(
     );
 }
 
+void Renderer::drawText(
+    const std::string& text,
+    int x,
+    int y,
+    SDL_Color colour)
+{
+    TextRenderer::drawText(
+        sdlRenderer,
+        text,
+        x + offsetX,
+        y + offsetY,
+        colour
+    );
+}
+
+void Renderer::drawText(
+    const std::string& text,
+    int x,
+    int y,
+    TTF_Font* font,
+    SDL_Color colour)
+{
+    if (font == nullptr)
+        font = fontManager.getNormalFont();
+
+    TextRenderer::drawText(
+        sdlRenderer,
+        font,
+        text,
+        x + offsetX,
+        y + offsetY,
+        colour);
+}
+
+void Renderer::drawText(
+    const std::string& text,
+    int x,
+    int y,
+    LabelStyle style,
+    SDL_Color colour)
+{
+    TTF_Font* font = nullptr;
+
+    switch (style)
+    {
+    case LabelStyle::Small:
+        font = fontManager.getSmallFont();
+        break;
+
+    case LabelStyle::Heading:
+        font = fontManager.getHeadingFont();
+        break;
+
+    default:
+        font = fontManager.getNormalFont();
+        break;
+    }
+
+    TextRenderer::drawText(
+        sdlRenderer,
+        font,
+        text,
+        x + offsetX,
+        y + offsetY,
+        colour);
+}
+
 void Renderer::drawLine(
     int x1,
     int y1,
@@ -75,19 +165,12 @@ void Renderer::drawLine(
     int y2,
     SDL_Color colour)
 {
-    SDL_SetRenderDrawColor(
-        sdlRenderer,
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a);
-
-    SDL_RenderDrawLine(
-        sdlRenderer,
+    shapeRenderer.drawLine(
         x1 + offsetX,
         y1 + offsetY,
         x2 + offsetX,
-        y2 + offsetY);
+        y2 + offsetY,
+        colour);
 }
 
 void Renderer::beginFrame()
@@ -166,4 +249,38 @@ void Renderer::popClip()
 int Renderer::getTextWidth(const std::string& text)
 {
     return TextRenderer::getTextWidth(text);
+}
+
+void Renderer::drawRoundedRect(
+    const SDL_Rect& rect,
+    SDL_Color colour,
+    int radius)
+{
+    SDL_Rect translated = rect;
+
+    translated.x += offsetX;
+    translated.y += offsetY;
+
+    shapeRenderer.drawRoundedRect(
+        translated,
+        colour,
+        radius);
+}
+
+void Renderer::drawRoundedRing(
+    const SDL_Rect& rect,
+    SDL_Color colour,
+    int radius,
+    int thickness)
+{
+    SDL_Rect translated = rect;
+
+    translated.x += offsetX;
+    translated.y += offsetY;
+
+    shapeRenderer.drawRoundedRing(
+        translated,
+        colour,
+        radius,
+        thickness);
 }

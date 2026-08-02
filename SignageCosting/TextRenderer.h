@@ -20,6 +20,14 @@ public:
         int y,
         SDL_Color colour = DefaultTheme.text);
 
+    static void drawText(
+        SDL_Renderer* renderer,
+        TTF_Font* font,
+        const std::string& text,
+        int x,
+        int y,
+        SDL_Color colour = DefaultTheme.text);
+
     static int getTextWidth(const std::string& text);
 
 private:

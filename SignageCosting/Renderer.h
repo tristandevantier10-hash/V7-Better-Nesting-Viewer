@@ -1,11 +1,15 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
 #include "Theme.h"
+#include "ShapeRenderer.h"
 #include <vector>
 
 class FontManager;
+
+enum class LabelStyle;
 
 class Renderer
 {
@@ -36,12 +40,34 @@ public:
         const SDL_Rect& rect,
         SDL_Color colour);
 
+    void fillRoundedRect(
+        const SDL_Rect& rect,
+        SDL_Color colour,
+        int radius);
+
+    void drawRoundedRect(
+        const SDL_Rect& rect,
+        SDL_Color colour,
+        int radius);
+
     void drawLine(
         int x1,
         int y1,
         int x2,
         int y2,
         SDL_Color colour);
+
+    void fillCircle(
+        int cx,
+        int cy,
+        int radius,
+        SDL_Color colour);
+
+    void drawRoundedRing(
+        const SDL_Rect& rect,
+        SDL_Color colour,
+        int radius,
+        int thickness = 1);
 
     //============================
     // Scroll
@@ -63,10 +89,32 @@ public:
     // Text
     //============================
 
+    FontManager& getFontManager();
+
     void drawText(
         const std::string& text,
         int x,
         int y);
+
+    void drawText(
+        const std::string& text,
+        int x,
+        int y,
+        SDL_Color colour);
+
+    void drawText(
+        const std::string& text,
+        int x,
+        int y,
+        TTF_Font* font,
+        SDL_Color colour);
+
+    void drawText(
+        const std::string& text,
+        int x,
+        int y,
+        LabelStyle style,
+        SDL_Color colour);
 
     //============================
     // Temporary bridge
@@ -79,6 +127,8 @@ public:
 private:
 
     SDL_Renderer* sdlRenderer;
+
+    ShapeRenderer shapeRenderer;
 
     FontManager& fontManager;
 

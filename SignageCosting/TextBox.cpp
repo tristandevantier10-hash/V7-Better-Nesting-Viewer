@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Theme.h"
 #include "TextRenderer.h"
+#include "Label.h"
 
 TextBox::TextBox()
 {
@@ -11,6 +12,11 @@ TextBox::TextBox()
 void TextBox::setText(const std::string& value)
 {
     text = value;
+}
+
+void TextBox::setPlaceholder(const std::string& value)
+{
+    placeholder = value;
 }
 
 const std::string& TextBox::getText() const
@@ -77,18 +83,35 @@ void TextBox::render(Renderer& renderer)
         colour = DefaultTheme.panelBackground;
     }
 
-    renderer.fillRect(
+    renderer.fillRoundedRect(
         getBounds(),
-        colour);
+        colour,
+        8);
 
-    renderer.drawRect(
+    renderer.drawRoundedRing(
         getBounds(),
-        DefaultTheme.border);
+        DefaultTheme.border,
+        8,
+        1);
 
-    renderer.drawText(
-        text,
-        getX() + 8,
-        getY() + 8);
+    if (text.empty())
+    {
+        renderer.drawText(
+            placeholder,
+            getX() + 8,
+            getY() + 8,
+            LabelStyle::Normal,
+            SDL_Color{ 150,150,150,255 });
+    }
+    else
+    {
+        renderer.drawText(
+            text,
+            getX() + 8,
+            getY() + 8,
+            LabelStyle::Normal,
+            DefaultTheme.text);
+    }
 
     if (focused && showCaret)
     {

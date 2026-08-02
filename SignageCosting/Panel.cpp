@@ -47,30 +47,67 @@ void Panel::update(const SDL_Event& e)
     }
 }
 
-void Panel::render(Renderer& renderer)
+void Panel::renderBackground(Renderer& renderer)
 {
+    switch (style)
+    {
+    case PanelStyle::Sidebar:
 
-    /*std::cout
-        << "Panel "
-        << getX() << ","
-        << getY()
-        << " "
-        << getWidth()
-        << "x"
-        << getHeight()
-        << std::endl;
-        */
+        renderer.fillRect(
+            bounds,
+            SDL_Color{ 15,15,15,255 });
 
-    renderer.fillRect(
-        bounds,
-        DefaultTheme.panelBackground);
+        break;
 
-    renderer.drawRect(
-        bounds,
-        DefaultTheme.border);
+    case PanelStyle::Header:
 
-    performLayout();
+        renderer.fillRect(
+            bounds,
+            DefaultTheme.headerBackground);
 
+        if (borderVisible)
+        {
+            renderer.drawRect(
+                bounds,
+                DefaultTheme.border);
+        }
+
+        break;
+
+    case PanelStyle::Card:
+
+        renderer.fillRect(
+            bounds,
+            SDL_Color{ 255,255,255,255 });
+
+        if (borderVisible)
+        {
+            renderer.drawRect(
+                bounds,
+                SDL_Color{ 220,220,220,255 });
+        }
+
+        break;
+
+    default:
+
+        renderer.fillRect(
+            bounds,
+            DefaultTheme.panelBackground);
+
+        if (borderVisible)
+        {
+            renderer.drawRect(
+                bounds,
+                DefaultTheme.border);
+        }
+
+        break;
+    }
+}
+
+void Panel::renderChildren(Renderer& renderer)
+{
     if (scrollable)
     {
         SDL_Rect clip =
@@ -98,6 +135,15 @@ void Panel::render(Renderer& renderer)
         renderer.popOffset();
         renderer.popClip();
     }
+}
+
+void Panel::render(Renderer& renderer)
+{
+    renderBackground(renderer);
+
+    performLayout();
+
+    renderChildren(renderer);
 }
 
 void Panel::addPanel(std::shared_ptr<Panel> panel)
@@ -128,7 +174,8 @@ void Panel::performLayout()
             getX(),
             getY(),
             getWidth(),
-            getHeight());
+            getHeight(),
+            getPadding());
     }
 }
 
@@ -176,4 +223,32 @@ void Panel::setScrollable(bool enabled)
 bool Panel::isScrollable() const
 {
     return scrollable;
+}
+
+void Panel::setPadding(int value)
+{
+    padding = value;
+}
+
+int Panel::getPadding() const
+{
+    return padding;
+}
+
+void Panel::setSpacing(int value)
+{
+    if (layout)
+    {
+        layout->setSpacing(value);
+    }
+}
+
+int Panel::getSpacing() const
+{
+    if (layout)
+    {
+        return layout->getSpacing();
+    }
+
+    return 0;
 }

@@ -22,17 +22,29 @@ void TextRenderer::drawText(
     int x,
     int y,
     SDL_Color colour)
-
 {
-
-    if (text.empty())
-        return;
-
-    /*std::cout << "Drawing: " << text << std::endl;*/
     if (!fontManager)
         return;
 
-    TTF_Font* font = fontManager->getNormalFont();
+    drawText(
+        renderer,
+        fontManager->getNormalFont(),
+        text,
+        x,
+        y,
+        colour);
+}
+
+void TextRenderer::drawText(
+    SDL_Renderer* renderer,
+    TTF_Font* font,
+    const std::string& text,
+    int x,
+    int y,
+    SDL_Color colour)
+{
+    if (text.empty())
+        return;
 
     if (!font)
         return;
@@ -49,14 +61,6 @@ void TextRenderer::drawText(
         return;
     }
 
-    /*std::cout
-        << "Surface "
-        << surface->w
-        << " x "
-        << surface->h
-        << std::endl;
-        */
-
     SDL_Texture* texture =
         SDL_CreateTextureFromSurface(
             renderer,
@@ -64,27 +68,20 @@ void TextRenderer::drawText(
 
     if (!texture)
     {
+        SDL_FreeSurface(surface);
         std::cout << SDL_GetError() << std::endl;
         return;
     }
 
-    SDL_Rect dst;
-
-    dst.x = x;
-    dst.y = y;
-    dst.w = surface->w;
-    dst.h = surface->h;
+    SDL_Rect dst =
+    {
+        x,
+        y,
+        surface->w,
+        surface->h
+    };
 
     SDL_FreeSurface(surface);
-
-    /*std::cout
-        << text
-        << " at "
-        << dst.x
-        << ", "
-        << dst.y
-        << std::endl;
-        */
 
     SDL_RenderCopy(
         renderer,
@@ -94,8 +91,6 @@ void TextRenderer::drawText(
 
     SDL_DestroyTexture(texture);
 }
-
-
 
 int TextRenderer::getTextWidth(const std::string& text)
 {

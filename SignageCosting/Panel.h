@@ -5,6 +5,7 @@
 #include "UIElement.h"
 #include "Dock.h"
 #include "Layout.h"
+#include "PanelStyle.h"
 
 class Renderer;
 
@@ -46,11 +47,60 @@ public:
 
     bool isScrollable() const;
 
+    void setStyle(PanelStyle newStyle)
+    {
+        style = newStyle;
+    }
+
+    PanelStyle getStyle() const
+    {
+        return style;
+    }
+
+    void setSidebarStyle(bool)
+    {
+        style = PanelStyle::Sidebar;
+    }
+
+    bool isSidebarStyle() const
+    {
+        return sidebarStyle;
+    }
+
+    void setHeaderStyle(bool)
+    {
+        style = PanelStyle::Header;
+    }
+
+    void setPadding(int value);
+
+    int getPadding() const;
+
+    void setSpacing(int value);
+
+    int getSpacing() const;
+
+    bool borderVisible = true;
+
+    void setBorderVisible(bool value)
+    {
+        borderVisible = value;
+    }
+
+    bool isBorderVisible() const
+    {
+        return borderVisible;
+    }
+
 private:
 
     Dock dock = Dock::None;
 
 protected:
+
+    virtual void renderBackground(Renderer& renderer);
+
+    virtual void renderChildren(Renderer& renderer);
 
     std::vector<std::shared_ptr<UIElement>> children;
 
@@ -61,5 +111,15 @@ protected:
     int scrollY = 0;
 
     int scrollSpeed = 40;
+
+    PanelStyle style = PanelStyle::Default;
+
+    // Temporary compatibility while we migrate
+    bool sidebarStyle = false;
+    bool headerStyle = false;
+
+    int padding = 0;
+
+    int spacing = 0;
 
 };

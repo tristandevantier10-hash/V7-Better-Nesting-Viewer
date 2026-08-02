@@ -12,6 +12,10 @@ public:
 
     static const std::vector<Customer>& getAll();
 
+    static std::vector<Customer> getCashCustomers();
+
+    static std::vector<Customer> getCreditCustomers();
+
     static void clear();
 
     static void initialise();

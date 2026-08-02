@@ -16,6 +16,7 @@ Toolbar::Toolbar()
     printButton = std::make_shared<Button>();
     exportButton = std::make_shared<Button>();
     settingsButton = std::make_shared<Button>();
+    backButton = std::make_shared<Button>();
 
     newJobButton->setText("New Job");
     saveButton->setText("Save");
@@ -23,6 +24,7 @@ Toolbar::Toolbar()
     printButton->setText("Print");
     exportButton->setText("Export");
     settingsButton->setText("Settings");
+    backButton->setText("Back");
 
     addLayoutElement(newJobButton, SizePolicy::Fixed, 120);
 
@@ -35,6 +37,8 @@ Toolbar::Toolbar()
     addLayoutElement(exportButton, SizePolicy::Fixed, 120);
 
     addLayoutElement(settingsButton, SizePolicy::Fixed, 120);
+
+    addLayoutElement(backButton, SizePolicy::Fixed, 120);
 }
 
 void Toolbar::setNewJobCallback(std::function<void()> callback)
@@ -78,4 +82,9 @@ void Toolbar::setSettingsCallback(std::function<void()> callback)
 void Toolbar::render(Renderer& renderer)
 {
     Panel::render(renderer);
+}
+
+void Toolbar::setBackCallback(std::function<void()> callback)
+{
+    backButton->setOnClick(callback);
 }

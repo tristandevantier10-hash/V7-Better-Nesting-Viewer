@@ -4,8 +4,12 @@
 #include "Button.h"
 #include "Label.h"
 #include <functional>
+#include "NavigationPanel.h"
+#include "CardPanel.h"
 
 class Renderer;
+
+class NavigationItem;
 
 class MainMenuScreen : public Screen
 {
@@ -23,11 +27,11 @@ public:
 
 private:
 
-    std::shared_ptr<Panel> bodyPanel;
+    std::shared_ptr<Panel> contentPanel;
 
-    std::shared_ptr<Panel> navigationPanel;
+    std::shared_ptr<NavigationPanel> sidebarPanel;
 
-    std::shared_ptr<Panel> statusPanel;
+    std::shared_ptr<CardPanel> statusPanel;
 
     std::shared_ptr<Label> companyLabel;
 
@@ -46,12 +50,6 @@ private:
     std::shared_ptr<Label> materialCountLabel;
 
     std::shared_ptr<Label> variantCountLabel;
-
-    std::shared_ptr<Button> newJobButton;
-
-    std::shared_ptr<Button> settingsButton;
-
-    std::shared_ptr<Button> exitButton;
 
     std::function<void()> newJobCallback;
 };
