@@ -25,7 +25,9 @@ public:
     enum class ButtonStyle
     {
         Normal,
-        Navigation
+        Navigation,
+        FilterChip,
+        Primary
     };
 
     void setStyle(ButtonStyle style)

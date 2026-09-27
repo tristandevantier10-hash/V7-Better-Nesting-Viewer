@@ -4,16 +4,22 @@
 
 PropertyRow::PropertyRow()
 {
-    setSize(250, 24);
+    setSize(250, 32);
 
-    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setBorderVisible(false);
+    setBackgroundColour({ 255, 255, 255, 255 });
 
-    caption = std::make_shared<Label>();
+    setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    caption =
+        std::make_shared<Label>();
 
     addLayoutElement(
         caption,
         SizePolicy::Fixed,
-        120);
+        110);
 }
 
 void PropertyRow::setControl(std::shared_ptr<UIElement> control)

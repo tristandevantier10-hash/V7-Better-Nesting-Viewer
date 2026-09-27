@@ -82,6 +82,10 @@ public:
 
     bool borderVisible = true;
 
+    SDL_Color backgroundColour = { 0,0,0,0 };
+
+    bool hasBackgroundColour = false;
+
     void setBorderVisible(bool value)
     {
         borderVisible = value;
@@ -91,6 +95,14 @@ public:
     {
         return borderVisible;
     }
+
+    void setBackgroundColour(SDL_Color colour)
+    {
+        backgroundColour = colour;
+        hasBackgroundColour = true;
+    }
+
+    void tick(float deltaTime) override;
 
 private:
 

@@ -4,7 +4,9 @@
 #include "FontManager.h"
 
 SegmentedControl::SegmentedControl()
-{}
+{
+    animatedPosition = 0.0f;
+}
 
 void SegmentedControl::addSegment(const std::string& text)
 {
@@ -33,15 +35,87 @@ void SegmentedControl::setSelectionChangedCallback(
     selectionChanged = callback;
 }
 
-void SegmentedControl::update(const SDL_Event&)
-{}
+void SegmentedControl::update(const SDL_Event& e)
+{
+
+    if (!visible)
+        return;
+
+    if (e.type == SDL_MOUSEMOTION)
+    {
+        hoveredIndex = -1;
+
+        int mouseX = e.motion.x;
+        int mouseY = e.motion.y;
+
+        if (!items.empty() &&
+            mouseX >= getX() &&
+            mouseX < getX() + getWidth() &&
+            mouseY >= getY() &&
+            mouseY < getY() + getHeight())
+        {
+            int segmentWidth =
+                getWidth() / static_cast<int>(items.size());
+
+            hoveredIndex =
+                (mouseX - getX()) / segmentWidth;
+        }
+    }
+
+    if (e.type != SDL_MOUSEBUTTONDOWN)
+        return;
+
+    if (e.button.button != SDL_BUTTON_LEFT)
+        return;
+
+    int mouseX = e.button.x;
+    int mouseY = e.button.y;
+
+    if (mouseX < getX() ||
+        mouseX >= getX() + getWidth() ||
+        mouseY < getY() ||
+        mouseY >= getY() + getHeight())
+    {
+        return;
+    }
+
+    if (items.empty())
+        return;
+
+    int segmentWidth = getWidth() / static_cast<int>(items.size());
+
+    int index = (mouseX - getX()) / segmentWidth;
+
+    if (index != selectedIndex)
+    {
+        selectedIndex = index;
+
+        if (selectionChanged)
+            selectionChanged(selectedIndex);
+    }
+}
+
+void SegmentedControl::tick(float)
+{
+    animatedPosition += (selectedIndex - animatedPosition) * 0.18f;
+}
 
 void SegmentedControl::render(Renderer& renderer)
 {
     if (!visible)
         return;
 
-    SDL_Rect background =
+    if (items.empty())
+        return;
+
+    int segmentWidth =
+        getWidth() / static_cast<int>(items.size());
+
+    //--------------------------------------------------
+    // Combined transparent control background
+    //--------------------------------------------------
+
+    SDL_Rect controlBounds =
     {
         getX(),
         getY(),
@@ -49,55 +123,73 @@ void SegmentedControl::render(Renderer& renderer)
         getHeight()
     };
 
-    // Background
-    renderer.fillRoundedRect(
-        background,
-        DefaultTheme.panelBackground,
-        10);
+    // No fill — just the combined outline
+    renderer.drawRoundedRect(
+        controlBounds,
+        { 0, 0, 0, 255 },
+        7);
 
-    if (items.empty())
-        return;
+    //--------------------------------------------------
+    // Animated green selection pill
+    //--------------------------------------------------
 
-    int segmentWidth = background.w / static_cast<int>(items.size());
-
-    for (int i = 0; i < static_cast<int>(items.size()); i++)
+    SDL_Rect selected =
     {
-        SDL_Rect segment =
-        {
-            background.x + i * segmentWidth,
-            background.y,
-            segmentWidth,
-            background.h
-        };
+        getX() +
+        static_cast<int>(animatedPosition * segmentWidth) +
+        4,
 
-        // Selected underline
+        getY() + 4,
+
+        segmentWidth - 8,
+        getHeight() - 8
+    };
+
+    renderer.fillRoundedRect(
+        selected,
+        DefaultTheme.accent,
+        7);
+
+    //--------------------------------------------------
+    // Text
+    //--------------------------------------------------
+
+    for (int i = 0;
+        i < static_cast<int>(items.size());
+        i++)
+    {
+        int textWidth =
+            renderer.getTextWidth(items[i]);
+
+        int textX =
+            getX() +
+            i * segmentWidth +
+            (segmentWidth - textWidth) / 2;
+
+        int textY =
+            getY() +
+            (getHeight() - 20) / 2;
+
+        SDL_Color textColour;
+
         if (i == selectedIndex)
         {
-            SDL_Rect underline =
-            {
-                segment.x + 20,
-                segment.y + segment.h - 3,
-                segment.w - 40,
-                3
-            };
-
-            renderer.fillRoundedRect(
-                underline,
-                DefaultTheme.accent,
-                2);
+            // Selected = white on green
+            textColour =
+            { 255, 255, 255, 255 };
         }
-
-        // Draw text
-        SDL_Color colour =
-            (i == selectedIndex)
-            ? DefaultTheme.darkText
-            : DefaultTheme.darkSecondaryText;
+        else
+        {
+            // Unselected = dark text on transparent background
+            textColour =
+            { 70, 70, 70, 255 };
+        }
 
         renderer.drawText(
             items[i],
-            segment.x + 18,
-            segment.y + 12,
+            textX,
+            textY,
             renderer.getFontManager().getNormalFont(),
-            colour);
+            textColour);
     }
 }

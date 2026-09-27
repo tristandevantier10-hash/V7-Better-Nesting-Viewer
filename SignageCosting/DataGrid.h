@@ -1,9 +1,9 @@
 #pragma once
 
 #include "UIElement.h"
-
 #include <string>
 #include <vector>
+#include <functional>
 
 class Renderer;
 
@@ -22,9 +22,22 @@ public:
     void render(Renderer& renderer) override;
 
     void addRow(
-        const std::vector<std::string>& values);
+        const std::vector<std::string>& values,
+        int dataIndex = -1);
 
     void clear();
+
+    void updateRow(
+        int index,
+        const std::vector<std::string>& values);
+
+    void removeRow(
+        int index);
+
+    int getSelectedRow() const;
+
+    void setSelectionChangedCallback(
+        std::function<void(int)> callback);
 
 private:
 
@@ -37,6 +50,7 @@ private:
     struct Row
     {
         std::vector<std::string> values;
+        int dataIndex = -1;
     };
 
     std::vector<Column> columns;
@@ -46,4 +60,6 @@ private:
 
     int headerHeight = 36;
     int rowHeight = 52;
+
+    std::function<void(int)> onSelectionChanged;
 };

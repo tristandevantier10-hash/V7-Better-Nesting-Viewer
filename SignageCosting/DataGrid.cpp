@@ -1,6 +1,7 @@
 #include "DataGrid.h"
 #include "Renderer.h"
 #include "label.h"  
+#include "iostream"
 
 DataGrid::DataGrid()
 {}
@@ -44,12 +45,41 @@ void DataGrid::update(const SDL_Event& e)
         e.button.button == SDL_BUTTON_LEFT)
     {
         if (hoveredRow != -1)
+        {
             selectedRow = hoveredRow;
+
+            if (onSelectionChanged)
+                onSelectionChanged(selectedRow);
+        }
     }
 }
 
 void DataGrid::render(Renderer& renderer)
 {
+
+    static int lastX = -1;
+    static int lastY = -1;
+    static int lastWidth = -1;
+    static int lastHeight = -1;
+
+    if (getX() != lastX ||
+        getY() != lastY ||
+        getWidth() != lastWidth ||
+        getHeight() != lastHeight)
+    {
+        std::cout
+            << "GRID BOUNDS: "
+            << getX() << ", "
+            << getY() << "  "
+            << getWidth() << "x"
+            << getHeight()
+            << std::endl;
+
+        lastX = getX();
+        lastY = getY();
+        lastWidth = getWidth();
+        lastHeight = getHeight();
+    }
 
     if (!visible)
         return;
@@ -97,7 +127,9 @@ void DataGrid::render(Renderer& renderer)
         renderer.drawText(
             column.title,
             x + 10,
-            getY() + 10);
+            getY() + 10,
+            LabelStyle::Normal,
+            DefaultTheme.darkText);
 
         x += column.width;
 
@@ -173,31 +205,12 @@ void DataGrid::render(Renderer& renderer)
                 ? SDL_Color{ 255,255,255,255 }
             : DefaultTheme.darkText;
 
-            if (col == 0)
-            {
-                renderer.drawText(
-                    rows[rowIndex].values[col],
-                    x + 10,
-                    y + 6,
-                    LabelStyle::Normal,
-                    DefaultTheme.darkText);
-
-                renderer.drawText(
-                    "Cash Customer",
-                    x + 10,
-                    y + 28,
-                    LabelStyle::Small,
-                    DefaultTheme.accent);
-            }
-            else
-            {
-                renderer.drawText(
-                    rows[rowIndex].values[col],
-                    x + 10,
-                    y + 18,
-                    LabelStyle::Normal,
-                    textColour);
-            }
+            renderer.drawText(
+                rows[rowIndex].values[col],
+                x + 10,
+                y + 18,
+                LabelStyle::Normal,
+                textColour);
 
             // Draw the separator at the right edge of this column
             renderer.drawLine(
@@ -228,12 +241,62 @@ void DataGrid::render(Renderer& renderer)
 }
 
 void DataGrid::addRow(
-    const std::vector<std::string>& values)
+    const std::vector<std::string>& values,
+    int dataIndex)
 {
-    rows.push_back({ values });
+    rows.push_back({ values, dataIndex });
 }
 
 void DataGrid::clear()
 {
     rows.clear();
+}
+
+void DataGrid::updateRow(
+    int index,
+    const std::vector<std::string>& values)
+{
+    if (index < 0 ||
+        index >= static_cast<int>(rows.size()))
+    {
+        return;
+    }
+
+    rows[index].values = values;
+}
+
+void DataGrid::removeRow(int index)
+{
+    if (index < 0 ||
+        index >= static_cast<int>(rows.size()))
+    {
+        return;
+    }
+
+    rows.erase(
+        rows.begin() + index);
+
+    if (selectedRow >=
+        static_cast<int>(rows.size()))
+    {
+        selectedRow =
+            static_cast<int>(rows.size()) - 1;
+    }
+}
+
+int DataGrid::getSelectedRow() const
+{
+    if (selectedRow < 0 ||
+        selectedRow >= static_cast<int>(rows.size()))
+    {
+        return -1;
+    }
+
+    return selectedRow;
+}
+
+void DataGrid::setSelectionChangedCallback(
+    std::function<void(int)> callback)
+{
+    onSelectionChanged = callback;
 }

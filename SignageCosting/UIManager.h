@@ -19,6 +19,8 @@ public:
 
     void setSize(int width, int height);
 
+    void tick(float deltaTime);
+
 private:
 
     Screen* currentScreen = nullptr;

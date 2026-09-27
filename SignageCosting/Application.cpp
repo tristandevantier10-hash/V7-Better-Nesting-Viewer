@@ -145,10 +145,15 @@ bool Application::initialise()
             if (index >= 0 &&
                 index < static_cast<int>(customers.size()))
             {
-                currentJob.customer = customers[index];
+                currentJob.customer =
+                    customers[index];
+
+                newJobScreen.setJob(
+                    &currentJob);
             }
 
-            ui.setScreen(&newJobScreen);
+            ui.setScreen(
+                &newJobScreen);
         });
 
     customerSelectionScreen.setEditCustomerCallback(
@@ -173,7 +178,7 @@ bool Application::initialise()
             if (index < 0)
                 return;
 
-            const Customer customer =
+            Customer customer =
                 CustomerDatabase::get(index);
 
             std::string message =
@@ -210,17 +215,33 @@ bool Application::initialise()
             customerSelectionScreen.refreshCustomers();
         });
 
-    resultsScreen.getToolbar().setNewJobCallback(
+    resultsScreen.setNewJobCallback(
         [this]()
         {
             beginNewJob();
             ui.setScreen(&newJobScreen);
         });
 
-    resultsScreen.getToolbar().setCalculateCallback(
+    resultsScreen.setBackCallback(
         [this]()
         {
-            calculateQuote();
+            ui.setScreen(&mainMenu);
+        });
+
+    resultsScreen.setPrintCallback(
+        [this]()
+        {
+            std::cout << "PRINT QUOTE\n";
+
+            // Existing print functionality can be moved here.
+        });
+
+    resultsScreen.setExportCallback(
+        [this]()
+        {
+            std::cout << "EXPORT PDF\n";
+
+            // PDF export will be wired here.
         });
 
     state = AppState::MainMenu;
@@ -377,6 +398,8 @@ void Application::processEvents()
 
 void Application::update()
     {
+
+    ui.tick(1.0f / 60.0f);
 
         {
             std::lock_guard<std::mutex> lock(resultMutex);
@@ -550,6 +573,8 @@ void Application::beginNewJob()
 
     sheets.clear();
 }
+
+
 
 void Application::destroyRenderer()
 {

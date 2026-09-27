@@ -49,6 +49,22 @@ void Panel::update(const SDL_Event& e)
 
 void Panel::renderBackground(Renderer& renderer)
 {
+
+    if (hasBackgroundColour)
+    {
+        renderer.fillRoundedRect(
+            {
+                getX(),
+                getY(),
+                getWidth(),
+                getHeight()
+            },
+            backgroundColour,
+            8);
+
+        return;
+    }
+
     switch (style)
     {
     case PanelStyle::Sidebar:
@@ -139,9 +155,9 @@ void Panel::renderChildren(Renderer& renderer)
 
 void Panel::render(Renderer& renderer)
 {
-    renderBackground(renderer);
-
     performLayout();
+
+    renderBackground(renderer);
 
     renderChildren(renderer);
 }
@@ -168,6 +184,7 @@ void Panel::setLayout(std::unique_ptr<Layout> newLayout)
 
 void Panel::performLayout()
 {
+    // First calculate this panel's direct children.
     if (layout)
     {
         layout->performLayout(
@@ -176,6 +193,22 @@ void Panel::performLayout()
             getWidth(),
             getHeight(),
             getPadding());
+    }
+
+    // Then recursively calculate the layouts
+    // of any child panels.
+    for (auto& child : children)
+    {
+        if (!child->isVisible())
+            continue;
+
+        auto panel =
+            std::dynamic_pointer_cast<Panel>(child);
+
+        if (panel)
+        {
+            panel->performLayout();
+        }
     }
 }
 
@@ -251,4 +284,12 @@ int Panel::getSpacing() const
     }
 
     return 0;
+}
+
+void Panel::tick(float deltaTime)
+{
+    for (auto& child : children)
+    {
+        child->tick(deltaTime);
+    }
 }

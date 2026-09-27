@@ -72,27 +72,33 @@ void TextBox::render(Renderer& renderer)
     if (!visible)
         return;
 
-    SDL_Color colour;
-
-    if (focused)
-    {
-        colour = { 70, 110, 220, 255 };
-    }
-    else
-    {
-        colour = DefaultTheme.panelBackground;
-    }
+    //==================================================
+    // Background
+    //==================================================
 
     renderer.fillRoundedRect(
         getBounds(),
-        colour,
+        { 255,255,255,255 },
         8);
+
+    //==================================================
+    // Border
+    //==================================================
+
+    SDL_Color borderColour =
+        focused
+        ? DefaultTheme.accent
+        : DefaultTheme.border;
 
     renderer.drawRoundedRing(
         getBounds(),
-        DefaultTheme.border,
+        borderColour,
         8,
-        1);
+        focused ? 2 : 1);
+
+    //==================================================
+    // Text / Placeholder
+    //==================================================
 
     if (text.empty())
     {
@@ -112,6 +118,10 @@ void TextBox::render(Renderer& renderer)
             LabelStyle::Normal,
             DefaultTheme.text);
     }
+
+    //==================================================
+    // Caret
+    //==================================================
 
     if (focused && showCaret)
     {
@@ -133,7 +143,6 @@ void TextBox::render(Renderer& renderer)
             caretX,
             bounds.y + bounds.h - 6);
     }
-
 }
 
 void TextBox::setTextChangedCallback(

@@ -17,4 +17,9 @@ public:
     std::shared_ptr<PropertyRow> addRow(
         const std::string& caption,
         std::shared_ptr<UIElement> control);
+
+    std::shared_ptr<PropertyRow> addCompactRow(
+        const std::string& caption,
+        std::shared_ptr<UIElement> control,
+        int height = 32);
 };

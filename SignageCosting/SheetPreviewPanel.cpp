@@ -7,13 +7,8 @@
 
 SheetPreviewPanel::SheetPreviewPanel()
 {
-    setPosition(350, 120);
-
-    setSize(800, 620);
-
     viewMode = ViewMode::FitWidth;
 }
-
 
 void SheetPreviewPanel::setSheets(
     const std::vector<Sheet>& newSheets)
@@ -31,6 +26,11 @@ void SheetPreviewPanel::setViewMode(ViewMode mode)
 
 void SheetPreviewPanel::render(Renderer& renderer)
 {
+    if (!visible)
+        return;
+
+    performLayout();
+
     if (viewMode == ViewMode::FitWidth)
         renderFitWidth(renderer);
     else

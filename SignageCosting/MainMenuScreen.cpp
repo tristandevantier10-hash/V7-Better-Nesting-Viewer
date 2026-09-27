@@ -141,6 +141,22 @@ MainMenuScreen::MainMenuScreen()
                     newJobCallback();
             });
 
+    auto materialDatabaseItem =
+        sidebarPanel->addItem(
+            "MATERIAL DATABASE",
+            []()
+            {
+                std::cout << "Material Database clicked\n";
+            });
+
+    auto customerDatabaseItem =
+        sidebarPanel->addItem(
+            "CUSTOMER DATABASE",
+            []()
+            {
+                std::cout << "Customer Database clicked\n";
+            });
+
     auto settingsItem =
         sidebarPanel->addItem(
             "SETTINGS",

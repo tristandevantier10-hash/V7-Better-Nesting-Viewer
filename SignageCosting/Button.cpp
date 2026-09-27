@@ -75,36 +75,125 @@ void Button::render(Renderer& renderer)
         return;
     }
 
-    // Standard buttons
-    SDL_Color backgroundColour = DefaultTheme.buttonNormal;
+    if (style == ButtonStyle::FilterChip)
+    {
+        SDL_Color background =
+            selected
+            ? SDL_Color{ 235,250,235,255 }
+        : SDL_Color{ 255,255,255,255 };
 
+        SDL_Color border =
+            selected
+            ? DefaultTheme.accent
+            : SDL_Color{ 220,220,220,255 };
+
+        SDL_Color text =
+            selected
+            ? DefaultTheme.accent
+            : DefaultTheme.darkSecondaryText;
+
+        renderer.fillRoundedRect(
+            bounds,
+            background,
+            7);
+
+        renderer.drawRoundedRect(
+            bounds,
+            border,
+            7);
+
+        renderer.drawText(
+            this->text,
+            bounds.x + 18,
+            bounds.y + 11,
+            text);
+
+        return;
+    }
+
+    // Primary action button
+    if (style == ButtonStyle::Primary)
+    {
+        SDL_Color backgroundColour = { 20,20,20,255 };
+
+        if (pressed)
+        {
+            backgroundColour = { 0,140,75,255 };
+        }
+        else if (hovered)
+        {
+            backgroundColour = DefaultTheme.accent;
+        }
+
+        renderer.fillRoundedRect(
+            bounds,
+            backgroundColour,
+            7);
+
+        renderer.drawText(
+            text,
+            bounds.x + 12,
+            bounds.y + 10,
+            DefaultTheme.lightText);
+
+        return;
+    }
+
+    //==================================================
+    // Standard Buttons
+    //==================================================
+
+    // Normal = black
+    SDL_Color backgroundColour =
+    { 20, 20, 20, 255 };
+
+    // Hover = green
+    if (hovered)
+    {
+        backgroundColour =
+            DefaultTheme.accent;
+    }
+
+    // Pressed = darker green
+    if (pressed)
+    {
+        backgroundColour =
+        { 0, 150, 75, 255 };
+    }
+
+    // Selected = green
     if (selected)
     {
-        backgroundColour = DefaultTheme.accent;
-    }
-    else if (pressed)
-    {
-        backgroundColour = DefaultTheme.buttonPressed;
-    }
-    else if (hovered)
-    {
-        backgroundColour = DefaultTheme.buttonHover;
+        backgroundColour =
+            DefaultTheme.accent;
     }
 
+    // Background
     renderer.fillRoundedRect(
         bounds,
         backgroundColour,
-        5);
+        7);
 
+    // White text
     SDL_Color textColour =
-        selected
-        ? DefaultTheme.lightText
-        : DefaultTheme.darkText;
+    { 255, 255, 255, 255 };
+
+    // Draw text
+    int textWidth =
+        renderer.getTextWidth(text);
+
+    int textX =
+        bounds.x +
+        (bounds.w - textWidth) / 2;
+
+    int textY =
+        bounds.y +
+        (bounds.h - 20) / 2;
 
     renderer.drawText(
         text,
-        bounds.x + 12,
-        bounds.y + 10,
+        textX,
+        textY,
         textColour);
 }
 

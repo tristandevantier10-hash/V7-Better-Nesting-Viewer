@@ -42,6 +42,8 @@ public:
 
     bool isEnabled() const;
 
+    virtual void tick(float deltaTime) {}
+
 protected:
 
     SDL_Rect bounds{ 0, 0, 0, 0 };

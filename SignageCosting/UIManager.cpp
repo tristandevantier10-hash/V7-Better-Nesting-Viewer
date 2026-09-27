@@ -48,3 +48,11 @@ void UIManager::setSize(int width, int height)
     currentScreen->setPosition(0, 0);
     currentScreen->setSize(width, height);
 }
+
+void UIManager::tick(float deltaTime)
+{
+    if (currentScreen)
+    {
+        currentScreen->tick(deltaTime);
+    }
+}

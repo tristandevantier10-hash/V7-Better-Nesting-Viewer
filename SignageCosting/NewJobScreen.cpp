@@ -5,18 +5,299 @@
 #include "TextBox.h"
 #include "Button.h"
 #include "VerticalLayout.h"
+#include "HorizontalLayout.h"
+#include "NavigationPanel.h"
+#include "Metrics.h"
 #include "MaterialDatabase.h"
 #include "PropertyRow.h"
+#include "DataGrid.h"
+#include "Panel.h"
+#include "Label.h"
 #include "iostream"
-#include "ListView.h"
 
 NewJobScreen::NewJobScreen()
 {
+    //==================================================
+    // Root
+    //==================================================
+
     setLayout(std::make_unique<VerticalLayout>());
 
-    form = std::make_shared<FormPanel>();
+    auto contentPanel = std::make_shared<Panel>();
+    contentPanel->setLayout(
+        std::make_unique<HorizontalLayout>());
 
-    material = std::make_shared<ComboBox>();
+    addLayoutElement(
+        contentPanel,
+        SizePolicy::Fill);
+
+    //==================================================
+    // Sidebar
+    //==================================================
+
+    auto sidebar = std::make_shared<NavigationPanel>();
+
+    sidebar->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    sidebar->setSidebarStyle(true);
+    sidebar->setPadding(Metrics::SidebarPadding);
+
+    contentPanel->addLayoutElement(
+        sidebar,
+        SizePolicy::Fixed,
+        Metrics::SidebarWidth);
+
+    sidebar->addItem(
+        "JOB INPUT",
+        []() {});
+
+    struct InvisibleSpacer : public Panel
+    {
+        void render(Renderer& renderer) override
+        {
+            performLayout();
+            renderChildren(renderer);
+        }
+    };
+
+    auto spacer =
+        std::make_shared<InvisibleSpacer>();
+
+    spacer->setBorderVisible(false);
+
+    sidebar->addLayoutElement(
+        spacer,
+        SizePolicy::Fill);
+
+    //==================================================
+    // Right Side
+    //==================================================
+
+    auto rightContainer =
+        std::make_shared<Panel>();
+
+    rightContainer->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    rightContainer->setStyle(
+        PanelStyle::Card);
+
+    rightContainer->setBorderVisible(false);
+    rightContainer->setPadding(30);
+    rightContainer->setSpacing(20);
+
+    contentPanel->addLayoutElement(
+        rightContainer,
+        SizePolicy::Fill);
+
+    //==================================================
+    // Header
+    //==================================================
+
+    auto pageHeader =
+        std::make_shared<Panel>();
+
+    pageHeader->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    pageHeader->setStyle(
+        PanelStyle::Card);
+
+    pageHeader->setBorderVisible(false);
+
+    rightContainer->addLayoutElement(
+        pageHeader,
+        SizePolicy::Fixed,
+        100);
+
+    auto titlePanel =
+        std::make_shared<Panel>();
+
+    titlePanel->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    titlePanel->setStyle(
+        PanelStyle::Card);
+
+    titlePanel->setBorderVisible(false);
+    titlePanel->setSpacing(4);
+
+    pageHeader->addLayoutElement(
+        titlePanel,
+        SizePolicy::Fill);
+
+    auto title =
+        std::make_shared<Label>();
+
+    title->setText("Job Input");
+    title->setStyle(LabelStyle::Heading);
+
+    titlePanel->addLayoutElement(
+        title,
+        SizePolicy::Fixed,
+        36);
+
+    auto subtitle =
+        std::make_shared<Label>();
+
+    subtitle->setText(
+        "Enter the materials and dimensions for this job");
+
+    subtitle->setStyle(
+        LabelStyle::Small);
+
+    subtitle->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    titlePanel->addLayoutElement(
+        subtitle,
+        SizePolicy::Fixed,
+        24);
+
+    //==================================================
+    // Selected Customer Card
+    //==================================================
+
+    customerCard =
+        std::make_shared<Panel>();
+
+    customerCard->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    auto customerHeader =
+        std::make_shared<Panel>();
+
+    customerHeader->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    customerHeader->setBorderVisible(false);
+    customerHeader->setPadding(0);
+    customerHeader->setSpacing(8);
+
+    customerTitle =
+        std::make_shared<Label>();
+
+    customerTitle->setText(
+        "Selected Customer");
+
+    customerTitle->setStyle(
+        LabelStyle::Small);
+
+    customerHeader->addLayoutElement(
+        customerTitle,
+        SizePolicy::Fill);
+
+    customerType =
+        std::make_shared<Label>();
+
+    customerType->setText(
+        "");
+
+    customerType->setStyle(
+        LabelStyle::Small);
+
+    customerType->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    customerHeader->addLayoutElement(
+        customerType,
+        SizePolicy::Fixed,
+        110);
+
+    customerCard->addLayoutElement(
+        customerHeader,
+        SizePolicy::Fixed,
+        30);
+
+    customerCompany =
+        std::make_shared<Label>();
+
+    customerCompany->setText(
+        "No customer selected");
+
+    customerCompany->setStyle(
+        LabelStyle::Normal);
+
+    customerCard->addLayoutElement(
+        customerCompany,
+        SizePolicy::Fixed,
+        15);
+
+    customerContact =
+        std::make_shared<Label>();
+
+    customerContact->setText("");
+
+    customerContact->setStyle(
+        LabelStyle::Normal);
+
+    customerCard->addLayoutElement(
+        customerContact,
+        SizePolicy::Fixed,
+        15);
+
+
+    customerPhone =
+        std::make_shared<Label>();
+
+    customerPhone->setText("");
+
+    customerPhone->setStyle(
+        LabelStyle::Normal);
+
+    customerCard->addLayoutElement(
+        customerPhone,
+        SizePolicy::Fixed,
+        15);
+
+    customerCard->setStyle(
+        PanelStyle::Card);
+
+    customerCard->setPadding(10);
+    customerCard->setSpacing(1);
+
+    pageHeader->addLayoutElement(
+        customerCard,
+        SizePolicy::Fixed,
+        430);
+
+    //==================================================
+    // Main Workspace
+    //==================================================
+
+    auto workspace =
+        std::make_shared<Panel>();
+
+    workspace->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    workspace->setStyle(
+        PanelStyle::Card);
+
+    workspace->setBorderVisible(false);
+    workspace->setPadding(0);
+    workspace->setSpacing(18);
+
+    rightContainer->addLayoutElement(
+        workspace,
+        SizePolicy::Fill);
+
+    //==================================================
+    // Initialise Existing Controls
+    //==================================================
+
+    form =
+        std::make_shared<FormPanel>();
+
+    form->setStyle(PanelStyle::Card);
+    form->setBorderVisible(false);
+    form->setBackgroundColour({ 255,255,255,255 });
+    form->setPadding(0);
+    form->setSpacing(8);
+
+    material =
+        std::make_shared<ComboBox>();
 
     material->setSelectionChangedCallback(
         [this](int)
@@ -24,7 +305,8 @@ NewJobScreen::NewJobScreen()
             loadVariants();
         });
 
-    variant = std::make_shared<ComboBox>();
+    variant =
+        std::make_shared<ComboBox>();
 
     variant->setSelectionChangedCallback(
         [this](int)
@@ -32,47 +314,314 @@ NewJobScreen::NewJobScreen()
             loadFormats();
         });
 
-    formatSelector = std::make_shared<ComboBox>();
+    formatSelector =
+        std::make_shared<ComboBox>();
 
-    width = std::make_shared<TextBox>();
-    height = std::make_shared<TextBox>();
-    quantity = std::make_shared<TextBox>();
+    width =
+        std::make_shared<TextBox>();
 
-    //=========================================
-    // NEW CONTROLS
-    //=========================================
+    height =
+        std::make_shared<TextBox>();
 
-    itemList = std::make_shared<ListView>();
+    quantity =
+        std::make_shared<TextBox>();
 
-    itemList->setSelectionChangedCallback(
+    //==================================================
+    // Form Rows
+    //==================================================
+
+    materialRow =
+        form->addCompactRow(
+            "Material",
+            material,
+            34);
+
+    variantRow =
+        form->addCompactRow(
+            "Variant",
+            variant,
+            34);
+
+    formatRow =
+        form->addCompactRow(
+            "Format",
+            formatSelector,
+            34);
+
+    form->addCompactRow(
+        "Width (mm)",
+        width,
+        34);
+
+    form->addCompactRow(
+        "Height (mm)",
+        height,
+        34);
+
+    form->addCompactRow(
+        "Quantity",
+        quantity,
+        34);
+
+    //==================================================
+    // Material Editor Header
+    //==================================================
+
+    auto editorHeader =
+        std::make_shared<Panel>();
+
+    editorHeader->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    editorHeader->setStyle(
+        PanelStyle::Card);
+
+    editorHeader->setBorderVisible(false);
+    editorHeader->setPadding(0);
+    editorHeader->setSpacing(8);
+
+    auto editorTitle =
+        std::make_shared<Label>();
+
+    editorTitle->setText(
+        "Material");
+
+    editorTitle->setStyle(
+        LabelStyle::Heading);
+
+    editorHeader->addLayoutElement(
+        editorTitle,
+        SizePolicy::Fill,
+        30);
+
+    auto editorHint =
+        std::make_shared<Label>();
+
+    editorHint->setText(
+        "Configure the material for this item");
+
+    editorHint->setStyle(
+        LabelStyle::Small);
+
+    editorHint->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    editorHeader->addLayoutElement(
+        editorHint,
+        SizePolicy::Fixed,
+        230);
+
+    workspace->addLayoutElement(
+        editorHeader,
+        SizePolicy::Fixed,
+        32);
+
+    //==================================================
+    // Create Action Column
+    //==================================================
+
+    auto actionColumn =
+        std::make_shared<Panel>();
+
+    actionColumn->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    auto actionSpacer =
+        std::make_shared<InvisibleSpacer>();
+
+    actionSpacer->setBorderVisible(false);
+
+    actionColumn->addLayoutElement(
+        actionSpacer,
+        SizePolicy::Fill);
+
+    actionColumn->setBorderVisible(false);
+    actionColumn->setBackgroundColour(
+        { 255, 255, 255, 255 });
+    actionColumn->setSpacing(12);
+
+    //==================================================
+    // Input Area
+    //==================================================
+
+    auto inputArea =
+        std::make_shared<Panel>();
+
+    inputArea->setBackgroundColour(
+        { 255,255,255,255 });
+
+    inputArea->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    inputArea->setBorderVisible(false);
+    inputArea->setSpacing(20);
+
+    inputArea->addLayoutElement(
+        form,
+        SizePolicy::Fixed,
+        500);
+
+    inputArea->addLayoutElement(
+        actionColumn,
+        SizePolicy::Fixed,
+        220);
+
+    workspace->addLayoutElement(
+        inputArea,
+        SizePolicy::Fixed,
+        250);
+
+    //==================================================
+    // Job Items Section
+    //==================================================
+
+    auto itemsHeader =
+        std::make_shared<Panel>();
+
+    itemsHeader->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    itemsHeader->setStyle(
+        PanelStyle::Card);
+
+    itemsHeader->setBorderVisible(false);
+    itemsHeader->setPadding(0);
+    itemsHeader->setSpacing(10);
+
+    workspace->addLayoutElement(
+        itemsHeader,
+        SizePolicy::Fixed,
+        38);
+
+    auto itemsTitle =
+        std::make_shared<Label>();
+
+    itemsTitle->setText(
+        "Job Items");
+
+    itemsTitle->setStyle(
+        LabelStyle::Heading);
+
+    itemsHeader->addLayoutElement(
+        itemsTitle,
+        SizePolicy::Fill,
+        30);
+
+    auto itemsHint =
+        std::make_shared<Label>();
+
+    itemsHint->setText(
+        "Materials added to this job");
+
+    itemsHint->setStyle(
+        LabelStyle::Small);
+
+    itemsHint->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    itemsHeader->addLayoutElement(
+        itemsHint,
+        SizePolicy::Fixed,
+        180);
+
+
+    //==================================================
+    // Job Item Grid
+    //==================================================
+
+    itemGrid =
+        std::make_shared<DataGrid>();
+
+    itemGrid->setSelectionChangedCallback(
         [this](int index)
         {
             loadItem(index);
         });
 
-    addItemButton = std::make_shared<Button>();
-    addItemButton->setText("Add Item");
+    itemGrid->addColumn(
+        "Material",
+        220);
 
-    removeItemButton = std::make_shared<Button>();
-    removeItemButton->setText("Remove Item");
+    itemGrid->addColumn(
+        "Variant",
+        350);
+
+    itemGrid->addColumn(
+        "Size",
+        180);
+
+    itemGrid->addColumn(
+        "Qty",
+        100);
+
+    workspace->addLayoutElement(
+        itemGrid,
+        SizePolicy::Fill);
+
+    //--------------------------------------------------
+    // Add Item
+    //--------------------------------------------------
+
+    addItemButton =
+        std::make_shared<Button>();
+
+    addItemButton->setText(
+        "Add Item");
+
+
+    //--------------------------------------------------
+    // Remove Item
+    //--------------------------------------------------
+
+    removeItemButton =
+        std::make_shared<Button>();
+
+    removeItemButton->setText(
+        "Remove Item");
+
+
+    //--------------------------------------------------
+    // Button Layout
+    //--------------------------------------------------
+
+    actionColumn->addLayoutElement(
+        addItemButton,
+        SizePolicy::Fixed,
+        40);
+
+    actionColumn->addLayoutElement(
+        removeItemButton,
+        SizePolicy::Fixed,
+        40);
+
+    //==================================================
+    // Existing Add Item Logic
+    //==================================================
 
     addItemButton->setOnClick(
         [this]()
         {
-            JobItem item = createItem();
+            JobItem item =
+                createItem();
 
             std::string description =
-                std::to_string(currentJob.items.size()) +
+                std::to_string(
+                    currentJob.items.size()) +
                 ". " +
                 item.material.id +
                 " | " +
-                item.material.variants[item.variantIndex].label +
+                item.material
+                .variants[item.variantIndex]
+                .label +
                 " | " +
-                std::to_string((int)item.width) +
+                std::to_string(
+                    (int)item.width) +
                 " x " +
-                std::to_string((int)item.height) +
+                std::to_string(
+                    (int)item.height) +
                 " | Qty " +
-                std::to_string(item.quantity);
+                std::to_string(
+                    item.quantity);
 
             if (editingIndex == -1)
             {
@@ -84,29 +633,48 @@ NewJobScreen::NewJobScreen()
                         << "After Add Item: "
                         << activeJob->items.size()
                         << "\n";
-
                 }
                 else
                 {
                     currentJob.addItem(item);
                 }
 
-                itemList->addItem(description);
+                itemGrid->addRow(
+                    {
+                        item.material.id,
+                        item.material.variants[item.variantIndex].label,
+                        std::to_string((int)item.width) +
+                            " x " +
+                            std::to_string((int)item.height),
+                        std::to_string(item.quantity)
+                    },
+                    activeJob
+                    ? static_cast<int>(activeJob->items.size()) - 1
+                    : static_cast<int>(currentJob.items.size()) - 1);
             }
             else
             {
                 if (activeJob)
                 {
-                    activeJob->items[editingIndex] = item;
+                    activeJob->items[
+                        editingIndex] = item;
                 }
 
-                itemList->setItem(
+                itemGrid->updateRow(
                     editingIndex,
-                    description);
+                    {
+                        item.material.id,
+                        item.material.variants[item.variantIndex].label,
+                        std::to_string((int)item.width) +
+                            " x " +
+                            std::to_string((int)item.height),
+                        std::to_string(item.quantity)
+                    });
 
                 editingIndex = -1;
 
-                addItemButton->setText("Add Item");
+                addItemButton->setText(
+                    "Add Item");
             }
 
             width->setText("");
@@ -116,33 +684,41 @@ NewJobScreen::NewJobScreen()
             width->setFocused(true);
         });
 
+    //==================================================
+    // Existing Remove Logic
+    //==================================================
+
     removeItemButton->setOnClick(
         [this]()
         {
-            int index = itemList->getSelectedIndex();
+            int index =
+                itemGrid->getSelectedRow();
 
             if (!activeJob)
                 return;
 
             if (index < 0 ||
-                index >= static_cast<int>(activeJob->items.size()))
+                index >= static_cast<int>(
+                    activeJob->items.size()))
             {
                 return;
             }
 
-            itemList->removeItem(index);
+            itemGrid->removeRow(index);
 
             activeJob->items.erase(
                 activeJob->items.begin() + index);
         });
 
-    //=========================================
-    // CALCULATE BUTTON
-    //=========================================
+    //==================================================
+    // Calculate Button
+    //==================================================
 
-    calculateButton = std::make_shared<Button>();
+    calculateButton =
+        std::make_shared<Button>();
 
-    calculateButton->setText("Calculate");
+    calculateButton->setText(
+        "Calculate");
 
     calculateButton->setOnClick(
         [this]()
@@ -150,63 +726,32 @@ NewJobScreen::NewJobScreen()
             calculate();
         });
 
-    //=========================================
-    // FORM
-    //=========================================
+    //==================================================
+    // Calculate Action Area
+    //==================================================
 
-    materialRow =
-        form->addRow(
-            "Material",
-            material);
+    auto calculateRow =
+        std::make_shared<Panel>();
 
-    variantRow =
-        form->addRow(
-            "Variant",
-            variant);
+    calculateRow->setLayout(
+        std::make_unique<HorizontalLayout>());
 
-    formatRow =
-        form->addRow(
-            "Format",
-            formatSelector);
+    calculateRow->setBorderVisible(false);
+    calculateRow->setPadding(0);
+    calculateRow->setSpacing(0);
 
-    form->addRow(
-        "Width (mm)",
-        width);
-
-    form->addRow(
-        "Height (mm)",
-        height);
-
-    form->addRow(
-        "Quantity",
-        quantity);
-
-    //=========================================
-    // LAYOUT
-    //=========================================
-
-    addLayoutElement(
-        form,
-        SizePolicy::Fill);
-
-    addLayoutElement(
-        addItemButton,
-        SizePolicy::Fixed,
-        45);
-
-    addLayoutElement(
-        removeItemButton,
-        SizePolicy::Fixed,
-        45);
-
-    addLayoutElement(
-        itemList,
-        SizePolicy::Fill);
-
-    addLayoutElement(
+    calculateRow->addLayoutElement(
         calculateButton,
+        SizePolicy::Fill);
+
+    workspace->addLayoutElement(
+        calculateRow,
         SizePolicy::Fixed,
-        45);
+        52);
+
+    //==================================================
+    // Format Visibility
+    //==================================================
 
     formatRow->setVisible(false);
 }
@@ -440,7 +985,7 @@ void NewJobScreen::clearEditor()
 {
     editingIndex = -1;
 
-    itemList->clear();
+    itemGrid->clear();
 
     width->setText("");
     height->setText("");
@@ -511,4 +1056,21 @@ void NewJobScreen::loadItem(int index)
 void NewJobScreen::setJob(Job* job)
 {
     activeJob = job;
+
+    if (!activeJob)
+        return;
+
+    customerCompany->setText(
+        activeJob->customer.company);
+
+    customerContact->setText(
+        activeJob->customer.contact);
+
+    customerPhone->setText(
+        activeJob->customer.phone);
+
+    customerType->setText(
+        activeJob->customer.accountType == AccountType::Cash
+        ? "Cash Customer"
+        : "Credit Customer");
 }

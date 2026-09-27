@@ -25,6 +25,8 @@ public:
 
     void update(const SDL_Event& e) override;
 
+    void tick(float deltaTime) override;
+
     void render(Renderer& renderer) override;
 
 private:
@@ -32,6 +34,8 @@ private:
     std::vector<std::string> items;
 
     int selectedIndex = 0;
+
+    float animatedPosition = 0.0f;
 
     int hoveredIndex = -1;
 

@@ -13,7 +13,7 @@ void FormPanel::addRow(
     addLayoutElement(
         row,
         SizePolicy::Fixed,
-        26);
+        32);
 }
 
 std::shared_ptr<PropertyRow> FormPanel::addRow(
@@ -26,6 +26,24 @@ std::shared_ptr<PropertyRow> FormPanel::addRow(
     row->setControl(control);
 
     addRow(row);
+
+    return row;
+}
+
+std::shared_ptr<PropertyRow> FormPanel::addCompactRow(
+    const std::string& caption,
+    std::shared_ptr<UIElement> control,
+    int height)
+{
+    auto row = std::make_shared<PropertyRow>();
+
+    row->setCaption(caption);
+    row->setControl(control);
+
+    addLayoutElement(
+        row,
+        SizePolicy::Fixed,
+        height);
 
     return row;
 }

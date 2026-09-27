@@ -26,32 +26,17 @@ const std::string& CardPanel::getTitle() const
 
 void CardPanel::render(Renderer& renderer)
 {
-
-    SDL_Rect shadow =
-    {
-        getX() + 3,
-        getY() + 3,
-        getWidth(),
-        getHeight()
-    };
-
-    renderer.fillRoundedRect(
-        shadow,
-        SDL_Color{ 100,100,100,255 },
-        14);
-
-    // Draw the card
-    renderer.fillRoundedRect(
+    // Flat white background
+    renderer.fillRect(
         getBounds(),
-        SDL_Color{ 248,248,248,255 },
-        14);
+        SDL_Color{ 255,255,255,255 });
 
-    renderer.drawRoundedRect(
+    // Optional subtle border
+    renderer.drawRect(
         getBounds(),
-        SDL_Color{ 225,225,225,255 },
-        14);
+        SDL_Color{ 235,235,235,255 });
 
-    // Draw title
+    // Title
     if (!title.empty())
     {
         renderer.drawText(

@@ -102,9 +102,17 @@ void ListView::update(const SDL_Event& e) {
     }
 }
 
-void ListView::render(Renderer& renderer) {
-    renderer.fillRect(bounds, DefaultTheme.panelBackground);
-    renderer.drawRect(bounds, DefaultTheme.border);
+void ListView::render(Renderer& renderer)
+{
+    // Clean white list background
+    renderer.fillRect(
+        bounds,
+        { 255, 255, 255, 255 });
+
+    // Subtle border
+    renderer.drawRect(
+        bounds,
+        { 220, 220, 220, 255 });
 
     int y = getY() + 4;
     for (int i = 0; i < static_cast<int>(items.size()); i++) {

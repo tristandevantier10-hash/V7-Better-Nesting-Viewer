@@ -91,22 +91,43 @@ void ComboBox::render(Renderer& renderer)
     if (!visible)
         return;
 
-    renderer.fillRect(
-        getBounds(),
-        DefaultTheme.panelBackground);
+    SDL_Rect r = getBounds();
 
-    renderer.drawRect(
-        getBounds(),
-        DefaultTheme.border);
+    //==================================================
+    // Background
+    //==================================================
+
+    renderer.fillRoundedRect(
+        r,
+        { 255,255,255,255 },
+        8);
+
+    //==================================================
+    // Border
+    //==================================================
+
+    renderer.drawRoundedRing(
+        r,
+        DefaultTheme.border,
+        8,
+        1);
+
+    //==================================================
+    // Selected Text
+    //==================================================
 
     renderer.drawText(
         getSelectedText(),
-        getX() + 8,
+        getX() + 12,
         getY() + 8);
 
+    //==================================================
+    // Dropdown Indicator
+    //==================================================
+
     renderer.drawText(
-        ">",
-        getX() + getWidth() - 18,
+        "▼",
+        getX() + getWidth() - 22,
         getY() + 8);
 }
 
