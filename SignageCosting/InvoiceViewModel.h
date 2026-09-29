@@ -6,6 +6,10 @@
 
 struct InvoiceViewModel
 {
+    std::string invoiceDate;
+
+    std::string jobref;
+
     std::string materialCost;
 
     std::string labourCost;

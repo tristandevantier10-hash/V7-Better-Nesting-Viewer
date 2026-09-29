@@ -69,6 +69,7 @@ private:
     // KPI cards
     // --------------------------------------------------
 
+    std::shared_ptr<Label> dateSummaryLabel;
     std::shared_ptr<Panel> totalPriceCard;
     std::shared_ptr<Panel> totalCostCard;
     std::shared_ptr<Panel> grossProfitCard;
@@ -79,6 +80,21 @@ private:
     std::shared_ptr<Label> grossProfitValueLabel;
     std::shared_ptr<Label> itemsValueLabel;
     std::shared_ptr<Label> sheetsValueLabel;
+    std::shared_ptr<Label> materialsSummaryLabel;
+    std::shared_ptr<Label> labourSummaryLabel;
+    std::shared_ptr<Label> productionSummaryLabel;
+    std::shared_ptr<Label> subtotalSummaryLabel;
+    std::shared_ptr<Label> markupSummaryLabel;
+    std::shared_ptr<Label> sellPriceSummaryLabel;
+
+    // ==================================================
+    // ADD ONLY THESE 4 VALUE TRACKERS HERE:
+    // ==================================================
+
+    std::shared_ptr<Label> materialsValueLabel;
+    std::shared_ptr<Label> dateValueLabel;
+    std::shared_ptr<Label> productionValueLabel;
+    std::shared_ptr<Label> subtotalValueLabel;
 
     // --------------------------------------------------
     // Main content

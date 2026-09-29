@@ -23,6 +23,8 @@ private:
 
     std::shared_ptr<Label> title;
 
+    std::shared_ptr<PropertyRow> invoiceDate;
+
     std::shared_ptr<PropertyRow> materialCost;
 
     std::shared_ptr<PropertyRow> labourCost;

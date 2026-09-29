@@ -5,4 +5,6 @@
 struct ResultsViewModel
 {
     InvoiceViewModel invoice;
+
+    int sheetsUsed = 0;
 };

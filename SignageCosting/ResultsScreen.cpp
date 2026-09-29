@@ -1,5 +1,4 @@
 #include "ResultsScreen.h"
-
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
 #include "NavigationPanel.h"
@@ -83,7 +82,6 @@ ResultsScreen::ResultsScreen()
 
     buildBottomActions();
 }
-
 
 // ======================================================
 // CARD FACTORY
@@ -327,7 +325,6 @@ void ResultsScreen::buildHeader()
         22);
 }
 
-
 // ======================================================
 // KPI ROW
 // ======================================================
@@ -403,7 +400,6 @@ void ResultsScreen::buildKpiRow()
         sheetsCard,
         SizePolicy::Fill);
 }
-
 
 // ======================================================
 // KPI CARD
@@ -679,10 +675,15 @@ void ResultsScreen::buildContentArea()
         std::make_unique<VerticalLayout>());
 
     summaryLayout->setBorderVisible(false);
+    summaryLayout->setSpacing(10);
 
     jobSummaryCard->addLayoutElement(
         summaryLayout,
         SizePolicy::Fill);
+
+    // --------------------------------------------------
+    // Title
+    // --------------------------------------------------
 
     auto summaryTitle =
         std::make_shared<Label>();
@@ -691,17 +692,96 @@ void ResultsScreen::buildContentArea()
         "Job Summary");
 
     summaryTitle->setStyle(
-        LabelStyle::Small);
+        LabelStyle::Normal);
 
     summaryLayout->addLayoutElement(
         summaryTitle,
         SizePolicy::Fixed,
-        30);
+        20);
+
+    // --------------------------------------------------
+    // Job Reference - 50/50 Split Row
+    // --------------------------------------------------
+    auto row1 = std::make_shared<Panel>();
+    row1->setBorderVisible(false);
+
+    row1->setLayout(std::make_unique<HorizontalLayout>());
+
+    materialsSummaryLabel = std::make_shared<Label>();
+    materialsSummaryLabel->setText("Job Reference");
+    materialsSummaryLabel->setStyle(LabelStyle::Small);
+
+    materialsValueLabel = std::make_shared<Label>();
+    materialsValueLabel->setText("REF-001");
+    materialsValueLabel->setStyle(LabelStyle::Small);
+
+    row1->addLayoutElement(materialsSummaryLabel, SizePolicy::Fill); // Left side
+    row1->addLayoutElement(materialsValueLabel, SizePolicy::Fill);   // Right side
+    summaryLayout->addLayoutElement(row1, SizePolicy::Fixed, 18);
+
+    // --------------------------------------------------
+    // Date - 50/50 Split Row
+    // --------------------------------------------------
+    auto row2 = std::make_shared<Panel>();
+    row2->setBorderVisible(false);
+    row2->setLayout(std::make_unique<HorizontalLayout>());
+
+    dateSummaryLabel = std::make_shared<Label>();
+    dateSummaryLabel->setText("Date");
+    dateSummaryLabel->setStyle(LabelStyle::Small);
+
+    dateValueLabel = std::make_shared<Label>();
+    dateValueLabel->setText(""); // Dynamically populated by refreshView()
+    dateValueLabel->setStyle(LabelStyle::Small);
+
+    row2->addLayoutElement(dateSummaryLabel, SizePolicy::Fill, 50); // Left side
+    row2->addLayoutElement(dateValueLabel, SizePolicy::Fill, 50);   // Right side
+    summaryLayout->addLayoutElement(row2, SizePolicy::Fixed, 18);
+
+    // --------------------------------------------------
+    // Payment Plan - 50/50 Split Row
+    // --------------------------------------------------
+    auto row3 = std::make_shared<Panel>();
+    row3->setBorderVisible(false);
+    row3->setLayout(std::make_unique<HorizontalLayout>());
+
+    productionSummaryLabel = std::make_shared<Label>();
+    productionSummaryLabel->setText("Payment Terms");
+    productionSummaryLabel->setStyle(LabelStyle::Small);
+
+    productionValueLabel = std::make_shared<Label>();
+    productionValueLabel->setText("COD");
+    productionValueLabel->setStyle(LabelStyle::Small);
+
+    row3->addLayoutElement(productionSummaryLabel, SizePolicy::Fill, 50); // Left side
+    row3->addLayoutElement(productionValueLabel, SizePolicy::Fill, 50);   // Right side
+    summaryLayout->addLayoutElement(row3, SizePolicy::Fixed, 18);
+
+    // --------------------------------------------------
+    // Validity Period - 50/50 Split Row
+    // --------------------------------------------------
+    auto row4 = std::make_shared<Panel>();
+    row4->setBorderVisible(false);
+    row4->setLayout(std::make_unique<HorizontalLayout>());
+
+    subtotalSummaryLabel = std::make_shared<Label>();
+    subtotalSummaryLabel->setText("Valid For");
+    subtotalSummaryLabel->setStyle(LabelStyle::Small);
+
+    subtotalValueLabel = std::make_shared<Label>();
+    subtotalValueLabel->setText("30 Days");
+    subtotalValueLabel->setStyle(LabelStyle::Small);
+
+    row4->addLayoutElement(subtotalSummaryLabel, SizePolicy::Fill, 50); // Left side
+    row4->addLayoutElement(subtotalValueLabel, SizePolicy::Fill, 50);   // Right side
+    summaryLayout->addLayoutElement(row4, SizePolicy::Fixed, 18);
+
+    // Job summary to change to Client Info block
 
     rightColumn->addLayoutElement(
         jobSummaryCard,
         SizePolicy::Fixed,
-        210);
+        170);
 
     // --------------------------------------------------
     // Nesting Preview
@@ -870,11 +950,20 @@ void ResultsScreen::refreshView()
 
     try
     {
+        std::string costText = invoice.subtotal;
+        std::string priceText = invoice.sellPrice;
+
+        if (!costText.empty() && costText[0] == 'R')
+            costText.erase(0, 1);
+
+        if (!priceText.empty() && priceText[0] == 'R')
+            priceText.erase(0, 1);
+
         totalCost =
-            std::stod(invoice.subtotal);
+            std::stod(costText);
 
         totalPrice =
-            std::stod(invoice.sellPrice);
+            std::stod(priceText);
     }
     catch (...)
     {
@@ -884,7 +973,7 @@ void ResultsScreen::refreshView()
         totalPrice - totalCost;
 
     std::string profitText =
-        "R " + std::to_string(profit);
+        "R " + std::to_string(static_cast<int>(profit));
 
     if (grossProfitValueLabel)
     {
@@ -902,13 +991,39 @@ void ResultsScreen::refreshView()
     {
         sheetsValueLabel->setText(
             std::to_string(
-                viewModel.invoice.jobs.size()));
+                viewModel.sheetsUsed));
+    }
+
+    if (materialsSummaryLabel)
+    {
+        materialsSummaryLabel->setText(
+            "Job Reference"); // Provide a hardcoded or custom reference instead of a currency cost
+    }
+
+    if (dateSummaryLabel)
+    {
+        dateSummaryLabel->setText("Date"); // Left box gets JUST the title text
+    }
+    if (dateValueLabel)
+    {
+        dateValueLabel->setText(viewModel.invoice.invoiceDate); // Right box gets JUST the date numbers
+    }
+
+    if (productionSummaryLabel)
+    {
+        productionSummaryLabel->setText(
+            "Payment Terms"); // Changed from productionCost to clean text string
+    }
+
+    if (subtotalSummaryLabel)
+    {
+        subtotalSummaryLabel->setText(
+            "Valid For"); // Changed from subtotal cost to clean text string
     }
 
     refreshCostBreakdown();
     refreshJobItems();
 }
-
 
 // ======================================================
 // COST BREAKDOWN
@@ -966,13 +1081,10 @@ void ResultsScreen::refreshJobItems()
                 job.variant,
                 size,
                 job.quantity,
-                job.isRoll
-                    ? job.sheetsUsed
-                    : job.sheetsUsed
+                job.sheetsUsed
             });
     }
 }
-
 
 // ======================================================
 // SHEETS
@@ -1004,97 +1116,6 @@ void ResultsScreen::render(
     Renderer& renderer)
 {
     performLayout();
-
-    std::cout
-        << "\n========== RESULTS LAYOUT ==========\n";
-
-    std::cout
-        << "SCREEN       : "
-        << getX() << ", "
-        << getY() << " "
-        << getWidth() << "x"
-        << getHeight()
-        << "\n";
-
-    if (contentPanel)
-    {
-        std::cout
-            << "CONTENT      : "
-            << contentPanel->getX() << ", "
-            << contentPanel->getY() << " "
-            << contentPanel->getWidth() << "x"
-            << contentPanel->getHeight()
-            << "\n";
-    }
-
-    if (mainContainer)
-    {
-        std::cout
-            << "MAIN         : "
-            << mainContainer->getX() << ", "
-            << mainContainer->getY() << " "
-            << mainContainer->getWidth() << "x"
-            << mainContainer->getHeight()
-            << "\n";
-    }
-
-    if (leftColumn)
-    {
-        std::cout
-            << "LEFT         : "
-            << leftColumn->getX() << ", "
-            << leftColumn->getY() << " "
-            << leftColumn->getWidth() << "x"
-            << leftColumn->getHeight()
-            << "\n";
-    }
-
-    if (rightColumn)
-    {
-        std::cout
-            << "RIGHT        : "
-            << rightColumn->getX() << ", "
-            << rightColumn->getY() << " "
-            << rightColumn->getWidth() << "x"
-            << rightColumn->getHeight()
-            << "\n";
-    }
-
-    if (costBreakdownCard)
-    {
-        std::cout
-            << "COST CARD    : "
-            << costBreakdownCard->getX() << ", "
-            << costBreakdownCard->getY() << " "
-            << costBreakdownCard->getWidth() << "x"
-            << costBreakdownCard->getHeight()
-            << "\n";
-    }
-
-    if (costBreakdownGrid)
-    {
-        std::cout
-            << "COST GRID    : "
-            << costBreakdownGrid->getX() << ", "
-            << costBreakdownGrid->getY() << " "
-            << costBreakdownGrid->getWidth() << "x"
-            << costBreakdownGrid->getHeight()
-            << "\n";
-    }
-
-    if (jobItemsGrid)
-    {
-        std::cout
-            << "JOB GRID     : "
-            << jobItemsGrid->getX() << ", "
-            << jobItemsGrid->getY() << " "
-            << jobItemsGrid->getWidth() << "x"
-            << jobItemsGrid->getHeight()
-            << "\n";
-    }
-
-    std::cout
-        << "====================================\n";
 
     renderBackground(renderer);
 

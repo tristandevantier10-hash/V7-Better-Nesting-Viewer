@@ -14,7 +14,7 @@ InvoicePanel::InvoicePanel()
     setSize(300, 300);
 
     title = std::make_shared<Label>();
-
+    invoiceDate = std::make_shared<PropertyRow>();
     materialCost = std::make_shared<PropertyRow>();
     labourCost = std::make_shared<PropertyRow>();
     productionCost = std::make_shared<PropertyRow>();
@@ -33,6 +33,8 @@ void InvoicePanel::render(Renderer& renderer)
 void InvoicePanel::buildStaticControls()
 {
     title->setText("Invoice");
+
+    invoiceDate->setCaption("Date");
 
     materialCost->setCaption("Material");
 
@@ -58,6 +60,7 @@ void InvoicePanel::buildStaticControls()
 
 void InvoicePanel::setViewModel(const InvoiceViewModel& vm)
 {
+    invoiceDate->setValue(vm.invoiceDate);
     materialCost->setValue(vm.materialCost);
     labourCost->setValue(vm.labourCost);
     productionCost->setValue(vm.productionCost);

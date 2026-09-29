@@ -2,7 +2,9 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <chrono>
 #include "JobSummaryViewModel.h"
+#include <windows.h>
 
 namespace
 {
@@ -43,6 +45,16 @@ InvoiceViewModel
 InvoiceViewModelBuilder::build(const CostResult& result)
 {
     InvoiceViewModel vm;
+
+    // --- BULLETPROOF PC DATE PULL ---
+    SYSTEMTIME st;
+    GetLocalTime(&st); // Pulls directly from your Windows taskbar clock
+
+    char dateBuffer[50];
+    sprintf_s(dateBuffer, "%04d-%02d-%02d", st.wYear, st.wMonth, st.wDay);
+
+    vm.invoiceDate = std::string(dateBuffer); // Saves your actual system date
+    // ---------------------------------
 
     vm.materialCost = formatCurrency(result.materialCost);
     vm.labourCost = formatCurrency(result.labourCost);

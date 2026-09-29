@@ -10,5 +10,8 @@ ResultsViewModelBuilder::build(
     vm.invoice =
         InvoiceViewModelBuilder::build(result);
 
+    vm.sheetsUsed =
+        static_cast<int>(result.nestingSheets.size());
+
     return vm;
 }

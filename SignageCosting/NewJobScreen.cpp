@@ -1,5 +1,4 @@
 #include "NewJobScreen.h"
-
 #include "FormPanel.h"
 #include "ComboBox.h"
 #include "TextBox.h"
@@ -327,7 +326,7 @@ NewJobScreen::NewJobScreen()
         std::make_shared<TextBox>();
 
     //==================================================
-    // Form Rows
+    // Form Rows // Change text colour
     //==================================================
 
     materialRow =

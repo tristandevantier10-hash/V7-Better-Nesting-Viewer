@@ -66,20 +66,18 @@ void DataGrid::render(Renderer& renderer)
         getY() != lastY ||
         getWidth() != lastWidth ||
         getHeight() != lastHeight)
-    {
-        std::cout
-            << "GRID BOUNDS: "
-            << getX() << ", "
-            << getY() << "  "
-            << getWidth() << "x"
-            << getHeight()
-            << std::endl;
 
-        lastX = getX();
-        lastY = getY();
-        lastWidth = getWidth();
-        lastHeight = getHeight();
-    }
+        // Check if any of the dimensions have changed since the last print
+        if (getX() != lastX || getY() != lastY || getWidth() != lastWidth || getHeight() != lastHeight)
+        {
+            std::cout << "GRID BOUNDS: " << getX() << ", " << getY() << " " << getWidth() << "x" << getHeight() << std::endl;
+
+            // Update the tracking variables so it doesn't print again until the next change
+            lastX = getX();
+            lastY = getY();
+            lastWidth = getWidth();
+            lastHeight = getHeight();
+        }
 
     if (!visible)
         return;
@@ -124,12 +122,24 @@ void DataGrid::render(Renderer& renderer)
 
     for (const auto& column : columns)
     {
+        SDL_Rect headerClip =
+        {
+            x,
+            getY(),
+            column.width,
+            headerHeight
+        };
+
+        renderer.pushClip(headerClip);
+
         renderer.drawText(
             column.title,
             x + 10,
             getY() + 10,
             LabelStyle::Normal,
             DefaultTheme.darkText);
+
+        renderer.popClip();
 
         x += column.width;
 
@@ -205,12 +215,24 @@ void DataGrid::render(Renderer& renderer)
                 ? SDL_Color{ 255,255,255,255 }
             : DefaultTheme.darkText;
 
+            SDL_Rect cellClip =
+            {
+                x,
+                y,
+                columns[col].width,
+                rowHeight
+            };
+
+            renderer.pushClip(cellClip);
+
             renderer.drawText(
                 rows[rowIndex].values[col],
                 x + 10,
                 y + 18,
                 LabelStyle::Normal,
                 textColour);
+
+            renderer.popClip();
 
             // Draw the separator at the right edge of this column
             renderer.drawLine(
