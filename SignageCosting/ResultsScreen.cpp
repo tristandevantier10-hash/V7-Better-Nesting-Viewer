@@ -59,28 +59,10 @@ ResultsScreen::ResultsScreen()
         SizePolicy::Fill);
 
     // ==================================================
-    // HEADER
+    // INITIAL PAGE
     // ==================================================
 
-    buildHeader();
-
-    // ==================================================
-    // KPI ROW
-    // ==================================================
-
-    buildKpiRow();
-
-    // ==================================================
-    // CONTENT
-    // ==================================================
-
-    buildContentArea();
-
-    // ==================================================
-    // BOTTOM ACTIONS
-    // ==================================================
-
-    buildBottomActions();
+    showOverview();
 }
 
 // ======================================================
@@ -120,19 +102,40 @@ void ResultsScreen::buildSidebar()
 
     sidebar->addItem(
         "RESULTS",
-        []() {});
+        [this]()
+        {
+            showOverview();
+        });
 
     sidebar->addItem(
         "OVERVIEW",
-        []() {});
+        [this]()
+        {
+            showOverview();
+        });
 
     sidebar->addItem(
         "NESTING SHEETS",
-        []() {});
+        [this]()
+        {
+            showNestingSheets();
+        });
 
     sidebar->addItem(
         "COST BREAKDOWN",
-        []() {});
+        [this]()
+        {
+            if (costBreakdownCallback)
+                costBreakdownCallback();
+        });
+
+    sidebar->addItem(
+        "QUOTE",
+        [this]()
+        {
+            if (quoteCallback)
+                quoteCallback();
+        });
 
     // --------------------------------------------------
     // Spacer
@@ -662,23 +665,23 @@ void ResultsScreen::buildContentArea()
         330);
 
     // --------------------------------------------------
-    // Job Summary
+    // Client Info
     // --------------------------------------------------
 
-    jobSummaryCard =
+    clientInfoCard =
         createCard();
 
-    auto summaryLayout =
+    auto clientInfoLayout =
         std::make_shared<Panel>();
 
-    summaryLayout->setLayout(
+    clientInfoLayout->setLayout(
         std::make_unique<VerticalLayout>());
 
-    summaryLayout->setBorderVisible(false);
-    summaryLayout->setSpacing(10);
+    clientInfoLayout->setBorderVisible(false);
+    clientInfoLayout->setSpacing(10);
 
-    jobSummaryCard->addLayoutElement(
-        summaryLayout,
+    clientInfoCard->addLayoutElement(
+        clientInfoLayout,
         SizePolicy::Fill);
 
     // --------------------------------------------------
@@ -694,7 +697,7 @@ void ResultsScreen::buildContentArea()
     summaryTitle->setStyle(
         LabelStyle::Normal);
 
-    summaryLayout->addLayoutElement(
+    clientInfoLayout->addLayoutElement(
         summaryTitle,
         SizePolicy::Fixed,
         20);
@@ -707,17 +710,17 @@ void ResultsScreen::buildContentArea()
 
     row1->setLayout(std::make_unique<HorizontalLayout>());
 
-    materialsSummaryLabel = std::make_shared<Label>();
-    materialsSummaryLabel->setText("Job Reference");
-    materialsSummaryLabel->setStyle(LabelStyle::Small);
+    jobReferenceLabel = std::make_shared<Label>();
+    jobReferenceLabel->setText("Job Reference");
+    jobReferenceLabel->setStyle(LabelStyle::Small);
 
-    materialsValueLabel = std::make_shared<Label>();
-    materialsValueLabel->setText("REF-001");
-    materialsValueLabel->setStyle(LabelStyle::Small);
+    jobReferenceValueLabel = std::make_shared<Label>();
+    jobReferenceValueLabel->setText("REF-001");
+    jobReferenceValueLabel->setStyle(LabelStyle::Small);
 
-    row1->addLayoutElement(materialsSummaryLabel, SizePolicy::Fill); // Left side
-    row1->addLayoutElement(materialsValueLabel, SizePolicy::Fill);   // Right side
-    summaryLayout->addLayoutElement(row1, SizePolicy::Fixed, 18);
+    row1->addLayoutElement(jobReferenceLabel, SizePolicy::Fill); // Left side
+    row1->addLayoutElement(jobReferenceValueLabel, SizePolicy::Fill);   // Right side
+    clientInfoLayout->addLayoutElement(row1, SizePolicy::Fixed, 18);
 
     // --------------------------------------------------
     // Date - 50/50 Split Row
@@ -736,7 +739,7 @@ void ResultsScreen::buildContentArea()
 
     row2->addLayoutElement(dateSummaryLabel, SizePolicy::Fill, 50); // Left side
     row2->addLayoutElement(dateValueLabel, SizePolicy::Fill, 50);   // Right side
-    summaryLayout->addLayoutElement(row2, SizePolicy::Fixed, 18);
+    clientInfoLayout->addLayoutElement(row2, SizePolicy::Fixed, 18);
 
     // --------------------------------------------------
     // Payment Plan - 50/50 Split Row
@@ -745,17 +748,17 @@ void ResultsScreen::buildContentArea()
     row3->setBorderVisible(false);
     row3->setLayout(std::make_unique<HorizontalLayout>());
 
-    productionSummaryLabel = std::make_shared<Label>();
-    productionSummaryLabel->setText("Payment Terms");
-    productionSummaryLabel->setStyle(LabelStyle::Small);
+    paymentTermsLabel = std::make_shared<Label>();
+    paymentTermsLabel->setText("Payment Terms");
+    paymentTermsLabel->setStyle(LabelStyle::Small);
 
-    productionValueLabel = std::make_shared<Label>();
-    productionValueLabel->setText("COD");
-    productionValueLabel->setStyle(LabelStyle::Small);
+    paymentTermsValueLabel = std::make_shared<Label>();
+    paymentTermsValueLabel->setText("COD");
+    paymentTermsValueLabel->setStyle(LabelStyle::Small);
 
-    row3->addLayoutElement(productionSummaryLabel, SizePolicy::Fill, 50); // Left side
-    row3->addLayoutElement(productionValueLabel, SizePolicy::Fill, 50);   // Right side
-    summaryLayout->addLayoutElement(row3, SizePolicy::Fixed, 18);
+    row3->addLayoutElement(paymentTermsLabel, SizePolicy::Fill, 50); // Left side
+    row3->addLayoutElement(paymentTermsValueLabel, SizePolicy::Fill, 50);   // Right side
+    clientInfoLayout->addLayoutElement(row3, SizePolicy::Fixed, 18);
 
     // --------------------------------------------------
     // Validity Period - 50/50 Split Row
@@ -764,22 +767,22 @@ void ResultsScreen::buildContentArea()
     row4->setBorderVisible(false);
     row4->setLayout(std::make_unique<HorizontalLayout>());
 
-    subtotalSummaryLabel = std::make_shared<Label>();
-    subtotalSummaryLabel->setText("Valid For");
-    subtotalSummaryLabel->setStyle(LabelStyle::Small);
+    validForLabel = std::make_shared<Label>();
+    validForLabel->setText("Valid For");
+    validForLabel->setStyle(LabelStyle::Small);
 
-    subtotalValueLabel = std::make_shared<Label>();
-    subtotalValueLabel->setText("30 Days");
-    subtotalValueLabel->setStyle(LabelStyle::Small);
+    validForValueLabel = std::make_shared<Label>();
+    validForValueLabel->setText("30 Days");
+    validForValueLabel->setStyle(LabelStyle::Small);
 
-    row4->addLayoutElement(subtotalSummaryLabel, SizePolicy::Fill, 50); // Left side
-    row4->addLayoutElement(subtotalValueLabel, SizePolicy::Fill, 50);   // Right side
-    summaryLayout->addLayoutElement(row4, SizePolicy::Fixed, 18);
+    row4->addLayoutElement(validForLabel, SizePolicy::Fill, 50); // Left side
+    row4->addLayoutElement(validForValueLabel, SizePolicy::Fill, 50);   // Right side
+    clientInfoLayout->addLayoutElement(row4, SizePolicy::Fixed, 18);
 
     // Job summary to change to Client Info block
 
     rightColumn->addLayoutElement(
-        jobSummaryCard,
+        clientInfoCard,
         SizePolicy::Fixed,
         170);
 
@@ -994,9 +997,9 @@ void ResultsScreen::refreshView()
                 viewModel.sheetsUsed));
     }
 
-    if (materialsSummaryLabel)
+    if (jobReferenceLabel)
     {
-        materialsSummaryLabel->setText(
+        jobReferenceLabel->setText(
             "Job Reference"); // Provide a hardcoded or custom reference instead of a currency cost
     }
 
@@ -1009,15 +1012,15 @@ void ResultsScreen::refreshView()
         dateValueLabel->setText(viewModel.invoice.invoiceDate); // Right box gets JUST the date numbers
     }
 
-    if (productionSummaryLabel)
+    if (paymentTermsLabel)
     {
-        productionSummaryLabel->setText(
+        paymentTermsLabel->setText(
             "Payment Terms"); // Changed from productionCost to clean text string
     }
 
-    if (subtotalSummaryLabel)
+    if (validForLabel)
     {
-        subtotalSummaryLabel->setText(
+        validForLabel->setText(
             "Valid For"); // Changed from subtotal cost to clean text string
     }
 
@@ -1093,10 +1096,11 @@ void ResultsScreen::refreshJobItems()
 void ResultsScreen::setSheets(
     const std::vector<Sheet>& sheets)
 {
+    nestingSheets = sheets;
+
     if (previewPanel)
         previewPanel->setSheets(sheets);
 }
-
 
 // ======================================================
 // UPDATE
@@ -1148,4 +1152,150 @@ void ResultsScreen::setExportCallback(
     std::function<void()> callback)
 {
     exportCallback = callback;
+}
+
+void ResultsScreen::setOverviewCallback(std::function<void()> callback)
+{
+    overviewCallback = callback;
+}
+
+void ResultsScreen::setNestingSheetsCallback(std::function<void()> callback)
+{
+    nestingSheetsCallback = callback;
+}
+
+void ResultsScreen::setCostBreakdownCallback(std::function<void()> callback)
+{
+    costBreakdownCallback = callback;
+}
+
+void ResultsScreen::setQuoteCallback(std::function<void()> callback)
+{
+    quoteCallback = callback;
+}
+
+// ======================================================
+// PAGE SWITCHING
+// ======================================================
+
+void ResultsScreen::clearMainContainer()
+{
+    if (mainContainer)
+    {
+        mainContainer->clearChildren();
+    }
+}
+
+void ResultsScreen::showOverview()
+{
+    clearMainContainer();
+
+    buildHeader();
+    buildKpiRow();
+    buildContentArea();
+    buildBottomActions();
+}
+
+void ResultsScreen::showNestingSheets()
+{
+    clearMainContainer();
+
+    // --------------------------------------------------
+    // Header
+    // --------------------------------------------------
+
+    auto header = std::make_shared<Panel>();
+
+    header->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    header->setBorderVisible(false);
+    header->setSpacing(4);
+
+    mainContainer->addLayoutElement(
+        header,
+        SizePolicy::Fixed,
+        70);
+
+    auto title = std::make_shared<Label>();
+
+    title->setText(
+        "Nesting Sheets");
+
+    title->setStyle(
+        LabelStyle::Heading);
+
+    header->addLayoutElement(
+        title,
+        SizePolicy::Fixed,
+        38);
+
+    auto subtitle = std::make_shared<Label>();
+
+    subtitle->setText(
+        "Material nesting and sheet utilisation");
+
+    subtitle->setStyle(
+        LabelStyle::Small);
+
+    subtitle->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    header->addLayoutElement(
+        subtitle,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Nesting Card
+    // --------------------------------------------------
+
+    auto nestingCard = createCard();
+
+    mainContainer->addLayoutElement(
+        nestingCard,
+        SizePolicy::Fill);
+
+    auto nestingLayout = std::make_shared<Panel>();
+
+    nestingLayout->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    nestingLayout->setBorderVisible(false);
+    nestingLayout->setSpacing(10);
+
+    nestingCard->addLayoutElement(
+        nestingLayout,
+        SizePolicy::Fill);
+
+    // --------------------------------------------------
+    // Card Title
+    // --------------------------------------------------
+
+    auto nestingTitle = std::make_shared<Label>();
+
+    nestingTitle->setText(
+        "Nesting Preview");
+
+    nestingTitle->setStyle(
+        LabelStyle::Normal);
+
+    nestingLayout->addLayoutElement(
+        nestingTitle,
+        SizePolicy::Fixed,
+        30);
+
+    // --------------------------------------------------
+    // Preview
+    // --------------------------------------------------
+
+    auto fullPreview =
+        std::make_shared<SheetPreviewPanel>();
+
+    fullPreview->setSheets(
+        nestingSheets);
+
+    nestingLayout->addLayoutElement(
+        fullPreview,
+        SizePolicy::Fill);
 }

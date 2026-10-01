@@ -46,6 +46,18 @@ public:
     void setExportCallback(
         std::function<void()> callback);
 
+    void setOverviewCallback(
+        std::function<void()> callback);
+
+    void setNestingSheetsCallback(
+        std::function<void()> callback);
+
+    void setCostBreakdownCallback(
+        std::function<void()> callback);
+
+    void setQuoteCallback(
+        std::function<void()> callback);
+
 private:
 
     // --------------------------------------------------
@@ -80,21 +92,22 @@ private:
     std::shared_ptr<Label> grossProfitValueLabel;
     std::shared_ptr<Label> itemsValueLabel;
     std::shared_ptr<Label> sheetsValueLabel;
-    std::shared_ptr<Label> materialsSummaryLabel;
-    std::shared_ptr<Label> labourSummaryLabel;
-    std::shared_ptr<Label> productionSummaryLabel;
-    std::shared_ptr<Label> subtotalSummaryLabel;
-    std::shared_ptr<Label> markupSummaryLabel;
-    std::shared_ptr<Label> sellPriceSummaryLabel;
 
     // ==================================================
-    // ADD ONLY THESE 4 VALUE TRACKERS HERE:
+    // JOB / CLIENT INFORMATION
     // ==================================================
 
-    std::shared_ptr<Label> materialsValueLabel;
+    std::shared_ptr<Label> jobReferenceLabel;
+    std::shared_ptr<Label> jobReferenceValueLabel;
+
+    std::shared_ptr<Label> dateLabel;
     std::shared_ptr<Label> dateValueLabel;
-    std::shared_ptr<Label> productionValueLabel;
-    std::shared_ptr<Label> subtotalValueLabel;
+
+    std::shared_ptr<Label> paymentTermsLabel;
+    std::shared_ptr<Label> paymentTermsValueLabel;
+
+    std::shared_ptr<Label> validForLabel;
+    std::shared_ptr<Label> validForValueLabel;
 
     // --------------------------------------------------
     // Main content
@@ -105,7 +118,7 @@ private:
 
     std::shared_ptr<Panel> costBreakdownCard;
     std::shared_ptr<Panel> jobItemsCard;
-    std::shared_ptr<Panel> jobSummaryCard;
+    std::shared_ptr<Panel> clientInfoCard;
     std::shared_ptr<Panel> nestingCard;
 
     std::shared_ptr<DataGrid> costBreakdownGrid;
@@ -136,6 +149,13 @@ private:
     std::function<void()> printCallback;
     std::function<void()> exportCallback;
 
+    std::vector<Sheet> nestingSheets;
+
+    std::function<void()> overviewCallback;
+    std::function<void()> nestingSheetsCallback;
+    std::function<void()> costBreakdownCallback;
+    std::function<void()> quoteCallback;
+
     // --------------------------------------------------
     // Construction helpers
     // --------------------------------------------------
@@ -145,6 +165,13 @@ private:
     void buildKpiRow();
     void buildContentArea();
     void buildBottomActions();
+
+    void showOverview();
+    void showNestingSheets();
+    void showCostBreakdown();
+    void showQuote();
+
+    void clearMainContainer();
 
     std::shared_ptr<Panel> createKpiCard(
         const std::string& title,

@@ -220,10 +220,6 @@ void SheetPreviewPanel::renderFitWidth(Renderer& renderer)
         getHeight()
     };
 
-    renderer.fillRect(
-        panel,
-        SDL_Color{ 25,25,30,255 });
-
     // ----------------------------------------------------
     // Toolbar
     // ----------------------------------------------------

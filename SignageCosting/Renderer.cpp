@@ -87,7 +87,7 @@ void Renderer::drawText(
         text,
         x + offsetX,
         y + offsetY,
-        theme.text
+        theme.darkText
     );
 }
 

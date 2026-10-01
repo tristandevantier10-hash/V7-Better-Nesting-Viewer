@@ -23,6 +23,14 @@ public:
 
     void setSettingsCallback(std::function<void()> callback);
 
+    void setOverviewCallback(std::function<void()> callback);
+
+    void setNestingSheetsCallback(std::function<void()> callback);
+
+    void setCostBreakdownCallback(std::function<void()> callback);
+
+    void setQuoteCallback(std::function<void()> callback);
+
     Toolbar();
 
     void render(Renderer& renderer) override;

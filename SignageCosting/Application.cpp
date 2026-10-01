@@ -228,6 +228,12 @@ bool Application::initialise()
             ui.setScreen(&mainMenu);
         });
 
+    resultsScreen.setOverviewCallback(
+        [this]()
+        {
+            ui.setScreen(&resultsScreen);
+        });
+
     resultsScreen.setPrintCallback(
         [this]()
         {
@@ -348,8 +354,7 @@ void Application::workerThread()
 
             pendingResults.result = result;
 
-            pendingResults.viewModel =
-                ResultsViewModelBuilder::build(result);
+            pendingResults.viewModel = vm;
 
             pendingResults.ready = true;
         }

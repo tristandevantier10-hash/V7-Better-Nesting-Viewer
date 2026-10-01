@@ -116,7 +116,7 @@ void TextBox::render(Renderer& renderer)
             getX() + 8,
             getY() + 8,
             LabelStyle::Normal,
-            DefaultTheme.text);
+            DefaultTheme.darkText);
     }
 
     //==================================================

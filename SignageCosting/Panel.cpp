@@ -94,13 +94,13 @@ void Panel::renderBackground(Renderer& renderer)
 
         renderer.fillRect(
             bounds,
-            SDL_Color{ 255,255,255,255 });
+            DefaultTheme.panelBackground);
 
         if (borderVisible)
         {
             renderer.drawRect(
                 bounds,
-                SDL_Color{ 220,220,220,255 });
+                DefaultTheme.border);
         }
 
         break;

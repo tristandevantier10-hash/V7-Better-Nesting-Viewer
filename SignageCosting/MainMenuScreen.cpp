@@ -29,7 +29,6 @@ MainMenuScreen::MainMenuScreen()
     auto dashboardLabel = std::make_shared<Label>();
     dashboardLabel->setText("Dashboard");
     dashboardLabel->setStyle(LabelStyle::Heading);
-    dashboardLabel->setTextColour(DefaultTheme.accent);
 
     headerPanel->addLayoutElement(
         dashboardLabel,
@@ -37,11 +36,11 @@ MainMenuScreen::MainMenuScreen()
 
     auto subtitleLabel = std::make_shared<Label>();
     subtitleLabel->setText("Signage Costing Suite");
-    subtitleLabel->setStyle(LabelStyle::Small);
+    subtitleLabel->setStyle(LabelStyle::Normal);
 
     headerPanel->addLayoutElement(
         subtitleLabel,
-        SizePolicy::Fixed,
+        SizePolicy::Fill,
         Metrics::LargeRow);
 
     //==================================================

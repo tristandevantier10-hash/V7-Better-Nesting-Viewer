@@ -146,9 +146,6 @@ NewJobScreen::NewJobScreen()
     subtitle->setStyle(
         LabelStyle::Small);
 
-    subtitle->setTextTheme(
-        TextTheme::DarkSecondary);
-
     titlePanel->addLayoutElement(
         subtitle,
         SizePolicy::Fixed,
@@ -195,9 +192,6 @@ NewJobScreen::NewJobScreen()
 
     customerType->setStyle(
         LabelStyle::Small);
-
-    customerType->setTextTheme(
-        TextTheme::DarkSecondary);
 
     customerHeader->addLayoutElement(
         customerType,
@@ -402,9 +396,6 @@ NewJobScreen::NewJobScreen()
     editorHint->setStyle(
         LabelStyle::Small);
 
-    editorHint->setTextTheme(
-        TextTheme::DarkSecondary);
-
     editorHeader->addLayoutElement(
         editorHint,
         SizePolicy::Fixed,
@@ -514,9 +505,6 @@ NewJobScreen::NewJobScreen()
 
     itemsHint->setStyle(
         LabelStyle::Small);
-
-    itemsHint->setTextTheme(
-        TextTheme::DarkSecondary);
 
     itemsHeader->addLayoutElement(
         itemsHint,

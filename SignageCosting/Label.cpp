@@ -1,7 +1,6 @@
 #include "Label.h"
 #include "Renderer.h"
 #include "TextRenderer.h"
-#include "iostream"
 
 Label::Label()
 {}
@@ -33,6 +32,7 @@ void Label::render(Renderer& renderer)
         font = renderer.getFontManager().getHeadingFont();
         break;
 
+    case LabelStyle::Normal:
     default:
         font = renderer.getFontManager().getNormalFont();
         break;
@@ -40,50 +40,43 @@ void Label::render(Renderer& renderer)
 
     SDL_Color colour;
 
-    if (useOverrideColour)
+    switch (textTheme)
     {
-        colour = overrideColour;
-    }
-    else
-    {
-        switch (textTheme)
-        {
-        case TextTheme::Light:
-            colour = DefaultTheme.lightText;
-            break;
+    case TextTheme::Light:
+        colour = DefaultTheme.lightText;
+        break;
 
-        case TextTheme::Dark:
-            colour = DefaultTheme.darkText;
-            break;
+    case TextTheme::Dark:
+        colour = DefaultTheme.darkText;
+        break;
 
-        case TextTheme::LightSecondary:
-            colour = DefaultTheme.lightSecondaryText;
-            break;
+    case TextTheme::LightSecondary:
+        colour = DefaultTheme.lightSecondaryText;
+        break;
 
-        case TextTheme::DarkSecondary:
-            colour = DefaultTheme.darkSecondaryText;
-            break;
+    case TextTheme::DarkSecondary:
+        colour = DefaultTheme.darkSecondaryText;
+        break;
 
-        case TextTheme::Title:
-            colour = DefaultTheme.titleText;
-            break;
+    case TextTheme::Title:
+        colour = DefaultTheme.titleText;
+        break;
 
-        case TextTheme::Success:
-            colour = DefaultTheme.successText;
-            break;
+    case TextTheme::Success:
+        colour = DefaultTheme.successText;
+        break;
 
-        case TextTheme::Warning:
-            colour = DefaultTheme.warningText;
-            break;
+    case TextTheme::Warning:
+        colour = DefaultTheme.warningText;
+        break;
 
-        case TextTheme::Error:
-            colour = DefaultTheme.errorText;
-            break;
+    case TextTheme::Error:
+        colour = DefaultTheme.errorText;
+        break;
 
-        default:
-            colour = DefaultTheme.darkText;
-            break;
-        }
+    default:
+        colour = DefaultTheme.darkText;
+        break;
     }
 
     renderer.drawText(
@@ -94,19 +87,9 @@ void Label::render(Renderer& renderer)
         colour);
 }
 
-void Label::setTextColour(SDL_Color colour)
-{
-    textColour = colour;
-}
-
 void Label::setStyle(LabelStyle value)
 {
     style = value;
-}
-
-LabelStyle Label::getStyle() const
-{
-    return style;
 }
 
 void Label::setTextTheme(TextTheme theme)
