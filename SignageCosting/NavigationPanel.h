@@ -16,7 +16,11 @@ public:
 
     std::shared_ptr<NavigationItem> addItem(
         const std::string& text,
-        std::function<void()> callback);
+        std::function<void()> callback,
+        const std::string& iconPath = "");
+
+    void addHeading(
+        const std::string& text);
 
 private:
 

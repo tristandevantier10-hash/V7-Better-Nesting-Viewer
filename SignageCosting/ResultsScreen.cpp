@@ -100,42 +100,39 @@ void ResultsScreen::buildSidebar()
     sidebar->setPadding(
         Metrics::SidebarPadding);
 
-    sidebar->addItem(
-        "RESULTS",
-        [this]()
-        {
-            showOverview();
-        });
+    sidebar->addHeading("RESULTS");
 
     sidebar->addItem(
         "OVERVIEW",
         [this]()
         {
             showOverview();
-        });
+        },
+        "Assets/Icons/overview.svg");
 
     sidebar->addItem(
         "NESTING SHEETS",
         [this]()
         {
             showNestingSheets();
-        });
+        },
+        "Assets/Icons/nesting.svg");
 
     sidebar->addItem(
         "COST BREAKDOWN",
         [this]()
         {
-            if (costBreakdownCallback)
-                costBreakdownCallback();
-        });
+            showCostBreakdown();
+        },
+        "Assets/Icons/costing.svg");
 
     sidebar->addItem(
         "QUOTE",
         [this]()
         {
-            if (quoteCallback)
-                quoteCallback();
-        });
+            showQuote();
+        },
+        "Assets/Icons/quote.svg");
 
     // --------------------------------------------------
     // Spacer
@@ -169,7 +166,8 @@ void ResultsScreen::buildSidebar()
         {
             if (newJobCallback)
                 newJobCallback();
-        });
+        },
+        "Assets/Icons/new_job.svg");
 
     // --------------------------------------------------
     // Back
@@ -181,7 +179,8 @@ void ResultsScreen::buildSidebar()
         {
             if (backCallback)
                 backCallback();
-        });
+        },
+        "Assets/Icons/back.svg");
 }
 
 // ======================================================
@@ -1194,6 +1193,16 @@ void ResultsScreen::showOverview()
     buildKpiRow();
     buildContentArea();
     buildBottomActions();
+
+    // Refresh the newly created controls
+    // using the existing job data.
+    refreshView();
+
+    // Restore the existing nesting result.
+    if (previewPanel)
+    {
+        previewPanel->setSheets(nestingSheets);
+    }
 }
 
 void ResultsScreen::showNestingSheets()
@@ -1297,5 +1306,567 @@ void ResultsScreen::showNestingSheets()
 
     nestingLayout->addLayoutElement(
         fullPreview,
+        SizePolicy::Fill);
+}
+
+void ResultsScreen::showCostBreakdown()
+{
+    clearMainContainer();
+
+    // --------------------------------------------------
+    // Header
+    // --------------------------------------------------
+
+    auto header =
+        std::make_shared<Panel>();
+
+    header->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    header->setBorderVisible(false);
+    header->setSpacing(4);
+
+    mainContainer->addLayoutElement(
+        header,
+        SizePolicy::Fixed,
+        70);
+
+    auto title =
+        std::make_shared<Label>();
+
+    title->setText(
+        "Cost Breakdown");
+
+    title->setStyle(
+        LabelStyle::Heading);
+
+    header->addLayoutElement(
+        title,
+        SizePolicy::Fixed,
+        38);
+
+    auto subtitle =
+        std::make_shared<Label>();
+
+    subtitle->setText(
+        "Detailed breakdown of job costs and selling price");
+
+    subtitle->setStyle(
+        LabelStyle::Small);
+
+    subtitle->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    header->addLayoutElement(
+        subtitle,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Main Card
+    // --------------------------------------------------
+
+    auto breakdownCard =
+        createCard();
+
+    mainContainer->addLayoutElement(
+        breakdownCard,
+        SizePolicy::Fill);
+
+    auto breakdownLayout =
+        std::make_shared<Panel>();
+
+    breakdownLayout->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    breakdownLayout->setBorderVisible(false);
+    breakdownLayout->setSpacing(12);
+
+    breakdownCard->addLayoutElement(
+        breakdownLayout,
+        SizePolicy::Fill);
+
+    // --------------------------------------------------
+    // Title
+    // --------------------------------------------------
+
+    auto breakdownTitle =
+        std::make_shared<Label>();
+
+    breakdownTitle->setText(
+        "Job Cost Summary");
+
+    breakdownTitle->setStyle(
+        LabelStyle::Normal);
+
+    breakdownLayout->addLayoutElement(
+        breakdownTitle,
+        SizePolicy::Fixed,
+        30);
+
+    // --------------------------------------------------
+    // Grid
+    // --------------------------------------------------
+
+    auto grid =
+        std::make_shared<DataGrid>();
+
+    grid->addColumn(
+        "Description",
+        300);
+
+    grid->addColumn(
+        "Cost",
+        160);
+
+    grid->addColumn(
+        "Markup",
+        160);
+
+    grid->addColumn(
+        "Selling Price",
+        180);
+
+    grid->addRow(
+        {
+            "Materials",
+            viewModel.invoice.materialCost,
+            "",
+            ""
+        });
+
+    grid->addRow(
+        {
+            "Labour",
+            viewModel.invoice.labourCost,
+            "",
+            ""
+        });
+
+    grid->addRow(
+        {
+            "Production",
+            viewModel.invoice.productionCost,
+            "",
+            ""
+        });
+
+    grid->addRow(
+        {
+            "Subtotal",
+            viewModel.invoice.subtotal,
+            "",
+            ""
+        });
+
+    grid->addRow(
+        {
+            "Markup",
+            "",
+            viewModel.invoice.markup,
+            ""
+        });
+
+    grid->addRow(
+        {
+            "SELL PRICE",
+            "",
+            "",
+            viewModel.invoice.sellPrice
+        });
+
+    breakdownLayout->addLayoutElement(
+        grid,
+        SizePolicy::Fill);
+}
+
+// ======================================================
+// QUOTE PAGE
+// ======================================================
+
+void ResultsScreen::showQuote()
+{
+    clearMainContainer();
+
+    // --------------------------------------------------
+    // Header
+    // --------------------------------------------------
+
+    auto header =
+        std::make_shared<Panel>();
+
+    header->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    header->setBorderVisible(false);
+    header->setSpacing(4);
+
+    mainContainer->addLayoutElement(
+        header,
+        SizePolicy::Fixed,
+        70);
+
+    auto title =
+        std::make_shared<Label>();
+
+    title->setText(
+        "Quote");
+
+    title->setStyle(
+        LabelStyle::Heading);
+
+    header->addLayoutElement(
+        title,
+        SizePolicy::Fixed,
+        38);
+
+    auto subtitle =
+        std::make_shared<Label>();
+
+    subtitle->setText(
+        "Customer quotation");
+
+    subtitle->setStyle(
+        LabelStyle::Small);
+
+    subtitle->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    header->addLayoutElement(
+        subtitle,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Quote Card
+    // --------------------------------------------------
+
+    auto quoteCard =
+        createCard();
+
+    mainContainer->addLayoutElement(
+        quoteCard,
+        SizePolicy::Fill);
+
+    auto quoteLayout =
+        std::make_shared<Panel>();
+
+    quoteLayout->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    quoteLayout->setBorderVisible(false);
+    quoteLayout->setSpacing(12);
+
+    quoteCard->addLayoutElement(
+        quoteLayout,
+        SizePolicy::Fill);
+
+    // --------------------------------------------------
+    // Customer / Job Information
+    // --------------------------------------------------
+
+    auto infoRow =
+        std::make_shared<Panel>();
+
+    infoRow->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    infoRow->setBorderVisible(false);
+    infoRow->setSpacing(20);
+
+    quoteLayout->addLayoutElement(
+        infoRow,
+        SizePolicy::Fixed,
+        70);
+
+    auto customerInfo =
+        std::make_shared<Panel>();
+
+    customerInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    customerInfo->setBorderVisible(false);
+
+    infoRow->addLayoutElement(
+        customerInfo,
+        SizePolicy::Fill);
+
+    auto customerTitle =
+        std::make_shared<Label>();
+
+    customerTitle->setText(
+        "CUSTOMER");
+
+    customerTitle->setStyle(
+        LabelStyle::Small);
+
+    customerInfo->addLayoutElement(
+        customerTitle,
+        SizePolicy::Fixed,
+        22);
+
+    auto customerName =
+        std::make_shared<Label>();
+
+    customerName->setText(
+        "Customer");
+
+    customerName->setStyle(
+        LabelStyle::Normal);
+
+    customerInfo->addLayoutElement(
+        customerName,
+        SizePolicy::Fixed,
+        28);
+
+    auto jobInfo =
+        std::make_shared<Panel>();
+
+    jobInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    jobInfo->setBorderVisible(false);
+
+    infoRow->addLayoutElement(
+        jobInfo,
+        SizePolicy::Fill);
+
+    auto reference =
+        std::make_shared<Label>();
+
+    reference->setText(
+        "JOB REFERENCE");
+
+    reference->setStyle(
+        LabelStyle::Small);
+
+    jobInfo->addLayoutElement(
+        reference,
+        SizePolicy::Fixed,
+        22);
+
+    auto referenceValue =
+        std::make_shared<Label>();
+
+    referenceValue->setText(
+        "REF-001");
+
+    referenceValue->setStyle(
+        LabelStyle::Normal);
+
+    jobInfo->addLayoutElement(
+        referenceValue,
+        SizePolicy::Fixed,
+        28);
+
+    // --------------------------------------------------
+    // Line Items
+    // --------------------------------------------------
+
+    auto itemsTitle =
+        std::make_shared<Label>();
+
+    itemsTitle->setText(
+        "Quote Items");
+
+    itemsTitle->setStyle(
+        LabelStyle::Normal);
+
+    quoteLayout->addLayoutElement(
+        itemsTitle,
+        SizePolicy::Fixed,
+        30);
+
+    auto itemsGrid =
+        std::make_shared<DataGrid>();
+
+    itemsGrid->addColumn(
+        "Material",
+        180);
+
+    itemsGrid->addColumn(
+        "Description",
+        300);
+
+    itemsGrid->addColumn(
+        "Qty",
+        70);
+
+    itemsGrid->addColumn(
+        "Area",
+        120);
+
+    for (const auto& job :
+        viewModel.invoice.jobs)
+    {
+        std::string description;
+
+        if (job.isRoll)
+        {
+            description =
+                job.variant +
+                " - " +
+                job.rollWidth +
+                " x " +
+                job.lengthUsed;
+        }
+        else
+        {
+            description =
+                job.variant +
+                " - " +
+                job.sheetSize;
+        }
+
+        itemsGrid->addRow(
+            {
+                job.material,
+                description,
+                job.quantity,
+                job.area
+            });
+    }
+
+    quoteLayout->addLayoutElement(
+        itemsGrid,
+        SizePolicy::Fill);
+
+    quoteLayout->addLayoutElement(
+        itemsGrid,
+        SizePolicy::Fill);
+
+    // --------------------------------------------------
+    // Totals
+    // --------------------------------------------------
+
+    auto totals =
+        std::make_shared<Panel>();
+
+    totals->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    totals->setBorderVisible(false);
+    totals->setSpacing(4);
+
+    quoteLayout->addLayoutElement(
+        totals,
+        SizePolicy::Fixed,
+        110);
+
+    auto subtotalRow =
+        std::make_shared<Panel>();
+
+    subtotalRow->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    subtotalRow->setBorderVisible(false);
+
+    totals->addLayoutElement(
+        subtotalRow,
+        SizePolicy::Fixed,
+        24);
+
+    auto subtotalLabel =
+        std::make_shared<Label>();
+
+    subtotalLabel->setText(
+        "Subtotal");
+
+    subtotalLabel->setStyle(
+        LabelStyle::Small);
+
+    subtotalRow->addLayoutElement(
+        subtotalLabel,
+        SizePolicy::Fill);
+
+    auto subtotalValue =
+        std::make_shared<Label>();
+
+    subtotalValue->setText(
+        viewModel.invoice.subtotal);
+
+    subtotalValue->setStyle(
+        LabelStyle::Small);
+
+    subtotalRow->addLayoutElement(
+        subtotalValue,
+        SizePolicy::Fill);
+
+    auto markupRow =
+        std::make_shared<Panel>();
+
+    markupRow->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    markupRow->setBorderVisible(false);
+
+    totals->addLayoutElement(
+        markupRow,
+        SizePolicy::Fixed,
+        24);
+
+    auto markupLabel =
+        std::make_shared<Label>();
+
+    markupLabel->setText(
+        "Markup");
+
+    markupLabel->setStyle(
+        LabelStyle::Small);
+
+    markupRow->addLayoutElement(
+        markupLabel,
+        SizePolicy::Fill);
+
+    auto markupValue =
+        std::make_shared<Label>();
+
+    markupValue->setText(
+        viewModel.invoice.markup);
+
+    markupValue->setStyle(
+        LabelStyle::Small);
+
+    markupRow->addLayoutElement(
+        markupValue,
+        SizePolicy::Fill);
+
+    auto totalRow =
+        std::make_shared<Panel>();
+
+    totalRow->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    totalRow->setBorderVisible(false);
+
+    totals->addLayoutElement(
+        totalRow,
+        SizePolicy::Fixed,
+        42);
+
+    auto totalLabel =
+        std::make_shared<Label>();
+
+    totalLabel->setText(
+        "TOTAL");
+
+    totalLabel->setStyle(
+        LabelStyle::Heading);
+
+    totalRow->addLayoutElement(
+        totalLabel,
+        SizePolicy::Fill);
+
+    auto totalValue =
+        std::make_shared<Label>();
+
+    totalValue->setText(
+        viewModel.invoice.sellPrice);
+
+    totalValue->setStyle(
+        LabelStyle::Heading);
+
+    totalRow->addLayoutElement(
+        totalValue,
         SizePolicy::Fill);
 }

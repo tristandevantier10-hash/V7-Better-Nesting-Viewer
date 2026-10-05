@@ -63,10 +63,10 @@ Theme DefaultTheme =
     {0,170,90,255},
 
     // Sidebar selected
-    {0,170,90,255},
+    {45,45,45,255},
 
     // Navigation hover
-    {137,243,54,255},
+    {210,210,210,255},
 
     // Border thickness
     1,

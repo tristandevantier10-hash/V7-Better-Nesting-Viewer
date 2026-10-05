@@ -116,6 +116,11 @@ public:
         LabelStyle style,
         SDL_Color colour);
 
+    void drawSVG(
+        const std::string& path,
+        const SDL_Rect& destination,
+        SDL_Color colour);
+
     //============================
     // Temporary bridge
     //============================

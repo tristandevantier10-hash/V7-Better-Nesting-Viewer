@@ -11,11 +11,14 @@ NavigationPanel::NavigationPanel()
 
 std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     const std::string& text,
-    std::function<void()> callback)
+    std::function<void()> callback,
+    const std::string& iconPath)
 {
     auto item = std::make_shared<NavigationItem>();
 
     item->setText(text);
+
+    item->setIcon(iconPath);
 
     item->setOnClick(
         [this, item, callback]()
@@ -47,4 +50,21 @@ std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     }
 
     return item;
+}
+
+void NavigationPanel::addHeading(
+    const std::string& text)
+{
+    auto heading = std::make_shared<NavigationItem>();
+
+    heading->setText(text);
+
+    // Headings are purely visual.
+    // They are not selectable and have no callback.
+    heading->setSelected(false);
+
+    addLayoutElement(
+        heading,
+        SizePolicy::Fixed,
+        40);
 }
