@@ -5,8 +5,9 @@
 #include <lunasvg/lunasvg.h>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <iterator>
 
 Renderer::Renderer(
     SDL_Renderer* renderer,
@@ -168,113 +169,32 @@ void Renderer::drawSVG(
     const SDL_Rect& destination,
     SDL_Color colour)
 {
-    std::cout << "\n========== SVG DEBUG ==========\n";
-
-    std::cout << "SVG REQUESTED PATH: "
-        << path
-        << "\n";
-
-    std::filesystem::path svgPath(path);
-
-    std::cout << "CURRENT WORKING DIRECTORY: "
-        << std::filesystem::current_path().string()
-        << "\n";
-
-    std::cout << "SVG ABSOLUTE PATH: "
-        << std::filesystem::absolute(svgPath).string()
-        << "\n";
-
-    bool exists =
-        std::filesystem::exists(svgPath);
-
-    std::cout << "SVG EXISTS: "
-        << (exists ? "YES" : "NO")
-        << "\n";
-
-    if (!exists)
-    {
-        std::cout << "SVG DEBUG: FILE DOES NOT EXIST\n";
+    if (path.empty())
         return;
-    }
 
-    try
-    {
-        std::cout << "SVG FILE SIZE: "
-            << std::filesystem::file_size(svgPath)
-            << " bytes\n";
-    }
-    catch (...)
-    {
-        std::cout << "SVG DEBUG: COULD NOT READ FILE SIZE\n";
-    }
+    std::filesystem::path svgPath =
+        std::filesystem::absolute(path);
 
-    std::ifstream file(
-        svgPath,
-        std::ios::binary);
+    if (!std::filesystem::exists(svgPath))
+        return;
+
+    std::ifstream file(svgPath);
 
     if (!file)
     {
-        std::cout << "SVG DEBUG: FILE COULD NOT BE OPENED\n";
         return;
     }
 
-    std::string svgContents(
+    std::string svgData(
         (std::istreambuf_iterator<char>(file)),
         std::istreambuf_iterator<char>());
 
-    file.close();
-
-    std::cout << "SVG FILE OPENED: YES\n";
-
-    std::cout << "SVG CONTENT LENGTH: "
-        << svgContents.size()
-        << " bytes\n";
-
-    if (!svgContents.empty())
-    {
-        std::cout << "SVG FIRST 200 CHARACTERS:\n";
-
-        std::cout
-            << svgContents.substr(
-                0,
-                std::min<size_t>(
-                    200,
-                    svgContents.size()))
-            << "\n";
-    }
-
-    std::cout << "ATTEMPTING LUNASVG LOAD FROM FILE...\n";
-
     auto document =
-        lunasvg::Document::loadFromFile(
-            std::filesystem::absolute(svgPath).string());
+        lunasvg::Document::loadFromData(
+            svgData);
 
     if (!document)
-    {
-        std::cout
-            << "LUNASVG LOAD: FAILED\n";
-
-        std::cout
-            << "================================\n";
-
         return;
-    }
-
-    std::cout
-        << "LUNASVG LOAD: SUCCESS\n";
-
-    std::cout
-        << "SVG WIDTH: "
-        << document->width()
-        << "\n";
-
-    std::cout
-        << "SVG HEIGHT: "
-        << document->height()
-        << "\n";
-
-    std::cout
-        << "ATTEMPTING SVG RENDER...\n";
 
     lunasvg::Bitmap bitmap =
         document->renderToBitmap(
@@ -284,24 +204,8 @@ void Renderer::drawSVG(
     if (bitmap.width() <= 0 ||
         bitmap.height() <= 0)
     {
-        std::cout
-            << "LUNASVG RENDER: FAILED\n";
-
-        std::cout
-            << "================================\n";
-
         return;
     }
-
-    std::cout
-        << "LUNASVG RENDER: SUCCESS\n";
-
-    std::cout
-        << "BITMAP SIZE: "
-        << bitmap.width()
-        << " x "
-        << bitmap.height()
-        << "\n";
 
     SDL_Surface* surface =
         SDL_CreateRGBSurfaceFrom(
@@ -316,20 +220,7 @@ void Renderer::drawSVG(
             0xFF000000);
 
     if (!surface)
-    {
-        std::cout
-            << "SDL SURFACE: FAILED\n";
-
-        std::cout
-            << "SDL ERROR: "
-            << SDL_GetError()
-            << "\n";
-
         return;
-    }
-
-    std::cout
-        << "SDL SURFACE: SUCCESS\n";
 
     SDL_Texture* texture =
         SDL_CreateTextureFromSurface(
@@ -339,20 +230,7 @@ void Renderer::drawSVG(
     SDL_FreeSurface(surface);
 
     if (!texture)
-    {
-        std::cout
-            << "SDL TEXTURE: FAILED\n";
-
-        std::cout
-            << "SDL ERROR: "
-            << SDL_GetError()
-            << "\n";
-
         return;
-    }
-
-    std::cout
-        << "SDL TEXTURE: SUCCESS\n";
 
     SDL_SetTextureBlendMode(
         texture,
@@ -375,12 +253,6 @@ void Renderer::drawSVG(
         &destination);
 
     SDL_DestroyTexture(texture);
-
-    std::cout
-        << "SVG DRAW: SUCCESS\n";
-
-    std::cout
-        << "================================\n";
 }
 
 void Renderer::drawLine(
