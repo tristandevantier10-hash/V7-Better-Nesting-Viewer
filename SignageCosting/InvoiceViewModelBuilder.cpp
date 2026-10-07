@@ -56,12 +56,35 @@ InvoiceViewModelBuilder::build(const CostResult& result)
     vm.invoiceDate = std::string(dateBuffer); // Saves your actual system date
     // ---------------------------------
 
+    vm.customer = result.customer.company;
+
+    vm.customerContact =
+        result.customer.contact;
+
+    vm.customerPhone =
+        result.customer.phone;
+
+    vm.customerEmail =
+        result.customer.email;
+
     vm.materialCost = formatCurrency(result.materialCost);
     vm.labourCost = formatCurrency(result.labourCost);
     vm.productionCost = formatCurrency(result.productionCost);
     vm.subtotal = formatCurrency(result.totalCost);
     vm.markup = formatCurrency(result.margin);
     vm.sellPrice = formatCurrency(result.sellPrice);
+
+    double vat =
+        result.sellPrice * 0.15;
+
+    double total =
+        result.sellPrice + vat;
+
+    vm.vat =
+        formatCurrency(vat);
+
+    vm.total =
+        formatCurrency(total);
 
     if (!result.items.empty())
     {
@@ -77,6 +100,9 @@ InvoiceViewModelBuilder::build(const CostResult& result)
             job.variant = item.variant;
 
             job.quantity = std::to_string(item.quantity);
+
+            job.sellPrice =
+                formatCurrency(item.sellPrice);
 
             std::ostringstream ss;
 

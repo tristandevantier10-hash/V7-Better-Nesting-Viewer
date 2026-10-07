@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "TextRenderer.h"
 #include "Label.h"
+#include <algorithm>
 #include <cmath>
 #include <lunasvg/lunasvg.h>
 #include <cstring>
@@ -315,7 +316,42 @@ void Renderer::popOffset()
 
 void Renderer::pushClip(const SDL_Rect& rect)
 {
-    clipStack.push_back(rect);
+    SDL_Rect translated = rect;
+
+    translated.x += offsetX;
+    translated.y += offsetY;
+
+    if (!clipStack.empty())
+    {
+        SDL_Rect parent = clipStack.back();
+
+        int left =
+            std::max(
+                translated.x,
+                parent.x);
+
+        int top =
+            std::max(
+                translated.y,
+                parent.y);
+
+        int right =
+            std::min(
+                translated.x + translated.w,
+                parent.x + parent.w);
+
+        int bottom =
+            std::min(
+                translated.y + translated.h,
+                parent.y + parent.h);
+
+        translated.x = left;
+        translated.y = top;
+        translated.w = std::max(0, right - left);
+        translated.h = std::max(0, bottom - top);
+    }
+
+    clipStack.push_back(translated);
 
     SDL_RenderSetClipRect(
         sdlRenderer,

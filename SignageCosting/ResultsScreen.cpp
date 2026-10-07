@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include "ScrollPanel.h"
 
 ResultsScreen::ResultsScreen()
 {
@@ -1489,51 +1490,256 @@ void ResultsScreen::showQuote()
     clearMainContainer();
 
     // --------------------------------------------------
-    // Header
+    // Quote Header
     // --------------------------------------------------
 
     auto header =
         std::make_shared<Panel>();
 
     header->setLayout(
-        std::make_unique<VerticalLayout>());
+        std::make_unique<HorizontalLayout>());
 
     header->setBorderVisible(false);
-    header->setSpacing(4);
+    header->setSpacing(20);
 
     mainContainer->addLayoutElement(
         header,
         SizePolicy::Fixed,
-        70);
+        145);
 
-    auto title =
+    // --------------------------------------------------
+    // Company Information
+    // --------------------------------------------------
+
+    auto companyInfo =
+        std::make_shared<Panel>();
+
+    companyInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    companyInfo->setBorderVisible(false);
+    companyInfo->setSpacing(4);
+
+    header->addLayoutElement(
+        companyInfo,
+        SizePolicy::Fill);
+
+    auto companyName =
         std::make_shared<Label>();
 
-    title->setText(
-        "Quote");
+    companyName->setText(
+        "E & G SIGNS CC");
 
-    title->setStyle(
+    companyName->setStyle(
         LabelStyle::Heading);
 
-    header->addLayoutElement(
-        title,
+    companyInfo->addLayoutElement(
+        companyName,
         SizePolicy::Fixed,
-        38);
+        32);
 
-    auto subtitle =
+    auto companyAddress =
         std::make_shared<Label>();
 
-    subtitle->setText(
-        "Customer quotation");
+    companyAddress->setText(
+        "350 Oppenheimer Street, Pinetown, 3610");
 
-    subtitle->setStyle(
+    companyAddress->setStyle(
         LabelStyle::Small);
 
-    subtitle->setTextTheme(
-        TextTheme::DarkSecondary);
+    companyInfo->addLayoutElement(
+        companyAddress,
+        SizePolicy::Fixed,
+        20);
+
+    auto companyContact =
+        std::make_shared<Label>();
+
+    companyContact->setText(
+        "SOUTH AFRICA");
+
+    companyContact->setStyle(
+        LabelStyle::Small);
+
+    companyInfo->addLayoutElement(
+        companyContact,
+        SizePolicy::Fixed,
+        20);
+
+    auto companyPhone =
+        std::make_shared<Label>();
+
+    companyPhone->setText(
+        "Tel: [Company Phone]");
+
+    companyPhone->setStyle(
+        LabelStyle::Small);
+
+    companyInfo->addLayoutElement(
+        companyPhone,
+        SizePolicy::Fixed,
+        20);
+
+    auto companyEmail =
+        std::make_shared<Label>();
+
+    companyEmail->setText(
+        "Email: [Company Email]");
+
+    companyEmail->setStyle(
+        LabelStyle::Small);
+
+    companyInfo->addLayoutElement(
+        companyEmail,
+        SizePolicy::Fixed,
+        20);
+
+    // --------------------------------------------------
+    // Quote Heading
+    // --------------------------------------------------
+
+    auto quoteHeading =
+        std::make_shared<Panel>();
+
+    quoteHeading->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    quoteHeading->setBorderVisible(false);
+    quoteHeading->setSpacing(2);
 
     header->addLayoutElement(
-        subtitle,
+        quoteHeading,
+        SizePolicy::Fill);
+
+    // --------------------------------------------------
+// Banking Information
+// --------------------------------------------------
+
+    auto bankingInfo =
+        std::make_shared<Panel>();
+
+    bankingInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    bankingInfo->setBorderVisible(false);
+    bankingInfo->setSpacing(2);
+
+    header->addLayoutElement(
+        bankingInfo,
+        SizePolicy::Fill);
+
+    auto bankingTitle =
+        std::make_shared<Label>();
+
+    bankingTitle->setText(
+        "BANKING DETAILS");
+
+    bankingTitle->setStyle(
+        LabelStyle::Small);
+
+    bankingInfo->addLayoutElement(
+        bankingTitle,
+        SizePolicy::Fixed,
+        22);
+
+    auto bankName =
+        std::make_shared<Label>();
+
+    bankName->setText(
+        "Bank: [Bank Name]");
+
+    bankName->setStyle(
+        LabelStyle::Small);
+
+    bankingInfo->addLayoutElement(
+        bankName,
+        SizePolicy::Fixed,
+        20);
+
+    auto accountName =
+        std::make_shared<Label>();
+
+    accountName->setText(
+        "Account: [Account Name]");
+
+    accountName->setStyle(
+        LabelStyle::Small);
+
+    bankingInfo->addLayoutElement(
+        accountName,
+        SizePolicy::Fixed,
+        20);
+
+    auto accountNumber =
+        std::make_shared<Label>();
+
+    accountNumber->setText(
+        "Account No: [Account Number]");
+
+    accountNumber->setStyle(
+        LabelStyle::Small);
+
+    bankingInfo->addLayoutElement(
+        accountNumber,
+        SizePolicy::Fixed,
+        20);
+
+    auto branchCode =
+        std::make_shared<Label>();
+
+    branchCode->setText(
+        "Branch: [Branch Code]");
+
+    branchCode->setStyle(
+        LabelStyle::Small);
+
+    bankingInfo->addLayoutElement(
+        branchCode,
+        SizePolicy::Fixed,
+        20);
+
+    auto quoteTitle =
+        std::make_shared<Label>();
+
+    quoteTitle->setText(
+        "COPY QUOTATION");
+
+    quoteTitle->setStyle(
+        LabelStyle::Heading);
+
+    quoteHeading->addLayoutElement(
+        quoteTitle,
+        SizePolicy::Fixed,
+        32);
+
+    auto quoteSubtitle =
+        std::make_shared<Label>();
+
+    quoteSubtitle->setText(
+        "PRO FORMA INVOICE");
+
+    quoteSubtitle->setStyle(
+        LabelStyle::Small);
+
+    quoteSubtitle->setTextTheme(
+        TextTheme::DarkSecondary);
+
+    quoteHeading->addLayoutElement(
+        quoteSubtitle,
+        SizePolicy::Fixed,
+        22);
+
+    auto quoteNumber =
+        std::make_shared<Label>();
+
+    quoteNumber->setText(
+        "QT-2026-0001");
+
+    quoteNumber->setStyle(
+        LabelStyle::Normal);
+
+    quoteHeading->addLayoutElement(
+        quoteNumber,
         SizePolicy::Fixed,
         24);
 
@@ -1549,20 +1755,20 @@ void ResultsScreen::showQuote()
         SizePolicy::Fill);
 
     auto quoteLayout =
-        std::make_shared<Panel>();
+        std::make_shared<ScrollPanel>();
 
     quoteLayout->setLayout(
         std::make_unique<VerticalLayout>());
 
     quoteLayout->setBorderVisible(false);
-    quoteLayout->setSpacing(12);
+    quoteLayout->setSpacing(10);
 
     quoteCard->addLayoutElement(
         quoteLayout,
         SizePolicy::Fill);
 
     // --------------------------------------------------
-    // Customer / Job Information
+    // Customer / Quote Information
     // --------------------------------------------------
 
     auto infoRow =
@@ -1572,12 +1778,16 @@ void ResultsScreen::showQuote()
         std::make_unique<HorizontalLayout>());
 
     infoRow->setBorderVisible(false);
-    infoRow->setSpacing(20);
+    infoRow->setSpacing(30);
 
     quoteLayout->addLayoutElement(
         infoRow,
         SizePolicy::Fixed,
-        70);
+        110);
+
+    // --------------------------------------------------
+    // Customer
+    // --------------------------------------------------
 
     auto customerInfo =
         std::make_shared<Panel>();
@@ -1586,6 +1796,7 @@ void ResultsScreen::showQuote()
         std::make_unique<VerticalLayout>());
 
     customerInfo->setBorderVisible(false);
+    customerInfo->setSpacing(2);
 
     infoRow->addLayoutElement(
         customerInfo,
@@ -1609,7 +1820,7 @@ void ResultsScreen::showQuote()
         std::make_shared<Label>();
 
     customerName->setText(
-        "Customer");
+        viewModel.invoice.customer);
 
     customerName->setStyle(
         LabelStyle::Normal);
@@ -1617,31 +1828,80 @@ void ResultsScreen::showQuote()
     customerInfo->addLayoutElement(
         customerName,
         SizePolicy::Fixed,
-        28);
+        24);
 
-    auto jobInfo =
-        std::make_shared<Panel>();
-
-    jobInfo->setLayout(
-        std::make_unique<VerticalLayout>());
-
-    jobInfo->setBorderVisible(false);
-
-    infoRow->addLayoutElement(
-        jobInfo,
-        SizePolicy::Fill);
-
-    auto reference =
+    auto customerContact =
         std::make_shared<Label>();
 
-    reference->setText(
-        "JOB REFERENCE");
+    customerContact->setText(
+        viewModel.invoice.customerContact);
 
-    reference->setStyle(
+    customerContact->setStyle(
         LabelStyle::Small);
 
-    jobInfo->addLayoutElement(
-        reference,
+    customerInfo->addLayoutElement(
+        customerContact,
+        SizePolicy::Fixed,
+        18);
+
+
+    auto customerPhone =
+        std::make_shared<Label>();
+
+    customerPhone->setText(
+        viewModel.invoice.customerPhone);
+
+    customerPhone->setStyle(
+        LabelStyle::Small);
+
+    customerInfo->addLayoutElement(
+        customerPhone,
+        SizePolicy::Fixed,
+        18);
+
+
+    auto customerEmail =
+        std::make_shared<Label>();
+
+    customerEmail->setText(
+        viewModel.invoice.customerEmail);
+
+    customerEmail->setStyle(
+        LabelStyle::Small);
+
+    customerInfo->addLayoutElement(
+        customerEmail,
+        SizePolicy::Fixed,
+        18);
+
+    // --------------------------------------------------
+    // Quote Information
+    // --------------------------------------------------
+
+    auto quoteInfo =
+        std::make_shared<Panel>();
+
+    quoteInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    quoteInfo->setBorderVisible(false);
+    quoteInfo->setSpacing(2);
+
+    infoRow->addLayoutElement(
+        quoteInfo,
+        SizePolicy::Fill);
+
+    auto referenceTitle =
+        std::make_shared<Label>();
+
+    referenceTitle->setText(
+        "QUOTE REFERENCE");
+
+    referenceTitle->setStyle(
+        LabelStyle::Small);
+
+    quoteInfo->addLayoutElement(
+        referenceTitle,
         SizePolicy::Fixed,
         22);
 
@@ -1649,25 +1909,216 @@ void ResultsScreen::showQuote()
         std::make_shared<Label>();
 
     referenceValue->setText(
-        "REF-001");
+        "QT-2026-0001");
 
     referenceValue->setStyle(
         LabelStyle::Normal);
 
-    jobInfo->addLayoutElement(
+    quoteInfo->addLayoutElement(
         referenceValue,
         SizePolicy::Fixed,
         28);
 
     // --------------------------------------------------
-    // Line Items
+    // Date
+    // --------------------------------------------------
+
+    auto dateTitle =
+        std::make_shared<Label>();
+
+    dateTitle->setText(
+        "DATE");
+
+    dateTitle->setStyle(
+        LabelStyle::Small);
+
+    quoteInfo->addLayoutElement(
+        dateTitle,
+        SizePolicy::Fixed,
+        20);
+
+    auto dateValue =
+        std::make_shared<Label>();
+
+    dateValue->setText(
+        viewModel.invoice.invoiceDate);
+
+    dateValue->setStyle(
+        LabelStyle::Small);
+
+    quoteInfo->addLayoutElement(
+        dateValue,
+        SizePolicy::Fixed,
+        18);
+
+    // --------------------------------------------------
+    // Quote Information Strip
+    // --------------------------------------------------
+
+    auto accountRow =
+        std::make_shared<Panel>();
+
+    accountRow->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    accountRow->setBorderVisible(false);
+
+    accountRow->setBackgroundColour(
+        SDL_Color{ 245, 245, 245, 255 });
+
+    accountRow->setBorderVisible(true);
+
+    accountRow->setSpacing(20);
+
+    quoteLayout->addLayoutElement(
+        accountRow,
+        SizePolicy::Fixed,
+        60);
+
+    // --------------------------------------------------
+    // Account
+    // --------------------------------------------------
+
+    auto accountInfo =
+        std::make_shared<Panel>();
+
+    accountInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    accountInfo->setBorderVisible(false);
+    accountInfo->setSpacing(4);
+
+    accountRow->addLayoutElement(
+        accountInfo,
+        SizePolicy::Fill);
+
+    auto accountTitle =
+        std::make_shared<Label>();
+
+    accountTitle->setText(
+        "ACCOUNT");
+
+    accountTitle->setStyle(
+        LabelStyle::Small);
+
+    accountInfo->addLayoutElement(
+        accountTitle,
+        SizePolicy::Fixed,
+        20);
+
+    auto accountValue =
+        std::make_shared<Label>();
+
+    accountValue->setText(
+        "-");
+
+    accountValue->setStyle(
+        LabelStyle::Normal);
+
+    accountInfo->addLayoutElement(
+        accountValue,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Your Reference
+    // --------------------------------------------------
+
+    auto yourReferenceInfo =
+        std::make_shared<Panel>();
+
+    yourReferenceInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    yourReferenceInfo->setBorderVisible(false);
+    yourReferenceInfo->setSpacing(4);
+
+    accountRow->addLayoutElement(
+        yourReferenceInfo,
+        SizePolicy::Fill);
+
+    auto yourReferenceTitle =
+        std::make_shared<Label>();
+
+    yourReferenceTitle->setText(
+        "YOUR REFERENCE");
+
+    yourReferenceTitle->setStyle(
+        LabelStyle::Small);
+
+    yourReferenceInfo->addLayoutElement(
+        yourReferenceTitle,
+        SizePolicy::Fixed,
+        20);
+
+    auto yourReferenceValue =
+        std::make_shared<Label>();
+
+    yourReferenceValue->setText(
+        "-");
+
+    yourReferenceValue->setStyle(
+        LabelStyle::Normal);
+
+    yourReferenceInfo->addLayoutElement(
+        yourReferenceValue,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Customer VAT Number
+    // --------------------------------------------------
+
+    auto vatInfo =
+        std::make_shared<Panel>();
+
+    vatInfo->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    vatInfo->setBorderVisible(false);
+    vatInfo->setSpacing(4);
+
+    accountRow->addLayoutElement(
+        vatInfo,
+        SizePolicy::Fill);
+
+    auto vatTitle =
+        std::make_shared<Label>();
+
+    vatTitle->setText(
+        "CUSTOMER VAT NUMBER");
+
+    vatTitle->setStyle(
+        LabelStyle::Small);
+
+    vatInfo->addLayoutElement(
+        vatTitle,
+        SizePolicy::Fixed,
+        20);
+
+    auto customerVatValue =
+        std::make_shared<Label>();
+
+    customerVatValue->setText(
+        "-");
+
+    customerVatValue->setStyle(
+        LabelStyle::Normal);
+
+    vatInfo->addLayoutElement(
+        customerVatValue,
+        SizePolicy::Fixed,
+        24);
+
+    // --------------------------------------------------
+    // Quotation Line Items
     // --------------------------------------------------
 
     auto itemsTitle =
         std::make_shared<Label>();
 
     itemsTitle->setText(
-        "Quote Items");
+        "QUOTATION DETAILS");
 
     itemsTitle->setStyle(
         LabelStyle::Normal);
@@ -1675,26 +2126,48 @@ void ResultsScreen::showQuote()
     quoteLayout->addLayoutElement(
         itemsTitle,
         SizePolicy::Fixed,
-        30);
+        28);
+
+    // --------------------------------------------------
+    // Items Grid
+    // --------------------------------------------------
 
     auto itemsGrid =
         std::make_shared<DataGrid>();
 
     itemsGrid->addColumn(
-        "Material",
-        180);
+        "Code",
+        90);
 
     itemsGrid->addColumn(
         "Description",
-        300);
+        360);
 
     itemsGrid->addColumn(
         "Qty",
+        60);
+
+    itemsGrid->addColumn(
+        "Unit",
         70);
 
     itemsGrid->addColumn(
         "Area",
+        90);
+
+    itemsGrid->addColumn(
+        "Cost / Unit",
+        110);
+
+    itemsGrid->addColumn(
+        "Net Price",
         120);
+
+    // --------------------------------------------------
+    // Populate Items
+    // --------------------------------------------------
+
+    int itemNumber = 1;
 
     for (const auto& job :
         viewModel.invoice.jobs)
@@ -1707,8 +2180,9 @@ void ResultsScreen::showQuote()
                 job.variant +
                 " - " +
                 job.rollWidth +
-                " x " +
-                job.lengthUsed;
+                "mm x " +
+                job.lengthUsed +
+                "m";
         }
         else
         {
@@ -1718,22 +2192,29 @@ void ResultsScreen::showQuote()
                 job.sheetSize;
         }
 
+        std::string code =
+            "ITEM-" +
+            std::to_string(itemNumber);
+
         itemsGrid->addRow(
             {
-                job.material,
+                code,
                 description,
                 job.quantity,
-                job.area
+                "EACH",
+                job.area,
+                "R -",
+                job.sellPrice
             });
+
+        itemNumber++;
     }
 
     quoteLayout->addLayoutElement(
         itemsGrid,
-        SizePolicy::Fill);
-
-    quoteLayout->addLayoutElement(
-        itemsGrid,
-        SizePolicy::Fill);
+        SizePolicy::Fixed,
+        36 +
+        static_cast<int>(viewModel.invoice.jobs.size()) * 52);
 
     // --------------------------------------------------
     // Totals
@@ -1751,7 +2232,11 @@ void ResultsScreen::showQuote()
     quoteLayout->addLayoutElement(
         totals,
         SizePolicy::Fixed,
-        110);
+        125);
+
+    // --------------------------------------------------
+    // Sub Total
+    // --------------------------------------------------
 
     auto subtotalRow =
         std::make_shared<Panel>();
@@ -1770,20 +2255,21 @@ void ResultsScreen::showQuote()
         std::make_shared<Label>();
 
     subtotalLabel->setText(
-        "Subtotal");
+        "SUB TOTAL");
 
     subtotalLabel->setStyle(
         LabelStyle::Small);
 
     subtotalRow->addLayoutElement(
         subtotalLabel,
-        SizePolicy::Fill);
+        SizePolicy::Fixed,
+        150);
 
     auto subtotalValue =
         std::make_shared<Label>();
 
     subtotalValue->setText(
-        viewModel.invoice.subtotal);
+        viewModel.invoice.sellPrice);
 
     subtotalValue->setStyle(
         LabelStyle::Small);
@@ -1792,44 +2278,54 @@ void ResultsScreen::showQuote()
         subtotalValue,
         SizePolicy::Fill);
 
-    auto markupRow =
+    // --------------------------------------------------
+    // VAT
+    // --------------------------------------------------
+
+    auto vatRow =
         std::make_shared<Panel>();
 
-    markupRow->setLayout(
+    vatRow->setLayout(
         std::make_unique<HorizontalLayout>());
 
-    markupRow->setBorderVisible(false);
+    vatRow->setBorderVisible(false);
 
     totals->addLayoutElement(
-        markupRow,
+        vatRow,
         SizePolicy::Fixed,
         24);
 
-    auto markupLabel =
+    auto vatLabel =
         std::make_shared<Label>();
 
-    markupLabel->setText(
-        "Markup");
+    vatLabel->setText(
+        "VAT 15%");
 
-    markupLabel->setStyle(
+    vatLabel->setStyle(
         LabelStyle::Small);
 
-    markupRow->addLayoutElement(
-        markupLabel,
-        SizePolicy::Fill);
+    vatRow->addLayoutElement(
+        vatLabel,
+        SizePolicy::Fixed,
+        150);
 
-    auto markupValue =
+    auto vatValue =
         std::make_shared<Label>();
 
-    markupValue->setText(
-        viewModel.invoice.markup);
+    vatValue->setText(
+        viewModel.invoice.vat);
 
-    markupValue->setStyle(
+    vatValue->setStyle(
         LabelStyle::Small);
 
-    markupRow->addLayoutElement(
-        markupValue,
-        SizePolicy::Fill);
+    vatRow->addLayoutElement(
+        vatValue,
+        SizePolicy::Fixed,
+        150);
+
+    // --------------------------------------------------
+    // Total
+    // --------------------------------------------------
 
     auto totalRow =
         std::make_shared<Panel>();
@@ -1855,18 +2351,191 @@ void ResultsScreen::showQuote()
 
     totalRow->addLayoutElement(
         totalLabel,
-        SizePolicy::Fill);
+        SizePolicy::Fixed,
+        150);
 
     auto totalValue =
         std::make_shared<Label>();
 
     totalValue->setText(
-        viewModel.invoice.sellPrice);
+        viewModel.invoice.total);
 
     totalValue->setStyle(
         LabelStyle::Heading);
 
     totalRow->addLayoutElement(
         totalValue,
+        SizePolicy::Fixed,
+        150);
+
+    auto scopeTitle =
+        std::make_shared<Label>();
+
+    scopeTitle->setText(
+        "SCOPE / NOTES");
+
+    scopeTitle->setStyle(
+        LabelStyle::Normal);
+
+    quoteLayout->addLayoutElement(
+        scopeTitle,
+        SizePolicy::Fixed,
+        28);
+
+    auto scopePanel =
+        std::make_shared<Panel>();
+
+    scopePanel->setBorderVisible(
+        true);
+
+    scopePanel->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    quoteLayout->addLayoutElement(
+        scopePanel,
+        SizePolicy::Fixed,
+        70);
+
+    auto scopeText =
+        std::make_shared<Label>();
+
+    scopeText->setText(
+        "Quotation based on the specifications and quantities listed above.");
+
+    scopeText->setStyle(
+        LabelStyle::Small);
+
+    scopePanel->addLayoutElement(
+        scopeText,
         SizePolicy::Fill);
+
+    auto termsTitle =
+        std::make_shared<Label>();
+
+    termsTitle->setText(
+        "TERMS & CONDITIONS");
+
+    termsTitle->setStyle(
+        LabelStyle::Normal);
+
+    quoteLayout->addLayoutElement(
+        termsTitle,
+        SizePolicy::Fixed,
+        28);
+
+    auto termsPanel =
+        std::make_shared<Panel>();
+
+    termsPanel->setBorderVisible(
+        true);
+
+    termsPanel->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    quoteLayout->addLayoutElement(
+        termsPanel,
+        SizePolicy::Fixed,
+        90);
+
+    auto termsText =
+        std::make_shared<Label>();
+
+    termsText->setText(
+        "Prices are subject to the specifications stated in this quotation. "
+        "Production will commence once the quotation has been accepted. "
+        "Payment terms are subject to the customer's approved account terms.");
+
+    termsText->setStyle(
+        LabelStyle::Small);
+
+    termsPanel->addLayoutElement(
+        termsText,
+        SizePolicy::Fill);
+
+    auto acceptanceTitle =
+        std::make_shared<Label>();
+
+    acceptanceTitle->setText(
+        "ACCEPTANCE OF QUOTATION");
+
+    acceptanceTitle->setStyle(
+        LabelStyle::Normal);
+
+    quoteLayout->addLayoutElement(
+        acceptanceTitle,
+        SizePolicy::Fixed,
+        28);
+
+    auto acceptancePanel =
+        std::make_shared<Panel>();
+
+    acceptancePanel->setBorderVisible(
+        true);
+
+    acceptancePanel->setLayout(
+        std::make_unique<VerticalLayout>());
+
+    acceptancePanel->setSpacing(4);
+
+    quoteLayout->addLayoutElement(
+        acceptancePanel,
+        SizePolicy::Fixed,
+        125);
+
+    auto acceptanceText =
+        std::make_shared<Label>();
+
+    acceptanceText->setText(
+        "I/We hereby accept this quotation and authorise "
+        "the work described above to proceed.");
+
+    acceptanceText->setStyle(
+        LabelStyle::Small);
+
+    acceptancePanel->addLayoutElement(
+        acceptanceText,
+        SizePolicy::Fixed,
+        24);
+
+    auto acceptanceCustomerName =
+        std::make_shared<Label>();
+
+    acceptanceCustomerName->setText(
+        "Customer Name: ______________________________");
+
+    acceptanceCustomerName->setStyle(
+        LabelStyle::Small);
+
+    acceptancePanel->addLayoutElement(
+        acceptanceCustomerName,
+        SizePolicy::Fixed,
+        22);
+
+    auto signature =
+        std::make_shared<Label>();
+
+    signature->setText(
+        "Signature:          ______________________________");
+
+    signature->setStyle(
+        LabelStyle::Small);
+
+    acceptancePanel->addLayoutElement(
+        signature,
+        SizePolicy::Fixed,
+        22);
+
+    auto acceptanceDate =
+        std::make_shared<Label>();
+
+    acceptanceDate->setText(
+        "Date:                 ______________________________");
+
+    acceptanceDate->setStyle(
+        LabelStyle::Small);
+
+    acceptancePanel->addLayoutElement(
+        acceptanceDate,
+        SizePolicy::Fixed,
+        22);
 }

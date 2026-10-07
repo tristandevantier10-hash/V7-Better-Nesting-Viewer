@@ -19,6 +19,9 @@
 CostResult CostEngine::calculate(Job job)
 {
     CostResult result;
+
+    result.customer = job.customer;
+
     NestingEngine nesting;
     NestingManager nestingManager;
 

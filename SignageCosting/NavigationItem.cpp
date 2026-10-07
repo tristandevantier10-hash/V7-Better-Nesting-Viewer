@@ -100,7 +100,7 @@ void NavigationItem::render(Renderer& renderer)
     // horizontally inside the navigation item.
     // ---------------------------------------------------------
 
-    constexpr int IconSize = 18;
+    constexpr int IconSize = 22;
     constexpr int IconTextGap = 10;
 
     TTF_Font* font =
@@ -132,8 +132,7 @@ void NavigationItem::render(Renderer& renderer)
     }
 
     int groupX =
-        bounds.x +
-        (bounds.w - groupWidth) / 2;
+        bounds.x + 22;
 
     int iconY =
         bounds.y +

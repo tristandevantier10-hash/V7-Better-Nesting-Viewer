@@ -77,6 +77,8 @@ struct ItemCostResult
 
 struct CostResult
 {
+    Customer customer;
+
     std::vector<ItemCostResult> items;
     std::vector<Sheet> nestingSheets;
 

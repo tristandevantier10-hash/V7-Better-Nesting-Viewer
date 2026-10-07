@@ -8,6 +8,7 @@ struct JobSummaryViewModel
     std::string variant;
     std::string quantity;
     std::string area;
+    std::string sellPrice;
 
     bool isRoll = true;
 
