@@ -7,20 +7,36 @@
 #include "ProductionPricingDatabase.h"
 #include "CustomerDatabase.h"
 
-bool DatabaseManager::initialise()
+bool DatabaseManager::initialise(
+    ProgressCallback progressCallback)
 {
     FileSystem::initialise();
+
+    if (progressCallback)
+        progressCallback(0);
 
     if (!loadMaterials())
         return false;
 
+    if (progressCallback)
+        progressCallback(1);
+
     if (!loadPricing())
         return false;
+
+    if (progressCallback)
+        progressCallback(2);
 
     if (!loadCustomers())
         return false;
 
+    if (progressCallback)
+        progressCallback(3);
+
     ProductionPricingDatabase::loadDefaults();
+
+    if (progressCallback)
+        progressCallback(4);
 
     return true;
 }

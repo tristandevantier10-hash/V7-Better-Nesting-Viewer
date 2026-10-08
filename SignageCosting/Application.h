@@ -64,9 +64,50 @@ private:
 
     bool running = true;
 
-    AppState state = AppState::MainMenu;
+    AppState state = AppState::Splash;
 
     RunMode mode = RunMode::Test;
+
+    float splashAnimation = 0.0f;
+
+    float startupProgress = 0.0f;
+
+    Uint32 splashStartTime = 0;
+
+    Uint32 startupStageStartTime = 0;
+
+    Uint32 readyStartTime = 0;
+
+    bool splashFadingOut = false;
+
+    bool mainMenuFadingIn = false;
+
+    float splashFadeAlpha = 0.0f;
+
+    //=================================================
+    // Startup Loading
+    //=================================================
+
+    enum class StartupStage
+    {
+        Materials,
+        Pricing,
+        Customers,
+        ProductionPricing,
+        Complete,
+        Ready
+    };
+
+    std::atomic<StartupStage> startupStage =
+        StartupStage::Materials;
+
+    std::atomic<int> startupCompletedStage{ -1 };
+
+    std::thread startupWorker;
+
+    std::atomic<bool> startupComplete{ false };
+
+    std::atomic<bool> startupFailed{ false };
 
     void toggleMode();
 

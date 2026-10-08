@@ -52,12 +52,6 @@ bool Application::initialise()
 
     SDL_StartTextInput();
 
-    if (!DatabaseManager::initialise())
-    {
-        std::cout << "FAILED: DatabaseManager\n";
-        return false;
-    }
-
     //=================================================
     // UI Initialisation
     //=================================================
@@ -72,19 +66,11 @@ bool Application::initialise()
             fontManager,
             DefaultTheme);
 
-    mainMenu.refreshStatus();
-
-    newJobScreen.initialiseMaterials();
-
-    newJobScreen.setJob(&currentJob);
-
-    customerSelectionScreen.refreshCustomers();
-
     //=================================================
     // Initial Screen
     //=================================================
 
-    ui.setScreen(&mainMenu);
+
 
     //=================================================
     // Callbacks
@@ -250,9 +236,46 @@ bool Application::initialise()
             // PDF export will be wired here.
         });
 
-    state = AppState::MainMenu;
+    state = AppState::Splash;
 
     running = true;
+
+    splashStartTime = SDL_GetTicks();
+
+    splashAnimation = 0.0f;
+    startupProgress = 0.0f;
+
+    startupStageStartTime =
+        splashStartTime;
+
+    readyStartTime = 0;
+
+    startupCompletedStage = -1;
+
+    splashFadingOut = false;
+    mainMenuFadingIn = false;
+
+    splashFadeAlpha = 0.0f;
+
+    startupComplete = false;
+    startupFailed = false;
+
+    startupWorker =
+        std::thread(
+            [this]()
+            {
+                if (!DatabaseManager::initialise(
+                    [this](int stage)
+                    {
+                        startupCompletedStage = stage;
+                    }))
+                {
+                    startupFailed = true;
+                    return;
+                }
+
+                startupComplete = true;
+            });
 
     worker =
         std::thread(
@@ -261,6 +284,7 @@ bool Application::initialise()
         );
 
     return true;
+
 }
 
 bool Application::createWindow()
@@ -406,6 +430,60 @@ void Application::update()
 
     ui.tick(1.0f / 60.0f);
 
+    Uint32 now =
+        SDL_GetTicks();
+
+    if (state == AppState::Splash)
+    {
+        splashAnimation += 0.02f;
+
+        if (splashAnimation > 1.0f)
+            splashAnimation = 0.0f;
+    }
+
+    if (splashFadingOut)
+    {
+        splashFadeAlpha += 8.0f;
+
+        if (splashFadeAlpha >= 255.0f)
+        {
+            splashFadeAlpha = 255.0f;
+
+            newJobScreen.initialiseMaterials();
+
+            newJobScreen.setJob(
+                &currentJob);
+
+            mainMenu.refreshStatus();
+
+            customerSelectionScreen.refreshCustomers();
+
+            startupStage =
+                StartupStage::Complete;
+
+            state =
+                AppState::MainMenu;
+
+            ui.setScreen(
+                &mainMenu);
+
+            // Switch from fading OUT the splash
+            // to fading IN the main menu.
+            splashFadingOut = false;
+            mainMenuFadingIn = true;
+        }
+    }
+    else if (mainMenuFadingIn)
+    {
+        splashFadeAlpha -= 8.0f;
+
+        if (splashFadeAlpha <= 0.0f)
+        {
+            splashFadeAlpha = 0.0f;
+            mainMenuFadingIn = false;
+        }
+    }
+
         {
             std::lock_guard<std::mutex> lock(resultMutex);
 
@@ -430,8 +508,140 @@ void Application::update()
 
         switch (state)
         {
+
         case AppState::Splash:
+        {
+            if (startupFailed)
+            {
+                std::cout
+                    << "FAILED: DatabaseManager\n";
+
+                running = false;
+                break;
+            }
+
+            if (startupComplete)
+            {
+                const Uint32 minimumStageTime =
+                    1500; // Hold time for Stages
+
+                Uint32 stageElapsed =
+                    now - startupStageStartTime;
+
+                int completedStage =
+                    startupCompletedStage.load();
+
+                startupProgress = 0.0f;
+
+                //=================================================
+                // Advance through startup stages one at a time
+                //=================================================
+
+                if (stageElapsed >= minimumStageTime)
+                {
+                    switch (startupStage.load())
+                    {
+                    case StartupStage::Materials:
+
+                        if (completedStage >= 1)
+                        {
+                            startupProgress = 0.15f;
+
+                            startupStage =
+                                StartupStage::Pricing;
+
+                            startupStageStartTime =
+                                now;
+                        }
+
+                        break;
+
+                    case StartupStage::Pricing:
+
+                        if (completedStage >= 2)
+                        {
+                            startupProgress = 0.35f;
+
+                            startupStage =
+                                StartupStage::Customers;
+
+                            startupStageStartTime =
+                                now;
+                        }
+
+                        break;
+
+                    case StartupStage::Customers:
+
+                        if (completedStage >= 3)
+                        {
+                            startupProgress = 0.55f;
+
+                            startupStage =
+                                StartupStage::ProductionPricing;
+
+                            startupStageStartTime =
+                                now;
+                        }
+
+                        break;
+
+                    case StartupStage::ProductionPricing:
+
+                        if (completedStage >= 4)
+                        {
+                            startupProgress = 0.75f;
+
+                            startupStage =
+                                StartupStage::Complete;
+
+                            startupStageStartTime =
+                                now;
+                        }
+
+                        break;
+
+                    case StartupStage::Complete:
+
+                        startupProgress = 0.90f;
+
+                        startupStage =
+                            StartupStage::Ready;
+
+                        readyStartTime =
+                            now;
+
+                        startupStageStartTime =
+                            now;
+
+                        break;
+                    }
+                }
+
+                //=================================================
+                // READY hold
+                //=================================================
+
+                if (startupStage.load() ==
+                    StartupStage::Ready)
+                {
+                    Uint32 readyElapsed =
+                        now - readyStartTime;
+
+                    const Uint32 readyHoldTime =
+                        3000;  // Hold time for Ready only
+
+                    if (readyElapsed >= readyHoldTime &&
+                        !splashFadingOut)
+                    {
+                        splashFadingOut = true;
+                        splashFadeAlpha = 0.0f;
+                    }
+                }
+            }
+
             break;
+        }
 
         case AppState::MainMenu:
             break;
@@ -464,14 +674,376 @@ void Application::render()
 
     ui.setSize(w, h);
 
+    //=================================================
+    // SPLASH SCREEN
+    //=================================================
+
+    if (state == AppState::Splash)
+    {
+        uiRenderer->beginFrame();
+
+        //=================================================
+        // Background
+        //=================================================
+
+        SDL_Color background =
+        {
+            248,
+            248,
+            247,
+            255
+        };
+
+        SDL_SetRenderDrawColor(
+            renderer,
+            background.r,
+            background.g,
+            background.b,
+            background.a);
+
+        SDL_RenderClear(renderer);
+
+        //=================================================
+        // Colours
+        //=================================================
+
+        SDL_Color dark =
+        {
+            32,
+            32,
+            32,
+            255
+        };
+
+        SDL_Color secondary =
+        {
+            105,
+            105,
+            105,
+            255
+        };
+
+        SDL_Color light =
+        {
+            175,
+            175,
+            175,
+            255
+        };
+
+        SDL_Color accent =
+        {
+            35,
+            105,
+            170,
+            255
+        };
+
+        SDL_Color panel =
+        {
+            255,
+            255,
+            255,
+            255
+        };
+
+        SDL_Color readyGreen =
+        {
+            46,
+            160,
+            67,
+            255
+        };
+
+        //=================================================
+        // Main layout
+        //=================================================
+
+        const int leftMargin = 110;
+        const int contentTop = 150;
+
+        //=================================================
+        // Accent vertical line
+        //=================================================
+
+        SDL_Rect accentBar =
+        {
+            leftMargin,
+            contentTop,
+            5,
+            300
+        };
+
+        uiRenderer->fillRect(
+            accentBar,
+            accent);
+
+        //=================================================
+        // Company
+        //=================================================
+
+        const std::string company =
+            "E & G SIGNS CC";
+
+        uiRenderer->drawText(
+            company,
+            leftMargin + 30,
+            contentTop + 4,
+            LabelStyle::Small,
+            secondary);
+
+        //=================================================
+        // Main title
+        //=================================================
+
+        const std::string title =
+            "SIGNAGE";
+
+        const std::string subtitle =
+            "COSTING SYSTEM";
+
+        uiRenderer->drawText(
+            title,
+            leftMargin + 30,
+            contentTop + 48,
+            LabelStyle::Heading,
+            dark);
+
+        uiRenderer->drawText(
+            subtitle,
+            leftMargin + 30,
+            contentTop + 92,
+            LabelStyle::Heading,
+            accent);
+
+        //=================================================
+        // Supporting line
+        //=================================================
+
+        SDL_Rect divider =
+        {
+            leftMargin + 30,
+            contentTop + 145,
+            420,
+            1
+        };
+
+        uiRenderer->fillRect(
+            divider,
+            light);
+
+        //=================================================
+        // Startup status
+        //=================================================
+
+        std::string status = "INITIALISING APPLICATION";
+
+        switch (startupStage.load())
+        {
+        case StartupStage::Materials:
+            status =
+                "LOADING MATERIAL DATABASE";
+            break;
+
+        case StartupStage::Pricing:
+            status =
+                "LOADING PRICING DATABASE";
+            break;
+
+        case StartupStage::Customers:
+            status =
+                "LOADING CUSTOMER DATABASE";
+            break;
+
+        case StartupStage::ProductionPricing:
+            status =
+                "LOADING PRODUCTION PRICING";
+            break;
+
+        case StartupStage::Complete:
+            status =
+                "PREPARING WORKSPACE";
+            break;
+
+        case StartupStage::Ready:
+            status =
+                "READY";
+            break;
+        }
+
+        SDL_Color statusColour = secondary;
+
+        if (startupStage.load() ==
+            StartupStage::Ready)
+        {
+            statusColour = readyGreen;
+        }
+
+        uiRenderer->drawText(
+            status,
+            leftMargin + 30,
+            contentTop + 175,
+            LabelStyle::Small,
+            statusColour);
+
+        //=================================================
+        // Loading track
+        //=================================================
+
+        const int trackWidth = 420;
+
+        SDL_Rect loadingTrack =
+        {
+            leftMargin + 30,
+            contentTop + 205,
+            trackWidth,
+            4
+        };
+
+        SDL_Color trackColour =
+        {
+            225,
+            225,
+            225,
+            255
+        };
+
+        uiRenderer->fillRoundedRect(
+            loadingTrack,
+            trackColour,
+            2);
+
+        //=================================================
+        // Animated loading indicator
+        //=================================================
+
+        const int progressWidth =
+            static_cast<int>(
+                trackWidth * startupProgress);
+
+        SDL_Rect loadingProgress =
+        {
+            leftMargin + 30,
+            contentTop + 205,
+            progressWidth,
+            4
+        };
+
+        if (progressWidth > 0)
+        {
+            uiRenderer->fillRoundedRect(
+                loadingProgress,
+                accent,
+                2);
+        }
+
+        //=================================================
+        // Information block
+        //=================================================
+
+        SDL_Rect infoPanel =
+        {
+            leftMargin + 30,
+            contentTop + 245,
+            420,
+            58
+        };
+
+        uiRenderer->fillRoundedRect(
+            infoPanel,
+            panel,
+            6);
+
+        const std::string info =
+            "Preparing materials, pricing and customer data";
+
+        uiRenderer->drawText(
+            info,
+            leftMargin + 48,
+            contentTop + 265,
+            LabelStyle::Small,
+            secondary);
+
+        //=================================================
+        // Version
+        //=================================================
+
+        const std::string version =
+            "VERSION 3.0";
+
+        int versionWidth =
+            uiRenderer->getTextWidth(version);
+
+        uiRenderer->drawText(
+            version,
+            w - versionWidth - 45,
+            h - 40,
+            LabelStyle::Small,
+            light);
+
+        //=================================================
+        // Bottom accent
+        //=================================================
+
+        SDL_Rect bottomAccent =
+        {
+            0,
+            h - 4,
+            w,
+            4
+        };
+
+        uiRenderer->fillRect(
+            bottomAccent,
+            accent);
+
+        //=================================================
+        // Splash fade-out
+        //=================================================
+
+        if (splashFadingOut)
+        {
+            SDL_SetRenderDrawBlendMode(
+                renderer,
+                SDL_BLENDMODE_BLEND);
+
+            SDL_SetRenderDrawColor(
+                renderer,
+                0,
+                0,
+                0,
+                static_cast<Uint8>(
+                    splashFadeAlpha));
+
+            SDL_Rect fadeRect =
+            {
+                0,
+                0,
+                w,
+                h
+            };
+
+            SDL_RenderFillRect(
+                renderer,
+                &fadeRect);
+
+            SDL_SetRenderDrawBlendMode(
+                renderer,
+                SDL_BLENDMODE_NONE);
+        }
+
+        uiRenderer->endFrame();
+
+        return;
+
+    }
+
+    //=================================================
+    // Main application UI
+    //=================================================
+
     if (uiRenderer == nullptr)
     {
-        SDL_ShowSimpleMessageBox(
-            SDL_MESSAGEBOX_ERROR,
-            "DEBUG",
-            "uiRenderer is nullptr",
-            nullptr);
-
         return;
     }
 
@@ -481,7 +1053,43 @@ void Application::render()
 
     drawSheets();
 
+    //=================================================
+    // Main menu fade-in
+    //=================================================
+
+    if (mainMenuFadingIn)
+    {
+        SDL_SetRenderDrawBlendMode(
+            renderer,
+            SDL_BLENDMODE_BLEND);
+
+        SDL_SetRenderDrawColor(
+            renderer,
+            0,
+            0,
+            0,
+            static_cast<Uint8>(
+                splashFadeAlpha));
+
+        SDL_Rect fadeRect =
+        {
+            0,
+            0,
+            w,
+            h
+        };
+
+        SDL_RenderFillRect(
+            renderer,
+            &fadeRect);
+
+        SDL_SetRenderDrawBlendMode(
+            renderer,
+            SDL_BLENDMODE_NONE);
+    }
+
     uiRenderer->endFrame();
+
 }
 
 void Application::toggleMode()
@@ -603,6 +1211,11 @@ void Application::shutdown()
 {
     running = false;
     appRunning = false;
+
+    if (startupWorker.joinable())
+    {
+        startupWorker.join();
+    }
 
     if (worker.joinable())
     {
