@@ -55,6 +55,11 @@ private:
     bool createWindow();
     bool createRenderer();
 
+    void setSplashWindowSize();
+    void restoreMainWindowSize();
+
+    bool splashWindowResized = false;
+
     void destroyRenderer();
     void destroyWindow();
 
@@ -71,6 +76,8 @@ private:
     float splashAnimation = 0.0f;
 
     float startupProgress = 0.0f;
+
+    float displayedProgress = 0.0f;
 
     Uint32 splashStartTime = 0;
 
@@ -142,6 +149,14 @@ private:
     SDL_Window* window = nullptr;
 
     SDL_Renderer* renderer = nullptr;
+
+    SDL_Texture* estimateLogoTexture = nullptr;
+
+    SDL_Texture* companyLogoTexture = nullptr;
+
+    SDL_Texture* splashArtworkTexture = nullptr;
+
+    bool loadSplashLogos();
 
     //=================================================
     // UI

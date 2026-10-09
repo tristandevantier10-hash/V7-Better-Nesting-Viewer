@@ -20,6 +20,7 @@
 #include "CustomerDatabase.h"
 #include "FileSystem.h"
 #include "DatabaseManager.h"
+#include <SDL2/SDL_image.h>
 
 Application::Application()
 {
@@ -28,6 +29,134 @@ Application::Application()
 Application::~Application()
 {
     shutdown();
+}
+
+bool Application::loadSplashLogos()
+{
+    //=================================================
+    // ESTIMATE PROGRAM LOGO
+    //=================================================
+
+    SDL_Surface* estimateSurface =
+        IMG_Load("Assets/Images/EstiMate.png");
+
+    if (!estimateSurface)
+    {
+        std::cout
+            << "Could not load EstiMate.png: "
+            << IMG_GetError()
+            << "\n";
+
+        return false;
+    }
+
+    estimateLogoTexture =
+        SDL_CreateTextureFromSurface(
+            renderer,
+            estimateSurface);
+
+    SDL_FreeSurface(estimateSurface);
+
+    if (!estimateLogoTexture)
+    {
+        std::cout
+            << "Could not create Estimate logo texture: "
+            << SDL_GetError()
+            << "\n";
+
+        return false;
+    }
+
+    //=================================================
+    // E&G SIGNS COMPANY LOGO
+    //=================================================
+
+    SDL_Surface* companySurface =
+        IMG_Load("Assets/Images/E&G Signs cc.png");
+
+    if (!companySurface)
+    {
+        std::cout
+            << "Could not load E&G Signs cc.png: "
+            << IMG_GetError()
+            << "\n";
+
+        return false;
+    }
+
+    companyLogoTexture =
+        SDL_CreateTextureFromSurface(
+            renderer,
+            companySurface);
+
+    SDL_FreeSurface(companySurface);
+
+    if (!companyLogoTexture)
+    {
+        std::cout
+            << "Could not create company logo texture: "
+            << SDL_GetError()
+            << "\n";
+
+        return false;
+    }
+
+    //=================================================
+    // SPLASH ARTWORK PNG
+    //=================================================
+
+    SDL_Surface* artworkSurface =
+        IMG_Load("Assets/Images/SplashArtwork.png");
+
+    if (artworkSurface)
+    {
+        splashArtworkTexture =
+            SDL_CreateTextureFromSurface(
+                renderer,
+                artworkSurface);
+
+        SDL_FreeSurface(artworkSurface);
+
+        if (!splashArtworkTexture)
+        {
+            std::cout
+                << "Could not create splash artwork texture: "
+                << SDL_GetError()
+                << "\n";
+
+            // Artwork is optional while building the template.
+        }
+        else
+        {
+            SDL_SetTextureBlendMode(
+                splashArtworkTexture,
+                SDL_BLENDMODE_BLEND);
+        }
+    }
+    else
+    {
+        // Optional until your artwork PNG is ready.
+        std::cout
+            << "Splash artwork not loaded yet: "
+            << IMG_GetError()
+            << "\n";
+    }
+
+    //=================================================
+    // LOGO TRANSPARENCY
+    //=================================================
+
+    SDL_SetTextureBlendMode(
+        estimateLogoTexture,
+        SDL_BLENDMODE_BLEND);
+
+    SDL_SetTextureBlendMode(
+        companyLogoTexture,
+        SDL_BLENDMODE_BLEND);
+
+    std::cout << "Splash logos loaded successfully.\n";
+
+    return true;
 }
 
 bool Application::initialise()
@@ -48,6 +177,22 @@ bool Application::initialise()
     {
         std::cout << "FAILED: createRenderer()\n";
         return false;
+    }
+
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0)
+    {
+        std::cout
+            << "SDL_image PNG initialisation failed: "
+            << IMG_GetError()
+            << "\n";
+    }
+    else
+    {
+        if (!loadSplashLogos())
+        {
+            std::cout
+                << "Warning: One or more splash logos failed to load.\n";
+        }
     }
 
     SDL_StartTextInput();
@@ -238,12 +383,15 @@ bool Application::initialise()
 
     state = AppState::Splash;
 
+    setSplashWindowSize();
+
     running = true;
 
     splashStartTime = SDL_GetTicks();
 
     splashAnimation = 0.0f;
     startupProgress = 0.0f;
+    displayedProgress = 0.0f;
 
     startupStageStartTime =
         splashStartTime;
@@ -285,6 +433,47 @@ bool Application::initialise()
 
     return true;
 
+}
+
+void Application::setSplashWindowSize()
+{
+    if (!window || splashWindowResized)
+        return;
+
+    // Compact popup dimensions for the startup screen.
+    const int splashWidth = 1040;
+    const int splashHeight = 460;
+
+    SDL_SetWindowSize(
+        window,
+        splashWidth,
+        splashHeight);
+
+    SDL_SetWindowPosition(
+        window,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED);
+
+    splashWindowResized = true;
+}
+
+void Application::restoreMainWindowSize()
+{
+    if (!window || !splashWindowResized)
+        return;
+
+    // Restore the normal application window.
+    SDL_SetWindowSize(
+        window,
+        1200,
+        800);
+
+    SDL_SetWindowPosition(
+        window,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED);
+
+    splashWindowResized = false;
 }
 
 bool Application::createWindow()
@@ -433,6 +622,9 @@ void Application::update()
     Uint32 now =
         SDL_GetTicks();
 
+    displayedProgress +=
+        (startupProgress - displayedProgress) * 0.10f;
+
     if (state == AppState::Splash)
     {
         splashAnimation += 0.02f;
@@ -460,6 +652,8 @@ void Application::update()
 
             startupStage =
                 StartupStage::Complete;
+
+            restoreMainWindowSize();
 
             state =
                 AppState::MainMenu;
@@ -531,7 +725,54 @@ void Application::update()
                 int completedStage =
                     startupCompletedStage.load();
 
-                startupProgress = 0.0f;
+                float stageFraction =
+                    static_cast<float>(stageElapsed) /
+                    static_cast<float>(minimumStageTime);
+
+                if (stageFraction > 1.0f)
+                    stageFraction = 1.0f;
+
+                switch (startupStage.load())
+                {
+                case StartupStage::Materials:
+                    startupProgress = 0.15f * stageFraction;
+                    break;
+
+                case StartupStage::Pricing:
+                    startupProgress =
+                        0.15f + 0.20f * stageFraction;
+                    break;
+
+                case StartupStage::Customers:
+                    startupProgress =
+                        0.35f + 0.20f * stageFraction;
+                    break;
+
+                case StartupStage::ProductionPricing:
+                    startupProgress =
+                        0.55f + 0.20f * stageFraction;
+                    break;
+
+                case StartupStage::Complete:
+                    startupProgress =
+                        0.75f + 0.15f * stageFraction;
+                    break;
+
+                case StartupStage::Ready:
+                {
+                    Uint32 readyElapsed =
+                        now - readyStartTime;
+
+                    startupProgress =
+                        0.90f + 0.10f *
+                        (static_cast<float>(readyElapsed) / 3000.0f);
+
+                    if (startupProgress > 1.0f)
+                        startupProgress = 1.0f;
+
+                    break;
+                }
+                }
 
                 //=================================================
                 // Advance through startup stages one at a time
@@ -688,9 +929,9 @@ void Application::render()
 
         SDL_Color background =
         {
+            242,
+            245,
             248,
-            248,
-            247,
             255
         };
 
@@ -756,65 +997,182 @@ void Application::render()
         };
 
         //=================================================
-        // Main layout
+        // COMPACT SPLASH LAYOUT
         //=================================================
 
-        const int leftMargin = 110;
-        const int contentTop = 150;
+        const int contentWidth = 1000;
+        const int contentHeight = 410;
+
+        const int leftMargin = (w - contentWidth) / 2;
+        const int contentTop = (h - contentHeight) / 2;
+
+        const int contentPadding = 20;
+
+        const int leftColumnX = leftMargin + 20;
+        const int leftColumnWidth = 420;
+        const int columnGap = 50;
 
         //=================================================
-        // Accent vertical line
+        // ESTIMATE BRANDING
         //=================================================
 
-        SDL_Rect accentBar =
+        if (estimateLogoTexture != nullptr)
         {
-            leftMargin,
-            contentTop,
-            5,
-            300
-        };
+            int textureWidth = 0;
+            int textureHeight = 0;
 
-        uiRenderer->fillRect(
-            accentBar,
-            accent);
+            SDL_QueryTexture(
+                estimateLogoTexture,
+                nullptr,
+                nullptr,
+                &textureWidth,
+                &textureHeight);
 
-        //=================================================
-        // Company
-        //=================================================
+            if (textureWidth > 0 && textureHeight > 0)
+            {
+                SDL_Rect logoBox =
+                {
+                    leftColumnX,
+                    contentTop,
+                    260,
+                    72
+                };
 
-        const std::string company =
-            "E & G SIGNS CC";
+                float scaleX =
+                    static_cast<float>(logoBox.w) / textureWidth;
 
+                float scaleY =
+                    static_cast<float>(logoBox.h) / textureHeight;
+
+                float scale = scaleX < scaleY ? scaleX : scaleY;
+
+                SDL_Rect logoRect =
+                {
+                    logoBox.x,
+
+                    logoBox.y + (logoBox.h -
+                        static_cast<int>(textureHeight * scale)) / 2,
+
+                    static_cast<int>(textureWidth * scale),
+                    static_cast<int>(textureHeight * scale)
+                };
+
+                SDL_RenderCopy(
+                    renderer,
+                    estimateLogoTexture,
+                    nullptr,
+                    &logoRect);
+            }
+        }
+        else
+        {
+            uiRenderer->drawText(
+                "EstiMate",
+                leftColumnX,
+                contentTop + 15,
+                LabelStyle::Heading,
+                dark);
+        }
+
+        // Welcome heading
         uiRenderer->drawText(
-            company,
-            leftMargin + 30,
-            contentTop + 4,
+            "Welcome to EstiMate.",
+            leftColumnX,
+            contentTop + 100,
+            LabelStyle::Heading,
+            dark);
+
+        // Supporting text
+        uiRenderer->drawText(
+            "Your workspace for smarter signage estimating.",
+            leftColumnX,
+            contentTop + 150,
             LabelStyle::Small,
             secondary);
 
         //=================================================
-        // Main title
+        // RIGHT-HAND ARTWORK PANEL
         //=================================================
 
-        const std::string title =
-            "SIGNAGE";
+        const int artX = leftMargin + 490;
+        const int artY = contentTop;
+        const int artW = 490;
 
-        const std::string subtitle =
-            "COSTING SYSTEM";
+        const int companyY = contentTop + 330;
+        const int companyLogoHeight = 44;
 
-        uiRenderer->drawText(
-            title,
-            leftMargin + 30,
-            contentTop + 48,
-            LabelStyle::Heading,
-            dark);
+        // Make the artwork panel end exactly at the bottom
+        // of the E&G company logo box.
+        const int artH =
+            (companyY + companyLogoHeight) - artY;
 
-        uiRenderer->drawText(
-            subtitle,
-            leftMargin + 30,
-            contentTop + 92,
-            LabelStyle::Heading,
-            accent);
+        SDL_Color artBackground =
+        {
+            220, 239, 241, 255
+        };
+
+        SDL_Rect artPanel =
+        {
+            artX,
+            artY,
+            artW,
+            artH
+        };
+
+        // Panel background — visible until the PNG is loaded.
+        uiRenderer->fillRoundedRect(
+            artPanel,
+            artBackground,
+            12
+        );
+
+        // Draw the supplied PNG, preserving its aspect ratio.
+        if (splashArtworkTexture != nullptr)
+        {
+            int textureWidth = 0;
+            int textureHeight = 0;
+
+            SDL_QueryTexture(
+                splashArtworkTexture,
+                nullptr,
+                nullptr,
+                &textureWidth,
+                &textureHeight
+            );
+
+            if (textureWidth > 0 && textureHeight > 0)
+            {
+                float scaleX =
+                    static_cast<float>(artW) / textureWidth;
+
+                float scaleY =
+                    static_cast<float>(artH) / textureHeight;
+
+                float scale =
+                    scaleX < scaleY ? scaleX : scaleY;
+
+                int drawW =
+                    static_cast<int>(textureWidth * scale);
+
+                int drawH =
+                    static_cast<int>(textureHeight * scale);
+
+                SDL_Rect imageRect =
+                {
+                    artX,
+                    artY,
+                    artW,
+                    artH
+                };
+
+                SDL_RenderCopy(
+                    renderer,
+                    splashArtworkTexture,
+                    nullptr,
+                    &imageRect
+                );
+            }
+        }
 
         //=================================================
         // Supporting line
@@ -822,9 +1180,9 @@ void Application::render()
 
         SDL_Rect divider =
         {
-            leftMargin + 30,
-            contentTop + 145,
-            420,
+            leftColumnX,
+            contentTop + 200,
+            leftColumnWidth,
             1
         };
 
@@ -841,48 +1199,41 @@ void Application::render()
         switch (startupStage.load())
         {
         case StartupStage::Materials:
-            status =
-                "LOADING MATERIAL DATABASE";
+            status = "LOADING MATERIAL DATABASE";
             break;
 
         case StartupStage::Pricing:
-            status =
-                "LOADING PRICING DATABASE";
+            status = "LOADING PRICING DATABASE";
             break;
 
         case StartupStage::Customers:
-            status =
-                "LOADING CUSTOMER DATABASE";
+            status = "LOADING CUSTOMER DATABASE";
             break;
 
         case StartupStage::ProductionPricing:
-            status =
-                "LOADING PRODUCTION PRICING";
+            status = "LOADING PRODUCTION PRICING";
             break;
 
         case StartupStage::Complete:
-            status =
-                "PREPARING WORKSPACE";
+            status = "PREPARING WORKSPACE";
             break;
 
         case StartupStage::Ready:
-            status =
-                "READY";
+            status = "READY";
             break;
         }
 
         SDL_Color statusColour = secondary;
 
-        if (startupStage.load() ==
-            StartupStage::Ready)
+        if (startupStage.load() == StartupStage::Ready)
         {
             statusColour = readyGreen;
         }
 
         uiRenderer->drawText(
             status,
-            leftMargin + 30,
-            contentTop + 175,
+            leftColumnX,
+            contentTop + 250,
             LabelStyle::Small,
             statusColour);
 
@@ -890,22 +1241,19 @@ void Application::render()
         // Loading track
         //=================================================
 
-        const int trackWidth = 420;
+        const int trackWidth = leftColumnWidth;
 
         SDL_Rect loadingTrack =
         {
-            leftMargin + 30,
-            contentTop + 205,
+            leftColumnX,
+            contentTop + 280,
             trackWidth,
             4
         };
 
         SDL_Color trackColour =
         {
-            225,
-            225,
-            225,
-            255
+            225, 225, 225, 255
         };
 
         uiRenderer->fillRoundedRect(
@@ -919,12 +1267,12 @@ void Application::render()
 
         const int progressWidth =
             static_cast<int>(
-                trackWidth * startupProgress);
+                trackWidth * displayedProgress);
 
         SDL_Rect loadingProgress =
         {
-            leftMargin + 30,
-            contentTop + 205,
+            leftColumnX,
+            contentTop + 280,
             progressWidth,
             4
         };
@@ -938,29 +1286,70 @@ void Application::render()
         }
 
         //=================================================
-        // Information block
+        // COMPANY BRANDING FOOTER
         //=================================================
 
-        SDL_Rect infoPanel =
+        if (companyLogoTexture != nullptr)
         {
-            leftMargin + 30,
-            contentTop + 245,
-            420,
-            58
-        };
+            int textureWidth = 0;
+            int textureHeight = 0;
 
-        uiRenderer->fillRoundedRect(
-            infoPanel,
-            panel,
-            6);
+            SDL_QueryTexture(
+                companyLogoTexture,
+                nullptr,
+                nullptr,
+                &textureWidth,
+                &textureHeight);
 
-        const std::string info =
-            "Preparing materials, pricing and customer data";
+            if (textureWidth > 0 && textureHeight > 0)
+            {
+                SDL_Rect logoBox =
+                {
+                    leftColumnX,
+                    companyY,
+                    90,
+                    44
+                };
+
+                float scaleX =
+                    static_cast<float>(logoBox.w) / textureWidth;
+
+                float scaleY =
+                    static_cast<float>(logoBox.h) / textureHeight;
+
+                float scale = scaleX < scaleY ? scaleX : scaleY;
+
+                SDL_Rect logoRect =
+                {
+                    logoBox.x + (logoBox.w -
+                        static_cast<int>(textureWidth * scale)) / 2,
+
+                    logoBox.y + (logoBox.h -
+                        static_cast<int>(textureHeight * scale)) / 2,
+
+                    static_cast<int>(textureWidth * scale),
+                    static_cast<int>(textureHeight * scale)
+                };
+
+                SDL_RenderCopy(
+                    renderer,
+                    companyLogoTexture,
+                    nullptr,
+                    &logoRect);
+            }
+        }
 
         uiRenderer->drawText(
-            info,
-            leftMargin + 48,
-            contentTop + 265,
+            "E & G SIGNS CC",
+            leftColumnX + 110,
+            companyY + 3,
+            LabelStyle::Small,
+            dark);
+
+        uiRenderer->drawText(
+            "SIGNAGE THAT GUIDES SOUTH AFRICA",
+            leftColumnX + 110,
+            companyY + 24,
             LabelStyle::Small,
             secondary);
 
@@ -1226,6 +1615,20 @@ void Application::shutdown()
     uiRenderer = nullptr;
 
     fontManager.shutdown();
+
+    if (estimateLogoTexture)
+    {
+        SDL_DestroyTexture(estimateLogoTexture);
+        estimateLogoTexture = nullptr;
+    }
+
+    if (companyLogoTexture)
+    {
+        SDL_DestroyTexture(companyLogoTexture);
+        companyLogoTexture = nullptr;
+    }
+
+    IMG_Quit();
 
     destroyRenderer();
 
