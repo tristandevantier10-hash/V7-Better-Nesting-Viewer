@@ -24,9 +24,13 @@ const std::string& TextBox::getText() const
     return text;
 }
 
+void TextBox::setPasswordMode(bool enabled)
+{
+    passwordMode = enabled;
+}
+
 void TextBox::update(const SDL_Event& e)
 {
-
     Uint32 now = SDL_GetTicks();
 
     if (now - lastBlink > 500)
@@ -54,6 +58,9 @@ void TextBox::update(const SDL_Event& e)
         e.type == SDL_TEXTINPUT)
     {
         text += e.text.text;
+
+        if (textChangedCallback)
+            textChangedCallback(text);
     }
 
     if (focused &&
@@ -62,7 +69,24 @@ void TextBox::update(const SDL_Event& e)
         if (e.key.keysym.sym == SDLK_BACKSPACE &&
             !text.empty())
         {
-            text.pop_back();
+            // Remove the last UTF-8 character.
+            size_t pos = text.find_last_of(
+                "\xC0");
+
+            (void)pos;
+
+            size_t i = text.size() - 1;
+
+            while (i > 0 &&
+                (static_cast<unsigned char>(text[i]) & 0xC0) == 0x80)
+            {
+                --i;
+            }
+
+            text.erase(i);
+
+            if (textChangedCallback)
+                textChangedCallback(text);
         }
     }
 }
@@ -72,18 +96,10 @@ void TextBox::render(Renderer& renderer)
     if (!visible)
         return;
 
-    //==================================================
-    // Background
-    //==================================================
-
     renderer.fillRoundedRect(
         getBounds(),
         { 255,255,255,255 },
         8);
-
-    //==================================================
-    // Border
-    //==================================================
 
     SDL_Color borderColour =
         focused
@@ -96,9 +112,10 @@ void TextBox::render(Renderer& renderer)
         8,
         focused ? 2 : 1);
 
-    //==================================================
-    // Text / Placeholder
-    //==================================================
+    std::string displayText = text;
+
+    if (passwordMode)
+        displayText = std::string(text.length(), '*');
 
     if (text.empty())
     {
@@ -112,22 +129,18 @@ void TextBox::render(Renderer& renderer)
     else
     {
         renderer.drawText(
-            text,
+            displayText,
             getX() + 8,
             getY() + 8,
             LabelStyle::Normal,
             DefaultTheme.darkText);
     }
 
-    //==================================================
-    // Caret
-    //==================================================
-
     if (focused && showCaret)
     {
         int caretX =
             bounds.x + 8 +
-            TextRenderer::getTextWidth(text);
+            TextRenderer::getTextWidth(displayText);
 
         SDL_SetRenderDrawColor(
             renderer.getSDLRenderer(),

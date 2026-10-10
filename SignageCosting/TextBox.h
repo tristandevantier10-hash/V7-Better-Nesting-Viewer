@@ -22,6 +22,8 @@ public:
 
     const std::string& getText() const;
 
+    void setPasswordMode(bool enabled);
+
     void setTextChangedCallback(
         std::function<void(const std::string&)> callback);
 
@@ -33,10 +35,11 @@ private:
 
     bool focused = false;
 
+    bool passwordMode = false;
+
     Uint32 lastBlink = 0;
 
     bool showCaret = true;
 
     std::function<void(const std::string&)> textChangedCallback;
-
 };

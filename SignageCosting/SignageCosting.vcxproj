@@ -148,6 +148,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ApplicationShell.cpp" />
+    <ClCompile Include="AuthenticationService.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="CardPanel.cpp" />
     <ClCompile Include="ComboBox.cpp" />
@@ -173,6 +174,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="Layout.cpp" />
     <ClCompile Include="ListView.cpp" />
+    <ClCompile Include="LoginScreen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuScreen.cpp" />
     <ClCompile Include="MaterialDatabase.cpp" />
@@ -199,6 +201,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClInclude Include="ApplicationShell.h" />
+    <ClInclude Include="AuthenticationService.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="CardPanel.h" />
     <ClInclude Include="ComboBox.h" />
@@ -220,6 +223,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="JobSummaryViewModel.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="ListView.h" />
+    <ClInclude Include="LoginScreen.h" />
     <ClInclude Include="MainMenuScreen.h" />
     <ClInclude Include="Metrics.h" />
     <ClInclude Include="NavigationItem.h" />

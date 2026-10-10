@@ -23,6 +23,8 @@
 #include "CustomerSelectionScreen.h"
 #include "CustomerEditorScreen.h"
 #include "ApplicationShell.h"
+#include "LoginScreen.h"
+#include "AuthenticationService.h"
 
 class Application
 {
@@ -34,6 +36,8 @@ public:
     bool initialise();
     void run();
     void shutdown();
+
+    void startSplashStartup();
 
     bool isRunning() const;
     SDL_Renderer* getRenderer() const;
@@ -69,7 +73,7 @@ private:
 
     bool running = true;
 
-    AppState state = AppState::Splash;
+    AppState state = AppState::Login;
 
     RunMode mode = RunMode::Test;
 
@@ -163,6 +167,10 @@ private:
     //=================================================
 
     UIManager ui;
+
+    // Authentication
+    LoginScreen loginScreen;
+    AuthenticationService authenticationService;
 
     MainMenuScreen mainMenu;
 

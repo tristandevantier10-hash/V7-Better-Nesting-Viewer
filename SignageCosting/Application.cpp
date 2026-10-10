@@ -221,6 +221,38 @@ bool Application::initialise()
     // Callbacks
     //=================================================
 
+    loginScreen.setLoginCallback(
+        [this](
+            const std::string& username,
+            const std::string& password)
+        {
+            std::string errorMessage;
+
+            if (authenticationService.login(
+                username,
+                password,
+                errorMessage))
+            {
+                loginScreen.setStatus(
+                    "Login successful. Preparing workspace...");
+
+                loginScreen.clearPassword();
+
+                std::cout << "Authentication successful.\n";
+
+                startSplashStartup();
+            }
+            else
+            {
+                loginScreen.setStatus(errorMessage);
+
+                std::cout
+                    << "Authentication failed: "
+                    << errorMessage
+                    << "\n";
+            }
+        });
+
     newJobScreen.setCalculateCallback(
         [this]()
         {
@@ -381,58 +413,59 @@ bool Application::initialise()
             // PDF export will be wired here.
         });
 
-    state = AppState::Splash;
-
-    setSplashWindowSize();
+    state = AppState::Login;
+    ui.setScreen(&loginScreen);
 
     running = true;
 
-    splashStartTime = SDL_GetTicks();
+    worker = std::thread(&Application::workerThread, this);
 
+    return true;
+
+}
+
+void Application::startSplashStartup() {
+    // 1. Reset state flags
+    state = AppState::Splash;
+    setSplashWindowSize();
+    running = true;
+
+    // 2. Initialize timing & animation properties
+    splashStartTime = SDL_GetTicks();
+    startupStageStartTime = splashStartTime;
+    readyStartTime = 0;
     splashAnimation = 0.0f;
     startupProgress = 0.0f;
     displayedProgress = 0.0f;
 
-    startupStageStartTime =
-        splashStartTime;
-
-    readyStartTime = 0;
-
-    startupCompletedStage = -1;
-
+    // 3. Reset state flow control
     splashFadingOut = false;
     mainMenuFadingIn = false;
-
     splashFadeAlpha = 0.0f;
 
-    startupComplete = false;
-    startupFailed = false;
+    // Use atomic stores to guarantee thread safety
+    startupComplete.store(false);
+    startupFailed.store(false);
+    startupCompletedStage.store(-1);
 
-    startupWorker =
-        std::thread(
-            [this]()
-            {
-                if (!DatabaseManager::initialise(
-                    [this](int stage)
-                    {
-                        startupCompletedStage = stage;
-                    }))
-                {
-                    startupFailed = true;
-                    return;
-                }
+    // 4. Clean up any existing worker thread before creating a new one
+    if (startupWorker.joinable()) {
+        startupWorker.join();
+    }
 
-                startupComplete = true;
+    // 5. Launch the asynchronous initialization thread
+    startupWorker = std::thread([this]() {
+        bool initSuccess = DatabaseManager::initialise([this](int stage) {
+            startupCompletedStage.store(stage);
             });
 
-    worker =
-        std::thread(
-            &Application::workerThread,
-            this
-        );
+        if (!initSuccess) {
+            startupFailed.store(true);
+            return;
+        }
 
-    return true;
-
+        startupComplete.store(true);
+        });
 }
 
 void Application::setSplashWindowSize()

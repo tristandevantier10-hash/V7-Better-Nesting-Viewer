@@ -7,25 +7,28 @@
 // The application will always be in exactly one of these
 // states.
 //
-// The main loop will update and render based on this state.
+// Startup flow:
 //
-// Current Flow:
-//
+// Login
+//    ↓
 // Splash
-//    ?
+//    ↓
 // MainMenu
-//    ?
-// InteractiveJob  ?? TestJob
-//    ?
+//    ↓
+// InteractiveJob / TestJob
+//    ↓
 // Calculating
-//    ?
+//    ↓
 // Results
-//    ?
+//    ↓
 // MainMenu
 //---------------------------------------------------------
 
 enum class AppState
 {
+    // Authentication screen
+    Login,
+
     // Startup splash screen
     Splash,
 
