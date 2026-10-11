@@ -6,6 +6,7 @@
 #include "PricingDatabase.h"
 #include "ProductionPricingDatabase.h"
 #include "CustomerDatabase.h"
+#include "QuoteDatabase.h"
 
 bool DatabaseManager::initialise(
     ProgressCallback progressCallback)
@@ -72,6 +73,12 @@ bool DatabaseManager::loadPricing()
 bool DatabaseManager::loadCustomers()
 {
     CustomerDatabase::initialise();
+
+    if (!QuoteDatabase::initialise())
+    {
+        // Database initialization failed.
+        // We will add proper error handling here.
+    }
 
     return true;
 }

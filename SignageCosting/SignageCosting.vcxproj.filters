@@ -55,6 +55,9 @@
     <Filter Include="UI\Header Files\Fonts\Source Files">
       <UniqueIdentifier>{dd13a44c-efe3-42d1-a966-3f30d3f34428}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Quotes">
+      <UniqueIdentifier>{952108f2-31fa-4c93-8e05-b8b03ec6e805}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CostEngine.cpp">
@@ -251,6 +254,12 @@
     </ClCompile>
     <ClCompile Include="AuthenticationService.cpp">
       <Filter>UI\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QuoteReferenceGenerator.cpp">
+      <Filter>Quotes</Filter>
+    </ClCompile>
+    <ClCompile Include="QuoteDatabase.cpp">
+      <Filter>Quotes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -505,6 +514,15 @@
     </ClInclude>
     <ClInclude Include="AuthenticationService.h">
       <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteRecord.h">
+      <Filter>Quotes</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteReferenceGenerator.h">
+      <Filter>Quotes</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteDatabase.h">
+      <Filter>Quotes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

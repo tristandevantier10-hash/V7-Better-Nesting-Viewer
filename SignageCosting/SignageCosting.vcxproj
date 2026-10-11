@@ -191,6 +191,8 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="PricingRules.cpp" />
     <ClCompile Include="ProductionPricingDatabase.cpp" />
     <ClCompile Include="PropertyRow.cpp" />
+    <ClCompile Include="QuoteDatabase.cpp" />
+    <ClCompile Include="QuoteReferenceGenerator.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResultsScreen.cpp" />
     <ClCompile Include="ResultsViewModelBuilder.cpp" />
@@ -235,7 +237,10 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="Panel.h" />
     <ClInclude Include="PanelStyle.h" />
     <ClInclude Include="PlacementStrategy.h" />
+    <ClInclude Include="QuoteDatabase.h" />
     <ClInclude Include="QuoteDocument.h" />
+    <ClInclude Include="QuoteRecord.h" />
+    <ClInclude Include="QuoteReferenceGenerator.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ResultsViewModelBuilder.h" />
     <ClCompile Include="RollOptimizer.cpp" />
