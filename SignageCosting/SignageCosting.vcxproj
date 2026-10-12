@@ -74,7 +74,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <VcpkgInstalledDir>..\..\..\..\..\..\dev\vcpkg\installed\x64-windows</VcpkgInstalledDir>
+    <VcpkgInstalledDir>C:\dev\vcpkg\installed\x64-windows</VcpkgInstalledDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -119,9 +119,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <AdditionalDependencies>libcurl.lib;SDL2.lib;SDL2_ttf.lib;SDL2_image.lib;lunasvg.lib
-;
-plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl.lib;SDL2.lib;SDL2_ttf.lib;SDL2_image.lib;lunasvg.lib;plutovg.lib;hpdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\dev\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -192,6 +190,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClCompile Include="ProductionPricingDatabase.cpp" />
     <ClCompile Include="PropertyRow.cpp" />
     <ClCompile Include="QuoteDatabase.cpp" />
+    <ClCompile Include="QuotePdfExporter.cpp" />
     <ClCompile Include="QuoteReferenceGenerator.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResultsScreen.cpp" />
@@ -239,6 +238,7 @@ plutovg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="PlacementStrategy.h" />
     <ClInclude Include="QuoteDatabase.h" />
     <ClInclude Include="QuoteDocument.h" />
+    <ClInclude Include="QuotePdfExporter.h" />
     <ClInclude Include="QuoteRecord.h" />
     <ClInclude Include="QuoteReferenceGenerator.h" />
     <ClInclude Include="Renderer.h" />

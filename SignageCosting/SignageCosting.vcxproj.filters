@@ -261,6 +261,9 @@
     <ClCompile Include="QuoteDatabase.cpp">
       <Filter>Quotes</Filter>
     </ClCompile>
+    <ClCompile Include="QuotePdfExporter.cpp">
+      <Filter>Quotes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CostEngine.h">
@@ -522,6 +525,9 @@
       <Filter>Quotes</Filter>
     </ClInclude>
     <ClInclude Include="QuoteDatabase.h">
+      <Filter>Quotes</Filter>
+    </ClInclude>
+    <ClInclude Include="QuotePdfExporter.h">
       <Filter>Quotes</Filter>
     </ClInclude>
   </ItemGroup>

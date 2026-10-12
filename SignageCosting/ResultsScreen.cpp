@@ -10,6 +10,8 @@
 #include <string>
 #include <iostream>
 #include "ScrollPanel.h"
+#include <hpdf.h>
+#include "QuotePdfExporter.h"
 
 ResultsScreen::ResultsScreen()
 {
@@ -1154,6 +1156,12 @@ void ResultsScreen::setExportCallback(
     exportCallback = callback;
 }
 
+void ResultsScreen::setSaveQuoteCallback(
+    std::function<bool(InvoiceViewModel&)> callback)
+{
+    saveQuoteCallback = callback;
+}
+
 void ResultsScreen::setOverviewCallback(std::function<void()> callback)
 {
     overviewCallback = callback;
@@ -1612,8 +1620,8 @@ void ResultsScreen::showQuote()
         SizePolicy::Fill);
 
     // --------------------------------------------------
-// Banking Information
-// --------------------------------------------------
+    // Banking Information
+    // --------------------------------------------------
 
     auto bankingInfo =
         std::make_shared<Panel>();
@@ -1729,19 +1737,10 @@ void ResultsScreen::showQuote()
         SizePolicy::Fixed,
         22);
 
-    auto quoteNumber =
-        std::make_shared<Label>();
-
-    quoteNumber->setText(
-        "QT-2026-0001");
-
-    quoteNumber->setStyle(
-        LabelStyle::Normal);
-
-    quoteHeading->addLayoutElement(
-        quoteNumber,
-        SizePolicy::Fixed,
-        24);
+    auto quoteNumber = std::make_shared<Label>();
+    quoteNumber->setText(viewModel.invoice.jobref.empty() ? "UNSAVED QUOTE" : viewModel.invoice.jobref);
+    quoteNumber->setStyle(LabelStyle::Normal);
+    quoteHeading->addLayoutElement(quoteNumber, SizePolicy::Fixed, 24);
 
     // --------------------------------------------------
     // Quote Card
@@ -1909,7 +1908,9 @@ void ResultsScreen::showQuote()
         std::make_shared<Label>();
 
     referenceValue->setText(
-        "QT-2026-0001");
+        viewModel.invoice.jobref.empty()
+        ? "UNSAVED QUOTE"
+        : viewModel.invoice.jobref);
 
     referenceValue->setStyle(
         LabelStyle::Normal);
@@ -2538,4 +2539,106 @@ void ResultsScreen::showQuote()
         acceptanceDate,
         SizePolicy::Fixed,
         22);
+
+    // --------------------------------------------------
+    // Quote Actions
+    // --------------------------------------------------
+
+    auto quoteActions =
+        std::make_shared<Panel>();
+
+    quoteActions->setLayout(
+        std::make_unique<HorizontalLayout>());
+
+    quoteActions->setBorderVisible(false);
+    quoteActions->setSpacing(12);
+
+    mainContainer->addLayoutElement(
+        quoteActions,
+        SizePolicy::Fixed,
+        48);
+
+    // Spacer keeps actions aligned to the right.
+    auto actionSpacer =
+        std::make_shared<Panel>();
+
+    actionSpacer->setBorderVisible(false);
+
+    quoteActions->addLayoutElement(
+        actionSpacer,
+        SizePolicy::Fill);
+
+    // Save Quote
+    saveQuoteButton =
+        std::make_shared<Button>();
+
+    saveQuoteButton->setText(
+        viewModel.invoice.jobref.empty()
+        ? "Save Quote"
+        : "Quote Saved");
+
+    saveQuoteButton->setOnClick(
+        [this]()
+        {
+            if (!saveQuoteCallback)
+                return;
+
+            if (!viewModel.invoice.jobref.empty())
+            {
+                saveQuoteButton->setText("Quote Saved");
+                return;
+            }
+
+            if (saveQuoteCallback(viewModel.invoice))
+            {
+                saveQuoteButton->setText("Quote Saved");
+
+                // Rebuild the quote so its reference and
+                // date reflect the saved invoice.
+                showQuote();
+            }
+        });
+
+    quoteActions->addLayoutElement(
+        saveQuoteButton,
+        SizePolicy::Fixed,
+        150);
+
+    // Export PDF
+    exportButton = std::make_shared<Button>();
+    exportButton->setText("Export PDF");
+
+    exportButton->setOnClick([this]()
+        {
+            if (exportCallback)
+            {
+                exportCallback();
+            }
+        });
+
+    quoteActions->addLayoutElement(
+        exportButton, SizePolicy::Fixed, 150);
+
+}
+
+bool ResultsScreen::exportQuoteToPdf(
+    std::string& errorMessage)
+{
+    if (viewModel.invoice.jobs.empty())
+    {
+        errorMessage =
+            "There are no quotation items to export.";
+
+        return false;
+    }
+
+    std::string outputPath =
+        viewModel.invoice.jobref.empty()
+        ? "Quotation.pdf"
+        : viewModel.invoice.jobref + ".pdf";
+
+    return QuotePdfExporter::exportToPdf(
+        viewModel.invoice,
+        outputPath,
+        errorMessage);
 }

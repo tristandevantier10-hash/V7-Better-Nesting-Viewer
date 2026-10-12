@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include "NavigationPanel.h"
+#include <string>
 
 class Renderer;
 
@@ -45,6 +46,11 @@ public:
 
     void setExportCallback(
         std::function<void()> callback);
+
+    void setSaveQuoteCallback(
+        std::function<bool(InvoiceViewModel&)> callback);
+
+    bool exportQuoteToPdf(std::string& errorMessage);
 
     void setOverviewCallback(
         std::function<void()> callback);
@@ -133,6 +139,7 @@ private:
     std::shared_ptr<Button> newJobButton;
     std::shared_ptr<Button> printButton;
     std::shared_ptr<Button> exportButton;
+    std::shared_ptr<Button> saveQuoteButton;
 
     // --------------------------------------------------
     // Data
@@ -155,6 +162,8 @@ private:
     std::function<void()> nestingSheetsCallback;
     std::function<void()> costBreakdownCallback;
     std::function<void()> quoteCallback;
+
+    std::function<bool(InvoiceViewModel&)> saveQuoteCallback;
 
     // --------------------------------------------------
     // Construction helpers

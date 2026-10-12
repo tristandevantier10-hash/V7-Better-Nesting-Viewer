@@ -21,6 +21,10 @@
 #include "FileSystem.h"
 #include "DatabaseManager.h"
 #include <SDL2/SDL_image.h>
+#include <cstdlib>
+#include <string>
+#include "QuoteDatabase.h"
+#include "QuotePdfExporter.h"
 
 Application::Application()
 {
@@ -226,6 +230,41 @@ bool Application::initialise()
             const std::string& username,
             const std::string& password)
         {
+            // TEMPORARY DEVELOPMENT BYPASS
+            // Only available in Debug builds.
+    #ifdef _DEBUG
+            char* devPassword = nullptr;
+            size_t passwordLength = 0;
+
+            if (_dupenv_s(
+                &devPassword,
+                &passwordLength,
+                "ESTIMATE_DEV_PASSWORD") != 0)
+            {
+                devPassword = nullptr;
+            }
+
+            if (devPassword != nullptr &&
+                passwordLength > 1 &&
+                password == devPassword)
+            {
+                free(devPassword);
+
+                loginScreen.setStatus(
+                    "Developer access accepted. Preparing workspace...");
+
+                loginScreen.clearPassword();
+
+                std::cout << "Development access accepted.\n";
+
+                startSplashStartup();
+                return;
+            }
+
+            free(devPassword);
+    #endif
+
+            // NORMAL EMPLOYEE AUTHENTICATION
             std::string errorMessage;
 
             if (authenticationService.login(
@@ -238,7 +277,8 @@ bool Application::initialise()
 
                 loginScreen.clearPassword();
 
-                std::cout << "Authentication successful.\n";
+                std::cout
+                    << "Authentication successful.\n";
 
                 startSplashStartup();
             }
@@ -410,7 +450,35 @@ bool Application::initialise()
         {
             std::cout << "EXPORT PDF\n";
 
-            // PDF export will be wired here.
+            std::string errorMessage;
+
+            if (resultsScreen.exportQuoteToPdf(errorMessage))
+            {
+                std::cout << "PDF exported successfully.\n";
+            }
+            else
+            {
+                std::cerr
+                    << "PDF export failed: "
+                    << errorMessage
+                    << '\n';
+            }
+        });
+
+    resultsScreen.setSaveQuoteCallback(
+        [this](InvoiceViewModel& invoice) -> bool
+        {
+            if (QuoteDatabase::saveQuote(invoice))
+            {
+                std::cout << "QUOTE SAVED SUCCESSFULLY\n";
+                std::cout << "Quote Reference: "
+                    << invoice.jobref << "\n";
+
+                return true;
+            }
+
+            std::cout << "FAILED TO SAVE QUOTE\n";
+            return false;
         });
 
     state = AppState::Login;
