@@ -179,6 +179,7 @@ private:
     void showNestingSheets();
     void showCostBreakdown();
     void showQuote();
+    bool pendingQuoteRefresh = false;
 
     void clearMainContainer();
 

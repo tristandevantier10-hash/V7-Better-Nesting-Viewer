@@ -8,12 +8,15 @@
 
 namespace
 {
-    // A4 portrait dimensions in PDF points.
     constexpr float PAGE_WIDTH = 595.28f;
     constexpr float PAGE_HEIGHT = 841.89f;
 
     constexpr float MARGIN = 42.0f;
     constexpr float CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2.0f);
+
+    constexpr float DARK = 0.25f;
+    constexpr float MUTED = 0.43f;
+    constexpr float PALE = 0.93f;
 
     struct QuotePdf
     {
@@ -43,9 +46,9 @@ namespace
         const std::string& value,
         HPDF_Font font,
         float size,
-        float r = 0.16f,
-        float g = 0.19f,
-        float b = 0.24f)
+        float r = 0.20f,
+        float g = 0.20f,
+        float b = 0.21f)
     {
         if (value.empty())
             return;
@@ -62,15 +65,46 @@ namespace
         HPDF_Page_EndText(doc.page);
     }
 
+    void drawRightText(
+        QuotePdf& doc,
+        float rightX,
+        float y,
+        const std::string& value,
+        HPDF_Font font,
+        float size,
+        float r = 0.20f,
+        float g = 0.20f,
+        float b = 0.21f)
+    {
+        if (value.empty())
+            return;
+
+        setColour(doc.page, r, g, b);
+
+        HPDF_Page_BeginText(doc.page);
+        HPDF_Page_SetFontAndSize(doc.page, font, size);
+
+        const float textWidth =
+            HPDF_Page_TextWidth(doc.page, value.c_str());
+
+        HPDF_Page_TextOut(
+            doc.page,
+            rightX - textWidth,
+            y,
+            value.c_str());
+
+        HPDF_Page_EndText(doc.page);
+    }
+
     void drawLine(
         HPDF_Page page,
         float x1,
         float y1,
         float x2,
         float y2,
-        float r = 0.85f,
-        float g = 0.87f,
-        float b = 0.89f)
+        float r = 0.84f,
+        float g = 0.84f,
+        float b = 0.85f)
     {
         HPDF_Page_SetRGBStroke(page, r, g, b);
         HPDF_Page_SetLineWidth(page, 0.7f);
@@ -105,28 +139,19 @@ namespace
             HPDF_PAGE_PORTRAIT);
 
         doc.pageNumber++;
-        doc.y = PAGE_HEIGHT - MARGIN;
 
-        // Restrained navy header and green accent.
-        drawRectangle(
-            doc.page,
-            0.0f,
-            PAGE_HEIGHT - 9.0f,
-            PAGE_WIDTH,
-            9.0f,
-            0.10f,
-            0.18f,
-            0.30f);
+        // Leave room for the brand header and divider on every page.
+        doc.y = PAGE_HEIGHT - 118.0f;
 
         drawRectangle(
             doc.page,
             0.0f,
-            PAGE_HEIGHT - 12.0f,
+            PAGE_HEIGHT - 5.0f,
             PAGE_WIDTH,
-            3.0f,
-            0.12f,
-            0.48f,
-            0.36f);
+            5.0f,
+            DARK,
+            DARK,
+            DARK);
 
         drawText(
             doc,
@@ -135,27 +160,16 @@ namespace
             "E & G SIGNS CC",
             doc.bold,
             19.0f,
-            0.10f,
-            0.18f,
-            0.30f);
-
-        drawText(
-            doc,
-            MARGIN,
-            PAGE_HEIGHT - 59.0f,
-            "SIGNAGE AND PRINT PRODUCTION",
-            doc.regular,
-            8.0f,
-            0.38f,
-            0.42f,
-            0.47f);
+            0.20f,
+            0.20f,
+            0.21f);
 
         drawLine(
             doc.page,
             MARGIN,
-            PAGE_HEIGHT - 72.0f,
+            PAGE_HEIGHT - 100.0f,
             PAGE_WIDTH - MARGIN,
-            PAGE_HEIGHT - 72.0f);
+            PAGE_HEIGHT - 100.0f);
 
         drawText(
             doc,
@@ -164,20 +178,20 @@ namespace
             "E & G SIGNS CC  |  QUOTATION",
             doc.regular,
             7.5f,
-            0.45f,
-            0.48f,
-            0.52f);
+            MUTED,
+            MUTED,
+            MUTED);
 
-        drawText(
+        drawRightText(
             doc,
-            PAGE_WIDTH - MARGIN - 75.0f,
+            PAGE_WIDTH - MARGIN,
             22.0f,
             "Page " + std::to_string(doc.pageNumber),
             doc.regular,
             7.5f,
-            0.45f,
-            0.48f,
-            0.52f);
+            MUTED,
+            MUTED,
+            MUTED);
     }
 
     void drawSectionHeading(
@@ -193,13 +207,17 @@ namespace
             heading,
             doc.bold,
             9.0f,
-            0.10f,
-            0.18f,
-            0.30f);
+            0.20f,
+            0.20f,
+            0.21f);
     }
 
     void drawTableHeader(QuotePdf& doc)
     {
+        constexpr float QTY_RIGHT = 370.0f;
+        constexpr float AREA_RIGHT = 446.0f;
+        constexpr float PRICE_RIGHT = PAGE_WIDTH - MARGIN - 10.0f;
+
         const float tableTop = doc.y;
         const float tableHeight = 27.0f;
         const float tableBottom = tableTop - tableHeight;
@@ -210,29 +228,53 @@ namespace
             tableBottom,
             CONTENT_WIDTH,
             tableHeight,
-            0.10f,
-            0.18f,
-            0.30f);
+            DARK,
+            DARK,
+            DARK);
 
         drawText(
-            doc, MARGIN + 9.0f, tableBottom + 9.0f,
-            "Material / Variant", doc.bold, 8.0f,
-            1.0f, 1.0f, 1.0f);
+            doc,
+            MARGIN + 9.0f,
+            tableBottom + 9.0f,
+            "Material / Variant",
+            doc.bold,
+            8.0f,
+            1.0f,
+            1.0f,
+            1.0f);
 
-        drawText(
-            doc, 342.0f, tableBottom + 9.0f,
-            "Qty", doc.bold, 8.0f,
-            1.0f, 1.0f, 1.0f);
+        drawRightText(
+            doc,
+            QTY_RIGHT,
+            tableBottom + 9.0f,
+            "Qty",
+            doc.bold,
+            8.0f,
+            1.0f,
+            1.0f,
+            1.0f);
 
-        drawText(
-            doc, 390.0f, tableBottom + 9.0f,
-            "Area", doc.bold, 8.0f,
-            1.0f, 1.0f, 1.0f);
+        drawRightText(
+            doc,
+            AREA_RIGHT,
+            tableBottom + 9.0f,
+            "Area",
+            doc.bold,
+            8.0f,
+            1.0f,
+            1.0f,
+            1.0f);
 
-        drawText(
-            doc, 455.0f, tableBottom + 9.0f,
-            "Sell Price", doc.bold, 8.0f,
-            1.0f, 1.0f, 1.0f);
+        drawRightText(
+            doc,
+            PRICE_RIGHT,
+            tableBottom + 9.0f,
+            "Sell Price",
+            doc.bold,
+            8.0f,
+            1.0f,
+            1.0f,
+            1.0f);
 
         doc.y = tableBottom;
     }
@@ -243,6 +285,9 @@ namespace
         std::size_t index)
     {
         constexpr float ROW_HEIGHT = 43.0f;
+        constexpr float QTY_RIGHT = 370.0f;
+        constexpr float AREA_RIGHT = 446.0f;
+        constexpr float PRICE_RIGHT = PAGE_WIDTH - MARGIN - 10.0f;
 
         const float rowBottom = doc.y - ROW_HEIGHT;
 
@@ -254,7 +299,8 @@ namespace
 
         const float bottom = doc.y - ROW_HEIGHT;
 
-        if (index % 2 == 0)
+        // The first row stays white; following rows alternate in pale gray.
+        if (index % 2 == 1)
         {
             drawRectangle(
                 doc.page,
@@ -262,9 +308,9 @@ namespace
                 bottom,
                 CONTENT_WIDTH,
                 ROW_HEIGHT,
-                0.97f,
-                0.98f,
-                0.985f);
+                PALE,
+                PALE,
+                PALE);
         }
 
         std::string description = job.material;
@@ -324,21 +370,33 @@ namespace
             detail,
             doc.regular,
             6.8f,
-            0.40f,
-            0.43f,
-            0.48f);
+            MUTED,
+            MUTED,
+            MUTED);
 
-        drawText(
-            doc, 342.0f, bottom + 18.0f,
-            job.quantity, doc.regular, 8.0f);
+        drawRightText(
+            doc,
+            QTY_RIGHT,
+            bottom + 18.0f,
+            job.quantity,
+            doc.regular,
+            8.0f);
 
-        drawText(
-            doc, 390.0f, bottom + 18.0f,
-            job.area, doc.regular, 8.0f);
+        drawRightText(
+            doc,
+            AREA_RIGHT,
+            bottom + 18.0f,
+            job.area,
+            doc.regular,
+            8.0f);
 
-        drawText(
-            doc, 455.0f, bottom + 18.0f,
-            job.sellPrice, doc.bold, 8.0f);
+        drawRightText(
+            doc,
+            PRICE_RIGHT,
+            bottom + 18.0f,
+            job.sellPrice,
+            doc.bold,
+            8.0f);
 
         drawLine(
             doc.page,
@@ -353,21 +411,20 @@ namespace
     void drawTotals(QuotePdf& doc, const InvoiceViewModel& invoice)
     {
         constexpr float LABEL_X = 350.0f;
-        constexpr float VALUE_X = 455.0f;
-        constexpr float ROW_GAP = 23.0f;
+        constexpr float VALUE_RIGHT = PAGE_WIDTH - MARGIN - 10.0f;
+        constexpr float ROW_GAP = 19.0f;
 
-        // Move the totals to a new page if there is insufficient room.
         if (doc.y < 200.0f)
             startPage(doc);
 
-        doc.y -= 30.0f;
+        doc.y -= 25.0f;
 
         drawText(
             doc, LABEL_X, doc.y,
             "Materials", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.materialCost, doc.regular, 9.0f);
 
         doc.y -= ROW_GAP;
@@ -376,8 +433,8 @@ namespace
             doc, LABEL_X, doc.y,
             "Labour", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.labourCost, doc.regular, 9.0f);
 
         doc.y -= ROW_GAP;
@@ -386,11 +443,40 @@ namespace
             doc, LABEL_X, doc.y,
             "Production", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.productionCost, doc.regular, 9.0f);
 
         doc.y -= ROW_GAP;
+
+        // Place the note alongside the subtotal, VAT, and total block.
+        drawSectionHeading(
+            doc,
+            "TERMS & ACCEPTANCE",
+            MARGIN,
+            doc.y);
+
+        drawText(
+            doc,
+            MARGIN,
+            doc.y - 17.0f,
+            "Please review the quoted items and amounts",
+            doc.regular,
+            8.0f,
+            MUTED,
+            MUTED,
+            MUTED);
+
+        drawText(
+            doc,
+            MARGIN,
+            doc.y - 29.0f,
+            "above before accepting this quotation.",
+            doc.regular,
+            8.0f,
+            MUTED,
+            MUTED,
+            MUTED);
 
         drawLine(
             doc.page,
@@ -403,8 +489,8 @@ namespace
             doc, LABEL_X, doc.y,
             "Subtotal", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.subtotal, doc.regular, 9.0f);
 
         doc.y -= ROW_GAP;
@@ -413,8 +499,8 @@ namespace
             doc, LABEL_X, doc.y,
             "Markup", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.markup, doc.regular, 9.0f);
 
         doc.y -= ROW_GAP;
@@ -423,8 +509,8 @@ namespace
             doc, LABEL_X, doc.y,
             "VAT", doc.regular, 9.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y,
             invoice.vat, doc.regular, 9.0f);
 
         doc.y -= 29.0f;
@@ -435,21 +521,21 @@ namespace
             doc.y - 9.0f,
             PAGE_WIDTH - MARGIN - LABEL_X + 10.0f,
             32.0f,
-            0.10f,
-            0.18f,
-            0.30f);
+            DARK,
+            DARK,
+            DARK);
 
         drawText(
             doc, LABEL_X, doc.y + 3.0f,
             "TOTAL", doc.bold, 11.0f,
             1.0f, 1.0f, 1.0f);
 
-        drawText(
-            doc, VALUE_X, doc.y + 3.0f,
+        drawRightText(
+            doc, VALUE_RIGHT, doc.y + 3.0f,
             invoice.total, doc.bold, 11.0f,
             1.0f, 1.0f, 1.0f);
 
-        doc.y -= 40.0f;
+        doc.y -= 30.0f;
     }
 }
 
@@ -476,7 +562,6 @@ bool QuotePdfExporter::exportToPdf(
         return false;
     }
 
-    // Use standard PDF fonts for predictable printing.
     doc.regular = HPDF_GetFont(
         doc.pdf,
         "Helvetica",
@@ -494,7 +579,6 @@ bool QuotePdfExporter::exportToPdf(
         return false;
     }
 
-    // PDF metadata.
     HPDF_SetInfoAttr(
         doc.pdf,
         HPDF_INFO_TITLE,
@@ -507,63 +591,51 @@ bool QuotePdfExporter::exportToPdf(
 
     startPage(doc);
 
+    // Keep the title and quote details in the top-right header area,
+    // above the divider drawn by startPage().
     drawText(
         doc,
-        MARGIN,
-        doc.y - 37.0f,
+        390.0f,
+        PAGE_HEIGHT - 43.0f,
         "QUOTATION",
         doc.bold,
-        24.0f,
-        0.10f,
-        0.18f,
-        0.30f);
-
-    drawText(
-        doc,
-        MARGIN,
-        doc.y - 55.0f,
-        "Prepared for your signage requirements",
-        doc.regular,
-        9.0f,
-        0.40f,
-        0.43f,
-        0.48f);
+        20.0f,
+        0.20f,
+        0.20f,
+        0.21f);
 
     drawText(
         doc,
         390.0f,
-        doc.y - 32.0f,
+        PAGE_HEIGHT - 62.0f,
         "QUOTE REFERENCE",
         doc.bold,
         7.0f,
-        0.40f,
-        0.43f,
-        0.48f);
+        MUTED,
+        MUTED,
+        MUTED);
 
     drawText(
         doc,
         390.0f,
-        doc.y - 48.0f,
+        PAGE_HEIGHT - 76.0f,
         invoice.jobref.empty()
         ? "UNSAVED QUOTE"
         : invoice.jobref,
         doc.bold,
-        10.0f,
-        0.12f,
-        0.48f,
-        0.36f);
+        10.0f);
 
     drawText(
         doc,
         390.0f,
-        doc.y - 65.0f,
+        PAGE_HEIGHT - 90.0f,
         "DATE: " + invoice.invoiceDate,
         doc.regular,
         8.0f);
 
-    doc.y -= 88.0f;
+    // Start the customer section below the header divider.
+    doc.y = PAGE_HEIGHT - 135.0f;
 
-    // Customer details and quotation details.
     drawSectionHeading(
         doc, "BILL TO", MARGIN, doc.y);
 
@@ -652,9 +724,13 @@ bool QuotePdfExporter::exportToPdf(
 
     drawTotals(doc, invoice);
 
-    // Acceptance area.
-    if (doc.y < 130.0f)
+    // Keep the acceptance lines above the footer. For a long quote,
+    // move this block onto a fresh page.
+    if (doc.y < 105.0f)
         startPage(doc);
+
+    if (doc.y > 160.0f)
+        doc.y = 160.0f;
 
     drawSectionHeading(
         doc,
@@ -662,17 +738,20 @@ bool QuotePdfExporter::exportToPdf(
         MARGIN,
         doc.y);
 
-    doc.y -= 25.0f;
+    doc.y -= 20.0f;
 
     drawText(
         doc,
         MARGIN,
         doc.y,
-        "I accept this quotation and authorise the work described above.",
+        "Sign below to accept this quotation.",
         doc.regular,
-        8.5f);
+        8.5f,
+        MUTED,
+        MUTED,
+        MUTED);
 
-    doc.y -= 38.0f;
+    doc.y -= 28.0f;
 
     drawLine(
         doc.page,
@@ -688,7 +767,7 @@ bool QuotePdfExporter::exportToPdf(
         PAGE_WIDTH - MARGIN,
         doc.y);
 
-    doc.y -= 14.0f;
+    doc.y -= 12.0f;
 
     drawText(
         doc,
@@ -697,9 +776,9 @@ bool QuotePdfExporter::exportToPdf(
         "Authorised signature",
         doc.regular,
         7.5f,
-        0.40f,
-        0.43f,
-        0.48f);
+        MUTED,
+        MUTED,
+        MUTED);
 
     drawText(
         doc,
@@ -708,11 +787,10 @@ bool QuotePdfExporter::exportToPdf(
         "Date",
         doc.regular,
         7.5f,
-        0.40f,
-        0.43f,
-        0.48f);
+        MUTED,
+        MUTED,
+        MUTED);
 
-    // Save the PDF.
     const HPDF_STATUS status = HPDF_SaveToFile(
         doc.pdf,
         outputPath.c_str());

@@ -1111,9 +1111,16 @@ void ResultsScreen::setSheets(
 void ResultsScreen::update(
     const SDL_Event& e)
 {
+    // Finish processing the current event first.
     Panel::update(e);
-}
 
+    // Now it is safe to rebuild the quote UI.
+    if (pendingQuoteRefresh)
+    {
+        pendingQuoteRefresh = false;
+        showQuote();
+    }
+}
 // ======================================================
 // RENDER
 // ======================================================
@@ -2593,9 +2600,9 @@ void ResultsScreen::showQuote()
             {
                 saveQuoteButton->setText("Quote Saved");
 
-                // Rebuild the quote so its reference and
-                // date reflect the saved invoice.
-                showQuote();
+                // Do not rebuild the UI while the current
+                // SDL event is still being processed.
+                pendingQuoteRefresh = true;
             }
         });
 
