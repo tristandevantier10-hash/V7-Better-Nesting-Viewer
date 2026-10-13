@@ -6,6 +6,7 @@
 #include "Theme.h"
 #include "ShapeRenderer.h"
 #include <vector>
+#include <unordered_map>
 
 class FontManager;
 
@@ -19,6 +20,8 @@ public:
         SDL_Renderer* renderer,
         FontManager& fonts,
         Theme& theme);
+
+    ~Renderer();
 
     //============================
     // Frame
@@ -121,6 +124,11 @@ public:
         const SDL_Rect& destination,
         SDL_Color colour);
 
+    void drawImage(
+        const std::string& path,
+        const SDL_Rect& destination,
+        bool preserveAspect = true);
+
     //============================
     // Temporary bridge
     //============================
@@ -146,4 +154,6 @@ private:
     std::vector<SDL_Point> offsetStack;
 
     std::vector<SDL_Rect> clipStack;
+
+    std::unordered_map<std::string, SDL_Texture*> imageTextures;
 };

@@ -1,7 +1,8 @@
 #include "DataGrid.h"
 #include "Renderer.h"
-#include "label.h"  
+#include "Label.h"
 #include "iostream"
+#include <algorithm>
 
 DataGrid::DataGrid()
 {}
@@ -21,20 +22,38 @@ void DataGrid::update(const SDL_Event& e)
 {
     hoveredRow = -1;
 
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
-
-    if (mouseX >= getX() &&
-        mouseX < getX() + getWidth() &&
-        mouseY >= getY() &&
-        mouseY < getY() + getHeight())
+    int mouseX = 0;
+    int mouseY = 0;
+    if (e.type == SDL_MOUSEMOTION)
     {
-        int localY = mouseY - getY();
+        mouseX = e.motion.x;
+        mouseY = e.motion.y;
+    }
+    else
+    {
+        SDL_GetMouseState(&mouseX, &mouseY);
+    }
 
-        if (localY > headerHeight)
+    const bool mouseInside =
+        mouseX >= getX() && mouseX < getX() + getWidth() &&
+        mouseY >= getY() && mouseY < getY() + getHeight();
+
+    if (e.type == SDL_MOUSEWHEEL && mouseInside)
+    {
+        const int contentHeight = static_cast<int>(rows.size()) * rowHeight;
+        const int viewportHeight = std::max(0, getHeight() - headerHeight);
+        const int maxScroll = std::max(0, contentHeight - viewportHeight);
+        scrollOffset -= e.wheel.y * rowHeight * 3;
+        scrollOffset = std::max(0, std::min(scrollOffset, maxScroll));
+    }
+
+    if (mouseInside)
+    {
+        const int rowsTop = getY() + headerHeight;
+        if (mouseY >= rowsTop)
         {
             hoveredRow =
-                (localY - headerHeight) / rowHeight;
+                (mouseY - rowsTop + scrollOffset) / rowHeight;
 
             if (hoveredRow >= static_cast<int>(rows.size()))
                 hoveredRow = -1;
@@ -44,12 +63,17 @@ void DataGrid::update(const SDL_Event& e)
     if (e.type == SDL_MOUSEBUTTONDOWN &&
         e.button.button == SDL_BUTTON_LEFT)
     {
-        if (hoveredRow != -1)
+        if (e.button.x >= getX() && e.button.x < getX() + getWidth() &&
+            e.button.y >= getY() + headerHeight && e.button.y < getY() + getHeight())
         {
-            selectedRow = hoveredRow;
-
-            if (onSelectionChanged)
-                onSelectionChanged(selectedRow);
+            const int clickedRow =
+                (e.button.y - (getY() + headerHeight) + scrollOffset) / rowHeight;
+            if (clickedRow >= 0 && clickedRow < static_cast<int>(rows.size()))
+            {
+                selectedRow = clickedRow;
+                if (onSelectionChanged)
+                    onSelectionChanged(selectedRow);
+            }
         }
     }
 }
@@ -81,6 +105,8 @@ void DataGrid::render(Renderer& renderer)
 
     if (!visible)
         return;
+
+    renderer.pushClip(bounds);
 
     //--------------------------------------------------
     // Background
@@ -166,10 +192,17 @@ void DataGrid::render(Renderer& renderer)
     // Rows
     //--------------------------------------------------
 
-    int y = getY() + headerHeight;
+    const size_t firstVisibleRow =
+        static_cast<size_t>(scrollOffset / rowHeight);
+    const int rowViewportHeight = std::max(0, getHeight() - headerHeight);
+    const size_t visibleRowCount =
+        static_cast<size_t>((rowViewportHeight + rowHeight - 1) / rowHeight + 1);
+    const size_t lastVisibleRow =
+        std::min(rows.size(), firstVisibleRow + visibleRowCount);
+    int y = getY() + headerHeight - (scrollOffset % rowHeight);
 
-    for (size_t rowIndex = 0;
-        rowIndex < rows.size();
+    for (size_t rowIndex = firstVisibleRow;
+        rowIndex < lastVisibleRow;
         ++rowIndex)
     {
 
@@ -228,8 +261,8 @@ void DataGrid::render(Renderer& renderer)
             renderer.drawText(
                 rows[rowIndex].values[col],
                 x + 10,
-                y + 18,
-                LabelStyle::Normal,
+                y + (rowHeight - 16) / 2,
+                textStyle,
                 textColour);
 
             renderer.popClip();
@@ -248,6 +281,26 @@ void DataGrid::render(Renderer& renderer)
         y += rowHeight;
     }
 
+    const int contentHeight = static_cast<int>(rows.size()) * rowHeight;
+    const int viewportHeight = std::max(0, getHeight() - headerHeight);
+    if (contentHeight > viewportHeight && viewportHeight > 0)
+    {
+        const int trackX = getX() + getWidth() - 7;
+        renderer.fillRect(
+            { trackX, getY() + headerHeight, 5, viewportHeight },
+            { 238, 240, 243, 255 });
+
+        const int thumbHeight = std::max(20,
+            viewportHeight * viewportHeight / contentHeight);
+        const int maxScroll = contentHeight - viewportHeight;
+        const int thumbTravel = viewportHeight - thumbHeight;
+        const int thumbY = getY() + headerHeight +
+            (maxScroll > 0 ? scrollOffset * thumbTravel / maxScroll : 0);
+        renderer.fillRect(
+            { trackX, thumbY, 5, thumbHeight },
+            { 150, 158, 168, 255 });
+    }
+
     //--------------------------------------------------
     // Outer Border
     //--------------------------------------------------
@@ -260,6 +313,8 @@ void DataGrid::render(Renderer& renderer)
             getHeight()
         },
         { 220,220,220,255 });
+
+    renderer.popClip();
 }
 
 void DataGrid::addRow(
@@ -272,6 +327,9 @@ void DataGrid::addRow(
 void DataGrid::clear()
 {
     rows.clear();
+    selectedRow = -1;
+    hoveredRow = -1;
+    scrollOffset = 0;
 }
 
 void DataGrid::updateRow(
@@ -321,4 +379,18 @@ void DataGrid::setSelectionChangedCallback(
     std::function<void(int)> callback)
 {
     onSelectionChanged = callback;
+}
+
+void DataGrid::setRowHeight(int height)
+{
+    rowHeight = std::max(18, height);
+    const int viewportHeight = std::max(0, getHeight() - headerHeight);
+    const int maxScroll = std::max(0,
+        static_cast<int>(rows.size()) * rowHeight - viewportHeight);
+    scrollOffset = std::min(scrollOffset, maxScroll);
+}
+
+void DataGrid::setTextStyle(LabelStyle style)
+{
+    textStyle = style;
 }

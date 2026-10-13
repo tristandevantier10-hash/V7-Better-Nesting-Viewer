@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "TextRenderer.h"
 #include "Label.h"
+#include <SDL2/SDL_image.h>
 #include <algorithm>
 #include <cmath>
 #include <lunasvg/lunasvg.h>
@@ -21,6 +22,15 @@ Renderer::Renderer(
     shapeRenderer(renderer)
 
 {}
+
+Renderer::~Renderer()
+{
+    for (auto& image : imageTextures)
+    {
+        if (image.second)
+            SDL_DestroyTexture(image.second);
+    }
+}
 
 void Renderer::fillRect(
     const SDL_Rect& rect,
@@ -254,6 +264,66 @@ void Renderer::drawSVG(
         &destination);
 
     SDL_DestroyTexture(texture);
+}
+
+void Renderer::drawImage(
+    const std::string& path,
+    const SDL_Rect& destination,
+    bool preserveAspect)
+{
+    if (path.empty() || destination.w <= 0 || destination.h <= 0)
+        return;
+
+    SDL_Texture* texture = nullptr;
+    const auto found = imageTextures.find(path);
+    if (found != imageTextures.end())
+    {
+        texture = found->second;
+        if (!texture)
+            return;
+    }
+    else
+    {
+        SDL_Surface* surface = IMG_Load(path.c_str());
+        if (!surface)
+        {
+            imageTextures.emplace(path, nullptr);
+            return;
+        }
+
+        texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
+        SDL_FreeSurface(surface);
+        if (!texture)
+        {
+            imageTextures.emplace(path, nullptr);
+            return;
+        }
+
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        imageTextures.emplace(path, texture);
+    }
+
+    SDL_Rect target = destination;
+    if (preserveAspect)
+    {
+        int imageWidth = 0;
+        int imageHeight = 0;
+        if (SDL_QueryTexture(texture, nullptr, nullptr, &imageWidth, &imageHeight) != 0 ||
+            imageWidth <= 0 || imageHeight <= 0)
+            return;
+
+        const double scale = std::min(
+            static_cast<double>(destination.w) / imageWidth,
+            static_cast<double>(destination.h) / imageHeight);
+        target.w = static_cast<int>(imageWidth * scale);
+        target.h = static_cast<int>(imageHeight * scale);
+        target.x += (destination.w - target.w) / 2;
+        target.y += (destination.h - target.h) / 2;
+    }
+
+    target.x += offsetX;
+    target.y += offsetY;
+    SDL_RenderCopy(sdlRenderer, texture, nullptr, &target);
 }
 
 void Renderer::drawLine(

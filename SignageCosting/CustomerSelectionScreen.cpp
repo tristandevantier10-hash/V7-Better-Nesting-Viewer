@@ -7,6 +7,7 @@
 #include "Metrics.h"
 #include "CardPanel.h"
 #include "Button.h"
+#include "PageHeader.h"
 
 CustomerSelectionScreen::CustomerSelectionScreen()
 {
@@ -78,20 +79,18 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     // Page Header
     //==================================================
 
-    auto pageHeader = std::make_shared<Panel>();
+    auto pageHeader = std::make_shared<PageHeaderPanel>();
     pageHeader->setLayout(std::make_unique<HorizontalLayout>());
-    pageHeader->setStyle(PanelStyle::Card);
-    pageHeader->setBorderVisible(false);
+    configurePageHeader(pageHeader);
     rightContainer->addLayoutElement(
         pageHeader,
         SizePolicy::Fixed,
-        50);
+        Metrics::HeaderHeight);
 
-    auto titlePanel = std::make_shared<Panel>();
+    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
-    titlePanel->setStyle(PanelStyle::Card);
-    titlePanel->setBorderVisible(false);
-    titlePanel->setSpacing(4);
+    configurePageHeaderTitle(titlePanel);
+    addPageHeaderLogo(pageHeader);
 
     pageHeader->addLayoutElement(
         titlePanel,
@@ -100,6 +99,8 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     auto title = std::make_shared<Label>();
     title->setText("Customers");
     title->setStyle(LabelStyle::Heading);
+    configurePageHeaderTitleLabel(title);
+    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -109,7 +110,8 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     auto subtitle = std::make_shared<Label>();
     subtitle->setText("Manage your customer database");
     subtitle->setStyle(LabelStyle::Small);
-    subtitle->setTextTheme(TextTheme::DarkSecondary);
+    configurePageHeaderSubtitleLabel(subtitle);
+    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,

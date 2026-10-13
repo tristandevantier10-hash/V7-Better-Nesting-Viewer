@@ -3,8 +3,8 @@
 #include "Renderer.h"
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
-#include "CardPanel.h"
 #include "Metrics.h"
+#include "PageHeader.h"
 
 LoginScreen::LoginScreen()
 {
@@ -12,32 +12,38 @@ LoginScreen::LoginScreen()
 
     setPadding(24);
     setSpacing(12);
+    setBackgroundColour(SDL_Color{ 245, 247, 249, 255 });
     setBorderVisible(false);
 
     //==================================================
     // HEADER
     //==================================================
 
-    auto headerPanel = std::make_shared<Panel>();
+    auto headerPanel = std::make_shared<PageHeaderPanel>();
 
     headerPanel->setLayout(
-        std::make_unique<VerticalLayout>());
+        std::make_unique<HorizontalLayout>());
 
-    headerPanel->setHeaderStyle(true);
-    headerPanel->setBorderVisible(false);
-    headerPanel->setPadding(8);
-    headerPanel->setSpacing(8);
+    configurePageHeader(headerPanel, 8, 8);
 
     addLayoutElement(
         headerPanel,
         SizePolicy::Fixed,
         100);
 
+    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
+    titlePanel->setLayout(std::make_unique<VerticalLayout>());
+    configurePageHeaderTitle(titlePanel, 8);
+    addPageHeaderLogo(headerPanel);
+    headerPanel->addLayoutElement(titlePanel, SizePolicy::Fill);
+
     titleLabel = std::make_shared<Label>();
     titleLabel->setText("Welcome to EstiMate");
     titleLabel->setStyle(LabelStyle::Heading);
+    configurePageHeaderTitleLabel(titleLabel);
+    titleLabel->setAlignment(LabelAlignment::Center);
 
-    headerPanel->addLayoutElement(
+    titlePanel->addLayoutElement(
         titleLabel,
         SizePolicy::Fixed,
         42);
@@ -46,9 +52,11 @@ LoginScreen::LoginScreen()
     subtitleLabel->setText(
         "Sign in to access your estimating workspace.");
 
-    subtitleLabel->setStyle(LabelStyle::Normal);
+    subtitleLabel->setStyle(LabelStyle::Small);
+    configurePageHeaderSubtitleLabel(subtitleLabel);
+    subtitleLabel->setAlignment(LabelAlignment::Center);
 
-    headerPanel->addLayoutElement(
+    titlePanel->addLayoutElement(
         subtitleLabel,
         SizePolicy::Fixed,
         30);
@@ -71,14 +79,22 @@ LoginScreen::LoginScreen()
     auto leftSpacer = std::make_shared<Panel>();
     leftSpacer->setBorderVisible(false);
 
-    auto loginPanel = std::make_shared<CardPanel>();
-
-    loginPanel->setTitle("Account Login");
-    loginPanel->setPadding(24);
-    loginPanel->setSpacing(14);
+    auto loginPanel = std::make_shared<Panel>();
+    loginPanel->setStyle(PanelStyle::Card);
+    loginPanel->setBorderVisible(true);
+    loginPanel->setPadding(16);
+    loginPanel->setSpacing(8);
 
     loginPanel->setLayout(
         std::make_unique<VerticalLayout>());
+
+    auto formTitle = std::make_shared<Label>();
+    formTitle->setText("Account Login");
+    formTitle->setStyle(LabelStyle::Heading);
+    loginPanel->addLayoutElement(
+        formTitle,
+        SizePolicy::Fixed,
+        30);
 
     auto rightSpacer = std::make_shared<Panel>();
     rightSpacer->setBorderVisible(false);
@@ -102,12 +118,12 @@ LoginScreen::LoginScreen()
 
     usernameLabel = std::make_shared<Label>();
     usernameLabel->setText("Username");
-    usernameLabel->setStyle(LabelStyle::Normal);
+    usernameLabel->setStyle(LabelStyle::Small);
 
     loginPanel->addLayoutElement(
         usernameLabel,
         SizePolicy::Fixed,
-        28);
+        20);
 
     usernameTextBox = std::make_shared<TextBox>();
     usernameTextBox->setPlaceholder("Enter your username");
@@ -116,7 +132,7 @@ LoginScreen::LoginScreen()
     loginPanel->addLayoutElement(
         usernameTextBox,
         SizePolicy::Fixed,
-        44);
+        40);
 
     //==================================================
     // PASSWORD
@@ -124,12 +140,12 @@ LoginScreen::LoginScreen()
 
     passwordLabel = std::make_shared<Label>();
     passwordLabel->setText("Password");
-    passwordLabel->setStyle(LabelStyle::Normal);
+    passwordLabel->setStyle(LabelStyle::Small);
 
     loginPanel->addLayoutElement(
         passwordLabel,
         SizePolicy::Fixed,
-        28);
+        20);
 
     passwordTextBox = std::make_shared<TextBox>();
     passwordTextBox->setPlaceholder("Enter your password");
@@ -139,7 +155,7 @@ LoginScreen::LoginScreen()
     loginPanel->addLayoutElement(
         passwordTextBox,
         SizePolicy::Fixed,
-        44);
+        40);
 
     //==================================================
     // STATUS MESSAGE
@@ -152,7 +168,7 @@ LoginScreen::LoginScreen()
     loginPanel->addLayoutElement(
         statusLabel,
         SizePolicy::Fixed,
-        32);
+        22);
 
     //==================================================
     // LOGIN BUTTON
@@ -160,9 +176,6 @@ LoginScreen::LoginScreen()
 
     loginButton = std::make_shared<Button>();
     loginButton->setText("SIGN IN");
-
-    loginButton->setStyle(
-        Button::ButtonStyle::Primary);
 
     loginButton->setOnClick(
         [this]()
@@ -197,20 +210,7 @@ LoginScreen::LoginScreen()
     loginPanel->addLayoutElement(
         loginButton,
         SizePolicy::Fixed,
-        44);
-
-    //==================================================
-    // FOOTER
-    //==================================================
-
-    auto footerPanel = std::make_shared<Panel>();
-
-    footerPanel->setBorderVisible(false);
-
-    addLayoutElement(
-        footerPanel,
-        SizePolicy::Fixed,
-        30);
+        40);
 }
 
 void LoginScreen::update(const SDL_Event& e)

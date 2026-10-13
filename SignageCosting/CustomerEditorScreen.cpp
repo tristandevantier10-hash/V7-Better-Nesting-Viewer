@@ -3,6 +3,7 @@
 #include "HorizontalLayout.h"
 #include "CustomerDatabase.h"
 #include "Metrics.h"
+#include "PageHeader.h"
 #include "NavigationPanel.h"
 #include "Panel.h"
 #include "Label.h"
@@ -83,21 +84,19 @@ CustomerEditorScreen::CustomerEditorScreen()
     //==================================================
     // Page Header (Integrated into Main Area)
     //==================================================
-    auto pageHeader = std::make_shared<Panel>();
+    auto pageHeader = std::make_shared<PageHeaderPanel>();
     pageHeader->setLayout(std::make_unique<HorizontalLayout>());
-    pageHeader->setStyle(PanelStyle::Card);
-    pageHeader->setBorderVisible(false);
+    configurePageHeader(pageHeader);
 
     rightContainer->addLayoutElement(
         pageHeader,
         SizePolicy::Fixed,
-        80);
+        Metrics::HeaderHeight);
 
-    auto titlePanel = std::make_shared<Panel>();
+    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
-    titlePanel->setStyle(PanelStyle::Card);
-    titlePanel->setBorderVisible(false);
-    titlePanel->setSpacing(4);
+    configurePageHeaderTitle(titlePanel);
+    addPageHeaderLogo(pageHeader);
 
     pageHeader->addLayoutElement(
         titlePanel,
@@ -106,6 +105,8 @@ CustomerEditorScreen::CustomerEditorScreen()
     auto title = std::make_shared<Label>();
     title->setText("Customer & Invoice");
     title->setStyle(LabelStyle::Heading);
+    configurePageHeaderTitleLabel(title);
+    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -115,12 +116,13 @@ CustomerEditorScreen::CustomerEditorScreen()
     auto subtitle = std::make_shared<Label>();
     subtitle->setText("Customer Management");
     subtitle->setStyle(LabelStyle::Small);
-    subtitle->setTextTheme(TextTheme::DarkSecondary);
+    configurePageHeaderSubtitleLabel(subtitle);
+    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,
         SizePolicy::Fixed,
-        220);
+        24);
 
     //==================================================
     // Editor Form Panel

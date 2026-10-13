@@ -25,6 +25,7 @@
 #include "ApplicationShell.h"
 #include "LoginScreen.h"
 #include "AuthenticationService.h"
+#include "QuoteHistoryScreen.h"
 
 class Application
 {
@@ -92,6 +93,12 @@ private:
     bool splashFadingOut = false;
 
     bool mainMenuFadingIn = false;
+
+    bool loginToSplashFadingOut = false;
+
+    bool loginToSplashFadingIn = false;
+
+    float loginToSplashAlpha = 0.0f;
 
     float splashFadeAlpha = 0.0f;
 
@@ -181,6 +188,8 @@ private:
     CustomerSelectionScreen customerSelectionScreen;
 
     CustomerEditorScreen customerEditorScreen;
+
+    QuoteHistoryScreen quoteHistoryScreen;
 
     ApplicationShell shell;
 

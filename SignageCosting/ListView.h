@@ -46,7 +46,7 @@ private:
 
     int selectedIndex = -1;
 
-    int rowHeight = 28;
+    int rowHeight = 30;
 
     std::function<void(int)> onSelectionChanged;
 

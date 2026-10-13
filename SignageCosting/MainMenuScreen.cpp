@@ -8,40 +8,51 @@
 #include "MaterialDatabase.h"
 #include "NavigationItem.h"
 #include "Metrics.h"
+#include "PageHeader.h"
 
 MainMenuScreen::MainMenuScreen()
 {
 
     setLayout(std::make_unique<VerticalLayout>());
 
-    auto headerPanel = std::make_shared<Panel>();
+    auto headerPanel = std::make_shared<PageHeaderPanel>();
     headerPanel->setLayout(std::make_unique<HorizontalLayout>());
-    headerPanel->setHeaderStyle(true);
-    headerPanel->setBorderVisible(false);
-    headerPanel->setPadding(Metrics::HeaderPadding);
-    headerPanel->setSpacing(Metrics::SpaceM);
+    configurePageHeader(headerPanel);
 
     addLayoutElement(
         headerPanel,
         SizePolicy::Fixed,
         Metrics::HeaderHeight);
 
+    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
+    titlePanel->setLayout(std::make_unique<VerticalLayout>());
+    configurePageHeaderTitle(titlePanel);
+    addPageHeaderLogo(headerPanel);
+    headerPanel->addLayoutElement(titlePanel, SizePolicy::Fill);
+
     auto dashboardLabel = std::make_shared<Label>();
     dashboardLabel->setText("Dashboard");
     dashboardLabel->setStyle(LabelStyle::Heading);
+    configurePageHeaderTitleLabel(dashboardLabel);
+    dashboardLabel->setAlignment(LabelAlignment::Center);
+    dashboardLabel->setAlignmentOffsetX(-PageHeaderLogoWidth / 2);
 
-    headerPanel->addLayoutElement(
+    titlePanel->addLayoutElement(
         dashboardLabel,
-        SizePolicy::Fill);
+        SizePolicy::Fixed,
+        36);
 
     auto subtitleLabel = std::make_shared<Label>();
     subtitleLabel->setText("Signage Costing Suite");
-    subtitleLabel->setStyle(LabelStyle::Normal);
+    subtitleLabel->setStyle(LabelStyle::Small);
+    configurePageHeaderSubtitleLabel(subtitleLabel);
+    subtitleLabel->setAlignment(LabelAlignment::Center);
+    subtitleLabel->setAlignmentOffsetX(-PageHeaderLogoWidth / 2);
 
-    headerPanel->addLayoutElement(
+    titlePanel->addLayoutElement(
         subtitleLabel,
-        SizePolicy::Fill,
-        Metrics::LargeRow);
+        SizePolicy::Fixed,
+        24);
 
     //==================================================
     // Header
@@ -148,6 +159,12 @@ MainMenuScreen::MainMenuScreen()
                 std::cout << "Material Database clicked\n";
             });
 
+    sidebarPanel->addItem("QUOTES", [this]()
+    {
+        if (quotesCallback)
+            quotesCallback();
+    });
+
     auto customerDatabaseItem =
         sidebarPanel->addItem(
             "CUSTOMER DATABASE",
@@ -187,6 +204,11 @@ void MainMenuScreen::render(Renderer& renderer)
 void MainMenuScreen::setNewJobCallback(std::function<void()> callback)
 {
     newJobCallback = callback;
+}
+
+void MainMenuScreen::setQuotesCallback(std::function<void()> callback)
+{
+    quotesCallback = callback;
 }
 
 void MainMenuScreen::refreshStatus()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UIElement.h"
+#include "Label.h"
 #include <string>
 #include <vector>
 #include <functional>
@@ -39,6 +40,9 @@ public:
     void setSelectionChangedCallback(
         std::function<void(int)> callback);
 
+    void setRowHeight(int height);
+    void setTextStyle(LabelStyle style);
+
 private:
 
     struct Column
@@ -59,7 +63,10 @@ private:
     int hoveredRow = -1;
 
     int headerHeight = 36;
-    int rowHeight = 52;
+    // Keep every grid on the compact sizing used by Quote History.
+    int rowHeight = 30;
+    int scrollOffset = 0;
+    LabelStyle textStyle = LabelStyle::Small;
 
     std::function<void(int)> onSelectionChanged;
 };

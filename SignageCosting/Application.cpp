@@ -25,7 +25,47 @@
 #include <string>
 #include "QuoteDatabase.h"
 #include "QuotePdfExporter.h"
+#include <shellapi.h>
+#include <filesystem>
+#include <system_error>
+#pragma comment(lib, "Shell32.lib")
 
+namespace
+{
+    std::string findOriginalQuotePdf(const std::string& reference)
+    {
+        if (reference.empty())
+            return {};
+
+        namespace fs = std::filesystem;
+        std::error_code error;
+        fs::path directory = fs::current_path(error);
+        if (error)
+            return {};
+
+        const std::string filename = reference + ".pdf";
+        for (int level = 0; level < 6 && !directory.empty(); ++level)
+        {
+            const fs::path candidates[] =
+            {
+                directory / filename,
+                directory / "SignageCosting" / filename
+            };
+            for (const auto& candidate : candidates)
+            {
+                error.clear();
+                if (fs::is_regular_file(candidate, error) && !error)
+                {
+                    error.clear();
+                    const fs::path absolutePath = fs::absolute(candidate, error);
+                    return error ? candidate.string() : absolutePath.string();
+                }
+            }
+            directory = directory.parent_path();
+        }
+        return {};
+    }
+}
 Application::Application()
 {
 }
@@ -305,6 +345,60 @@ bool Application::initialise()
             ui.setScreen(&customerSelectionScreen);
         });
 
+    mainMenu.setQuotesCallback(
+        [this]()
+        {
+            quoteHistoryScreen.refreshQuotes();
+            ui.setScreen(&quoteHistoryScreen);
+        });
+
+    quoteHistoryScreen.setBackCallback([this]()
+    {
+        ui.setScreen(&mainMenu);
+    });
+    quoteHistoryScreen.setQuoteSelectedCallback(
+        [this](const QuoteRecord& quote)
+        {
+            std::string pdfPath = findOriginalQuotePdf(quote.invoice.jobref);
+            if (pdfPath.empty())
+            {
+                std::filesystem::path generatedPath =
+                    std::filesystem::path(FileSystem::getDataFolder()) /
+                    ((quote.invoice.jobref.empty() ? std::string("Quote") : quote.invoice.jobref) + ".pdf");
+                std::string errorMessage;
+                if (!QuotePdfExporter::exportToPdf(
+                    quote.invoice, generatedPath.string(), errorMessage))
+                {
+                    std::cerr << "Could not create quote PDF: " << errorMessage << std::endl;
+                    return;
+                }
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_INFORMATION,
+                    "Original PDF Missing",
+                    "The original PDF was missing. A replacement was recreated from the saved quote information.",
+                    window);
+                std::error_code error;
+                pdfPath = std::filesystem::absolute(generatedPath, error).string();
+                if (error)
+                    pdfPath = generatedPath.string();
+            }
+
+            const INT_PTR result = reinterpret_cast<INT_PTR>(
+                ShellExecuteA(nullptr, "open", pdfPath.c_str(), nullptr, nullptr, SW_SHOWNORMAL));
+            if (result <= 32)
+                std::cerr << "Could not open quote PDF (ShellExecute error " << result << ")." << std::endl;
+        });
+    quoteHistoryScreen.setViewOverviewCallback(
+        [this](const QuoteRecord& quote)
+        {
+            ResultsViewModel viewModel;
+            viewModel.invoice = quote.invoice;
+            viewModel.sheetsUsed = 0;
+            resultsScreen.setViewModel(viewModel);
+            resultsScreen.setSheets({});
+            ui.setScreen(&resultsScreen);
+        });
+
     customerSelectionScreen.setBackCallback(
         [this]()
         {
@@ -494,13 +588,12 @@ bool Application::initialise()
 
 void Application::startSplashStartup() {
     // 1. Reset state flags
-    state = AppState::Splash;
     setSplashWindowSize();
     running = true;
 
     // 2. Initialize timing & animation properties
-    splashStartTime = SDL_GetTicks();
-    startupStageStartTime = splashStartTime;
+    splashStartTime = 0;
+    startupStageStartTime = 0;
     readyStartTime = 0;
     splashAnimation = 0.0f;
     startupProgress = 0.0f;
@@ -510,6 +603,9 @@ void Application::startSplashStartup() {
     splashFadingOut = false;
     mainMenuFadingIn = false;
     splashFadeAlpha = 0.0f;
+    loginToSplashFadingOut = true;
+    loginToSplashFadingIn = false;
+    loginToSplashAlpha = 0.0f;
 
     // Use atomic stores to guarantee thread safety
     startupComplete.store(false);
@@ -583,8 +679,8 @@ bool Application::createWindow()
         "Signage Costing System",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        1200,
-        800,
+        1040,
+        460,
         SDL_WINDOW_SHOWN
     );
 
@@ -722,6 +818,29 @@ void Application::update()
 
     Uint32 now =
         SDL_GetTicks();
+
+    if (loginToSplashFadingOut)
+    {
+        loginToSplashAlpha += 20.0f;
+        if (loginToSplashAlpha >= 255.0f)
+        {
+            loginToSplashAlpha = 255.0f;
+            loginToSplashFadingOut = false;
+            loginToSplashFadingIn = true;
+            state = AppState::Splash;
+            splashStartTime = now;
+            startupStageStartTime = now;
+        }
+    }
+    else if (loginToSplashFadingIn)
+    {
+        loginToSplashAlpha -= 20.0f;
+        if (loginToSplashAlpha <= 0.0f)
+        {
+            loginToSplashAlpha = 0.0f;
+            loginToSplashFadingIn = false;
+        }
+    }
 
     displayedProgress +=
         (startupProgress - displayedProgress) * 0.10f;
@@ -1522,6 +1641,15 @@ void Application::render()
                 SDL_BLENDMODE_NONE);
         }
 
+        if (loginToSplashFadingIn)
+        {
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, static_cast<Uint8>(loginToSplashAlpha));
+            SDL_Rect transitionRect = { 0, 0, w, h };
+            SDL_RenderFillRect(renderer, &transitionRect);
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+        }
+
         uiRenderer->endFrame();
 
         return;
@@ -1542,6 +1670,15 @@ void Application::render()
     ui.render(*uiRenderer);
 
     drawSheets();
+
+    if (loginToSplashFadingOut)
+    {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, static_cast<Uint8>(loginToSplashAlpha));
+        SDL_Rect transitionRect = { 0, 0, w, h };
+        SDL_RenderFillRect(renderer, &transitionRect);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    }
 
     //=================================================
     // Main menu fade-in

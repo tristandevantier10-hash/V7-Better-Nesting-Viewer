@@ -1,6 +1,7 @@
 #include "Label.h"
 #include "Renderer.h"
 #include "TextRenderer.h"
+#include <algorithm>
 
 Label::Label()
 {}
@@ -79,9 +80,23 @@ void Label::render(Renderer& renderer)
         break;
     }
 
+    int x = getX();
+    if (alignment != LabelAlignment::Left && font)
+    {
+        int textWidth = 0;
+        int textHeight = 0;
+        if (TTF_SizeUTF8(font, text.c_str(), &textWidth, &textHeight) == 0)
+        {
+            if (alignment == LabelAlignment::Center)
+                x += std::max(0, (getWidth() - textWidth) / 2) + alignmentOffsetX;
+            else
+                x += std::max(0, getWidth() - textWidth);
+        }
+    }
+
     renderer.drawText(
         text,
-        getX(),
+        x,
         getY(),
         font,
         colour);
@@ -95,4 +110,14 @@ void Label::setStyle(LabelStyle value)
 void Label::setTextTheme(TextTheme theme)
 {
     textTheme = theme;
+}
+
+void Label::setAlignment(LabelAlignment value)
+{
+    alignment = value;
+}
+
+void Label::setAlignmentOffsetX(int offset)
+{
+    alignmentOffsetX = offset;
 }

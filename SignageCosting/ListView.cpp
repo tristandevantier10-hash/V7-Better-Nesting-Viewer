@@ -1,4 +1,5 @@
 #include "ListView.h"
+#include "Label.h"
 #include "Renderer.h"
 #include "Theme.h"
 
@@ -69,7 +70,7 @@ void ListView::update(const SDL_Event& e) {
         if (mx >= getX() && mx <= getX() + getWidth() &&
             my >= getY() && my <= getY() + getHeight()) {
 
-            int index = (my - getY() - 4) / rowHeight;
+            int index = (my - getY()) / rowHeight;
             if (index >= 0 && index < static_cast<int>(items.size())) {
                 hoveredIndex = index; // Update tracked hover row
             }
@@ -93,7 +94,7 @@ void ListView::update(const SDL_Event& e) {
         return;
     }
 
-    int index = (my - getY() - 4) / rowHeight;
+    int index = (my - getY()) / rowHeight;
     if (index >= 0 && index < static_cast<int>(items.size())) {
         selectedIndex = index;
         if (onSelectionChanged) {
@@ -104,41 +105,50 @@ void ListView::update(const SDL_Event& e) {
 
 void ListView::render(Renderer& renderer)
 {
-    // Clean white list background
+    renderer.pushClip(bounds);
+
     renderer.fillRect(
         bounds,
         { 255, 255, 255, 255 });
 
-    // Subtle border
-    renderer.drawRect(
-        bounds,
-        { 220, 220, 220, 255 });
-
-    int y = getY() + 4;
+    int y = getY();
     for (int i = 0; i < static_cast<int>(items.size()); i++) {
-        SDL_Rect row = { getX() + 2, y, getWidth() - 4, rowHeight };
+        SDL_Rect row = { getX(), y, getWidth(), rowHeight };
 
-        // Draw selection background fill
+        SDL_Color rowColour =
+            (i % 2 == 0)
+            ? SDL_Color{ 255, 255, 255, 255 }
+            : SDL_Color{ 250, 250, 250, 255 };
+
         if (i == selectedIndex) {
-            renderer.fillRect(row, DefaultTheme.buttonHover);
+            rowColour = DefaultTheme.accent;
+        }
+        else if (i == hoveredIndex) {
+            rowColour = { 240, 244, 248, 255 };
         }
 
-        // Save original color state
-        SDL_Color originalColor = DefaultTheme.text;
+        renderer.fillRect(row, rowColour);
+        renderer.drawText(
+            items[i],
+            row.x + 10,
+            row.y + (rowHeight - 16) / 2,
+            LabelStyle::Small,
+            i == selectedIndex
+                ? SDL_Color{ 255, 255, 255, 255 }
+                : DefaultTheme.darkText);
 
-        // Change text color on hover if not selected
-        if (i == hoveredIndex && i != selectedIndex) {
-            DefaultTheme.text = { 137, 243, 0, 255 }; // Your hover text color
-        }
-
-        // Draw text with matching signature
-        renderer.drawText(items[i], row.x + 8, row.y + 6);
-
-        // Restore theme color state for the next items/elements
-        DefaultTheme.text = originalColor;
+        renderer.drawLine(
+            row.x,
+            row.y + rowHeight - 1,
+            row.x + row.w,
+            row.y + rowHeight - 1,
+            { 235, 237, 240, 255 });
 
         y += rowHeight;
     }
+
+    renderer.drawRect(bounds, { 220, 220, 220, 255 });
+    renderer.popClip();
 }
 
 void ListView::setSelectionChangedCallback(

@@ -18,6 +18,7 @@ public:
     MainMenuScreen();
 
     void setNewJobCallback(std::function<void()> callback);
+    void setQuotesCallback(std::function<void()> callback);
 
     void update(const SDL_Event& e) override;
 
@@ -52,4 +53,5 @@ private:
     std::shared_ptr<Label> variantCountLabel;
 
     std::function<void()> newJobCallback;
+    std::function<void()> quotesCallback;
 };

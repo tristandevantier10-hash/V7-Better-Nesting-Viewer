@@ -7,6 +7,7 @@
 #include "HorizontalLayout.h"
 #include "NavigationPanel.h"
 #include "Metrics.h"
+#include "PageHeader.h"
 #include "MaterialDatabase.h"
 #include "PropertyRow.h"
 #include "DataGrid.h"
@@ -95,15 +96,12 @@ NewJobScreen::NewJobScreen()
     //==================================================
 
     auto pageHeader =
-        std::make_shared<Panel>();
+        std::make_shared<PageHeaderPanel>();
 
     pageHeader->setLayout(
         std::make_unique<HorizontalLayout>());
 
-    pageHeader->setStyle(
-        PanelStyle::Card);
-
-    pageHeader->setBorderVisible(false);
+    configurePageHeader(pageHeader);
 
     rightContainer->addLayoutElement(
         pageHeader,
@@ -111,16 +109,13 @@ NewJobScreen::NewJobScreen()
         100);
 
     auto titlePanel =
-        std::make_shared<Panel>();
+        std::make_shared<PageHeaderContentPanel>();
 
     titlePanel->setLayout(
         std::make_unique<VerticalLayout>());
 
-    titlePanel->setStyle(
-        PanelStyle::Card);
-
-    titlePanel->setBorderVisible(false);
-    titlePanel->setSpacing(4);
+    configurePageHeaderTitle(titlePanel);
+    addPageHeaderLogo(pageHeader);
 
     pageHeader->addLayoutElement(
         titlePanel,
@@ -131,6 +126,8 @@ NewJobScreen::NewJobScreen()
 
     title->setText("Job Input");
     title->setStyle(LabelStyle::Heading);
+    configurePageHeaderTitleLabel(title);
+    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -141,10 +138,12 @@ NewJobScreen::NewJobScreen()
         std::make_shared<Label>();
 
     subtitle->setText(
-        "Enter the materials and dimensions for this job");
+        "Enter materials and dimensions");
 
     subtitle->setStyle(
         LabelStyle::Small);
+    configurePageHeaderSubtitleLabel(subtitle);
+    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,

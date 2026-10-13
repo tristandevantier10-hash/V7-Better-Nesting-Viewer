@@ -13,6 +13,13 @@ enum class LabelStyle
     Heading
 };
 
+enum class LabelAlignment
+{
+    Left,
+    Center,
+    Right
+};
+
 enum class TextTheme
 {
     Light,
@@ -44,6 +51,9 @@ public:
 
     void setTextTheme(TextTheme theme);
 
+    void setAlignment(LabelAlignment alignment);
+    void setAlignmentOffsetX(int offset);
+
 private:
 
     std::string text;
@@ -51,4 +61,6 @@ private:
     LabelStyle style = LabelStyle::Normal;
 
     TextTheme textTheme = TextTheme::Dark;
+    LabelAlignment alignment = LabelAlignment::Left;
+    int alignmentOffsetX = 0;
 };

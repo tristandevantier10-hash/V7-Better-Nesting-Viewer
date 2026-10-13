@@ -190,6 +190,7 @@
     <ClCompile Include="ProductionPricingDatabase.cpp" />
     <ClCompile Include="PropertyRow.cpp" />
     <ClCompile Include="QuoteDatabase.cpp" />
+    <ClCompile Include="QuoteHistoryScreen.cpp" />
     <ClCompile Include="QuotePdfExporter.cpp" />
     <ClCompile Include="QuoteReferenceGenerator.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -235,8 +236,10 @@
     <ClInclude Include="NewJobScreen.h" />
     <ClInclude Include="Panel.h" />
     <ClInclude Include="PanelStyle.h" />
+    <ClInclude Include="PageHeader.h" />
     <ClInclude Include="PlacementStrategy.h" />
     <ClInclude Include="QuoteDatabase.h" />
+    <ClInclude Include="QuoteHistoryScreen.h" />
     <ClInclude Include="QuoteDocument.h" />
     <ClInclude Include="QuotePdfExporter.h" />
     <ClInclude Include="QuoteRecord.h" />

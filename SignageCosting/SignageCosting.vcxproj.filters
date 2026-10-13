@@ -213,6 +213,9 @@
     <ClCompile Include="CustomerEditorScreen.cpp">
       <Filter>Screens\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QuoteHistoryScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="FileSystem.cpp">
       <Filter>UI\Source Files</Filter>
     </ClCompile>
@@ -389,6 +392,9 @@
     <ClInclude Include="MainMenuScreen.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="QuoteHistoryScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Screen.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
@@ -498,6 +504,9 @@
       <Filter>UI\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PanelStyle.h">
+      <Filter>UI\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PageHeader.h">
       <Filter>UI\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShadowRenderer.h">

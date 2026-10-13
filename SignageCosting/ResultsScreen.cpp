@@ -12,6 +12,7 @@
 #include "ScrollPanel.h"
 #include <hpdf.h>
 #include "QuotePdfExporter.h"
+#include "PageHeader.h"
 
 ResultsScreen::ResultsScreen()
 {
@@ -193,30 +194,30 @@ void ResultsScreen::buildSidebar()
 void ResultsScreen::buildHeader()
 {
     auto header =
-        std::make_shared<Panel>();
+        std::make_shared<PageHeaderPanel>();
 
     header->setLayout(
         std::make_unique<HorizontalLayout>());
 
-    header->setBorderVisible(false);
+    configurePageHeader(header, 0, Metrics::SpaceM);
 
     mainContainer->addLayoutElement(
         header,
         SizePolicy::Fixed,
-        130);
+        Metrics::HeaderHeight);
 
     // --------------------------------------------------
     // Left
     // --------------------------------------------------
 
     auto titlePanel =
-        std::make_shared<Panel>();
+        std::make_shared<PageHeaderContentPanel>();
 
     titlePanel->setLayout(
         std::make_unique<VerticalLayout>());
 
-    titlePanel->setBorderVisible(false);
-    titlePanel->setSpacing(5);
+    configurePageHeaderTitle(titlePanel, Metrics::SpaceS);
+    addPageHeaderLogo(header);
 
     header->addLayoutElement(
         titlePanel,
@@ -230,6 +231,8 @@ void ResultsScreen::buildHeader()
 
     pageTitle->setStyle(
         LabelStyle::Heading);
+    configurePageHeaderTitleLabel(pageTitle);
+    pageTitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         pageTitle,
@@ -245,8 +248,8 @@ void ResultsScreen::buildHeader()
     pageSubtitle->setStyle(
         LabelStyle::Small);
 
-    pageSubtitle->setTextTheme(
-        TextTheme::DarkSecondary);
+    configurePageHeaderSubtitleLabel(pageSubtitle);
+    pageSubtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         pageSubtitle,
