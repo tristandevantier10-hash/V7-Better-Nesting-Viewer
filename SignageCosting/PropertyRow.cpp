@@ -1,6 +1,5 @@
 #include "PropertyRow.h"
 #include "Renderer.h"
-#include "iostream"
 
 PropertyRow::PropertyRow()
 {
@@ -62,8 +61,6 @@ void PropertyRow::setValue(const std::string& text)
 
         setControl(label);
     }
-
-    std::cout << "Setting PropertyRow to: " << text << std::endl;
 
     label->setText(text);
 }

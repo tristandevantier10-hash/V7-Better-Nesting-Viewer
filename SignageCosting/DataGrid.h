@@ -42,6 +42,7 @@ public:
 
     void setRowHeight(int height);
     void setTextStyle(LabelStyle style);
+    void setEmptyMessage(const std::string& message);
 
 private:
 
@@ -67,6 +68,7 @@ private:
     int rowHeight = 30;
     int scrollOffset = 0;
     LabelStyle textStyle = LabelStyle::Small;
+    std::string emptyMessage;
 
     std::function<void(int)> onSelectionChanged;
 };

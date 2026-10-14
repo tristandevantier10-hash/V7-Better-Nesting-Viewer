@@ -15,6 +15,7 @@ void Screen::update(const SDL_Event& e)
 void Screen::render(Renderer& renderer)
 {
     Panel::render(renderer);
+    renderOverlays(renderer);
 }
 
 void Screen::tick(float deltaTime)

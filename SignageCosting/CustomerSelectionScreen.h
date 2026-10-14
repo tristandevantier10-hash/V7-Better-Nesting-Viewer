@@ -29,6 +29,7 @@ public:
         std::function<void(int)> callback);
 
     void setBackCallback(std::function<void()> callback);
+    void setSelectionMode(bool enabled);
 
     void refreshCustomers();
 

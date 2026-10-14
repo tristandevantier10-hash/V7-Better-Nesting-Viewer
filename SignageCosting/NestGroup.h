@@ -12,7 +12,7 @@ struct NestGroup
     int sheetWidth = 0;
     int sheetHeight = 0;
 
-    int rollWidth = 0;
+    double rollWidth = 0.0;
 
     bool isRoll = false;
 

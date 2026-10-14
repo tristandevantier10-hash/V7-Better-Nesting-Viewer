@@ -1,7 +1,6 @@
 #include "DataGrid.h"
 #include "Renderer.h"
 #include "Label.h"
-#include "iostream"
 #include <algorithm>
 
 DataGrid::DataGrid()
@@ -80,28 +79,6 @@ void DataGrid::update(const SDL_Event& e)
 
 void DataGrid::render(Renderer& renderer)
 {
-
-    static int lastX = -1;
-    static int lastY = -1;
-    static int lastWidth = -1;
-    static int lastHeight = -1;
-
-    if (getX() != lastX ||
-        getY() != lastY ||
-        getWidth() != lastWidth ||
-        getHeight() != lastHeight)
-
-        // Check if any of the dimensions have changed since the last print
-        if (getX() != lastX || getY() != lastY || getWidth() != lastWidth || getHeight() != lastHeight)
-        {
-            std::cout << "GRID BOUNDS: " << getX() << ", " << getY() << " " << getWidth() << "x" << getHeight() << std::endl;
-
-            // Update the tracking variables so it doesn't print again until the next change
-            lastX = getX();
-            lastY = getY();
-            lastWidth = getWidth();
-            lastHeight = getHeight();
-        }
 
     if (!visible)
         return;
@@ -195,6 +172,17 @@ void DataGrid::render(Renderer& renderer)
     const size_t firstVisibleRow =
         static_cast<size_t>(scrollOffset / rowHeight);
     const int rowViewportHeight = std::max(0, getHeight() - headerHeight);
+    if (rows.empty() && !emptyMessage.empty() && rowViewportHeight > 0)
+    {
+        const int textWidth = renderer.getTextWidth(emptyMessage);
+        renderer.drawText(
+            emptyMessage,
+            getX() + (getWidth() - textWidth) / 2,
+            getY() + headerHeight + (rowViewportHeight - 16) / 2,
+            LabelStyle::Small,
+            DefaultTheme.darkSecondaryText);
+    }
+
     const size_t visibleRowCount =
         static_cast<size_t>((rowViewportHeight + rowHeight - 1) / rowHeight + 1);
     const size_t lastVisibleRow =
@@ -393,4 +381,9 @@ void DataGrid::setRowHeight(int height)
 void DataGrid::setTextStyle(LabelStyle style)
 {
     textStyle = style;
+}
+
+void DataGrid::setEmptyMessage(const std::string& message)
+{
+    emptyMessage = message;
 }

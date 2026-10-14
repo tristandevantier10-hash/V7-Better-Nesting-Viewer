@@ -1,7 +1,6 @@
 #include "InvoicePanel.h"
 #include "VerticalLayout.h"
 #include "Renderer.h"
-#include "iostream"
 #include <windows.h>
 
 InvoicePanel::InvoicePanel()
@@ -67,11 +66,6 @@ void InvoicePanel::setViewModel(const InvoiceViewModel& vm)
     subtotal->setValue(vm.subtotal);
     markup->setValue(vm.markup);
     sellPrice->setValue(vm.sellPrice);
-
-    std::cout << "\n===== InvoicePanel::setViewModel =====\n";
-    std::cout << vm.materialCost << std::endl;
-    std::cout << vm.labourCost << std::endl;
-    std::cout << vm.sellPrice << std::endl;
 
     rebuildJobPanels(vm);
 }

@@ -1,7 +1,6 @@
 #include "InvoiceViewModelBuilder.h"
 #include <sstream>
 #include <iomanip>
-#include <iostream>
 #include <chrono>
 #include "JobSummaryViewModel.h"
 #include <windows.h>
@@ -91,8 +90,6 @@ InvoiceViewModelBuilder::build(const CostResult& result)
         for (const auto& item : result.items)
         {
 
-            std::cout << "Category = " << item.category << std::endl;
-
             JobSummaryViewModel job;
 
             job.material = item.materialId;
@@ -166,13 +163,6 @@ InvoiceViewModelBuilder::build(const CostResult& result)
             vm.jobs.push_back(job);
         }
     }
-
-    std::cout << "\n===== INVOICE VM =====\n";
-    std::cout << "Material   : " << vm.materialCost << "\n";
-    std::cout << "Labour     : " << vm.labourCost << "\n";
-    std::cout << "Production : " << vm.productionCost << "\n";
-    std::cout << "Markup     : " << vm.markup << "\n";
-    std::cout << "Sell Price : " << vm.sellPrice << "\n";
 
     return vm;
 }

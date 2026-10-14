@@ -162,6 +162,21 @@ void Panel::render(Renderer& renderer)
     renderChildren(renderer);
 }
 
+void Panel::renderOverlays(Renderer& renderer)
+{
+    for (auto& child : children)
+    {
+        if (!child->isVisible())
+            continue;
+
+        auto panel = std::dynamic_pointer_cast<Panel>(child);
+        if (panel)
+            panel->renderOverlays(renderer);
+        else
+            child->renderOverlay(renderer);
+    }
+}
+
 void Panel::addPanel(std::shared_ptr<Panel> panel)
 {
     add(panel);

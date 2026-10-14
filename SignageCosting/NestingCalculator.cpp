@@ -1,6 +1,5 @@
 #include <algorithm>
 #include "NestingCalculator.h"
-#include "iostream"
 
 NestingResult NestingCalculator::Calculate(
     double widthMM,
@@ -8,13 +7,6 @@ NestingResult NestingCalculator::Calculate(
     int quantity,
     double rollWidthMM)
 {
-
-    std::cout << "\n===== NESTING CALCULATOR =====\n";
-
-    std::cout << "Input Width  : " << widthMM << "\n";
-    std::cout << "Input Height : " << heightMM << "\n";
-    std::cout << "Quantity     : " << quantity << "\n";
-    std::cout << "Roll Width   : " << rollWidthMM << "\n";
 
     NestingResult result;
 
@@ -37,10 +29,6 @@ NestingResult NestingCalculator::Calculate(
     // How many pieces fit across roll width
     result.piecesAcross = static_cast<int>(rollWidthM / widthM);
 
-    std::cout << "Pieces Across: "
-        << result.piecesAcross
-        << "\n";
-
     // Safety fallback
     if (result.piecesAcross < 1)
         result.piecesAcross = 1;
@@ -48,15 +36,7 @@ NestingResult NestingCalculator::Calculate(
     // Calculate how many rows are needed (ceiling division)
     result.rows = (quantity + result.piecesAcross - 1) / result.piecesAcross;
 
-    std::cout << "Rows: "
-        << result.rows
-        << "\n";
-
     result.requiredLengthM = result.rows * heightM;
-
-    std::cout << "Required Length: "
-        << result.requiredLengthM
-        << " m\n";
 
     result.consumedAreaM2 = rollWidthM * result.requiredLengthM;
 

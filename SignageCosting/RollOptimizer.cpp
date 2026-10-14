@@ -1,6 +1,5 @@
 #include "RollOptimizer.h"
 #include <algorithm>
-#include <iostream>
 
 RollSolution RollOptimizer::evaluate(
     double widthMM,
@@ -19,11 +18,6 @@ RollSolution RollOptimizer::evaluate(
             qty,
             roll
         );
-
-        std::cout << "\n===== ROLL OPTION =====\n";
-        std::cout << "Roll: " << roll << "\n";
-        std::cout << "Length: " << n.requiredLengthM << "\n";
-        std::cout << "Efficiency: " << n.efficiencyPercent << "\n";
 
         double eff = n.efficiencyPercent;
 

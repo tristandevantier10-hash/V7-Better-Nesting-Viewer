@@ -101,7 +101,6 @@ private:
     void calculateRollItem(
         const JobItem& item,
         ItemCostResult& itemResult,
-        CostResult& result,
         double totalArea,
         double& materialCost);
 
@@ -109,8 +108,6 @@ private:
         const JobItem& item,
         const NestGroup& group,
         ItemCostResult& itemResult,
-        CostResult& result,
-        double totalArea,
         double& materialCost);
 
     void calculateGenericItem(

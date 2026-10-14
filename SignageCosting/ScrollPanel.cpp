@@ -1,6 +1,5 @@
 #include "ScrollPanel.h"
 #include "Renderer.h"
-#include "iostream"
 
 ScrollPanel::ScrollPanel()
 {}
@@ -35,10 +34,6 @@ void ScrollPanel::update(const SDL_Event& e)
         if (scrollY < 0)
             scrollY = 0;
 
-        std::cout
-            << "Scroll Y = "
-            << scrollY
-            << std::endl;
     }
 
     Panel::update(e);

@@ -1,4 +1,5 @@
 #include "TextBox.h"
+#include "ComboBox.h"
 #include "Renderer.h"
 #include "Theme.h"
 #include "TextRenderer.h"
@@ -31,6 +32,9 @@ void TextBox::setPasswordMode(bool enabled)
 
 void TextBox::update(const SDL_Event& e)
 {
+    if (ComboBox::hasOpenDropdown())
+        return;
+
     Uint32 now = SDL_GetTicks();
 
     if (now - lastBlink > 500)
@@ -42,6 +46,9 @@ void TextBox::update(const SDL_Event& e)
     if (e.type == SDL_MOUSEBUTTONDOWN &&
         e.button.button == SDL_BUTTON_LEFT)
     {
+        if (ComboBox::wasClickConsumed(e.button.timestamp))
+            return;
+
         int mx = e.button.x;
         int my = e.button.y;
 

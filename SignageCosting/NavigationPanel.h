@@ -17,7 +17,8 @@ public:
     std::shared_ptr<NavigationItem> addItem(
         const std::string& text,
         std::function<void()> callback,
-        const std::string& iconPath = "");
+        const std::string& iconPath = "",
+        bool enabled = true);
 
     void addHeading(
         const std::string& text);

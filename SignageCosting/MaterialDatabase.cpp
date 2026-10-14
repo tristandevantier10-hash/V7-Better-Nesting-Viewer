@@ -22,10 +22,6 @@ void MaterialDatabase::load(const std::string& jsonData)
 
     json j;
 
-    //std::cout << "\n[MaterialDB] ===============================\n";
-    //std::cout << "[MaterialDB] START LOAD\n";
-    //std::cout << "[MaterialDB] RAW SIZE: " << jsonData.size() << " bytes\n";
-    std::cout << "[OK] Materials database loaded\n\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 1 second
 
     try
@@ -44,15 +40,8 @@ void MaterialDatabase::load(const std::string& jsonData)
         return;
     }
 
-    //std::cout << "[MaterialDB] Materials found: " << j["materials"].size() << "\n";
-
-    int materialIndex = 0;
-
     for (const auto& item : j["materials"])
     {
-        //std::cout << "\n[MaterialDB] --------------------------------\n";
-        //std::cout << "[MaterialDB] Material index: " << materialIndex++ << "\n";
-
         Material m;
         m.id = item.value("id", "");
         m.name = item.value("name", "");
@@ -65,22 +54,14 @@ void MaterialDatabase::load(const std::string& jsonData)
             continue;
         }
 
-        //std::cout << "[MaterialDB] ID: " << m.id << "\n";
-        //std::cout << "   Name: " << m.name << "\n";
-        //std::cout << "   Category: " << m.category << "\n";
-
         if (!item.contains("variants") || !item["variants"].is_array())
         {
             std::cerr << "[MaterialDB][WARN] No variants for " << m.id << "\n";
         }
         else
         {
-            int variantIndex = 0;
-
             for (const auto& v : item["variants"])
             {
-                //std::cout << "   [Variant " << variantIndex++ << "]\n";
-
                 MaterialVariant mv;
 
                 mv.label = v.value("label", "");
@@ -129,9 +110,6 @@ void MaterialDatabase::load(const std::string& jsonData)
         g_materialCount++;
     }
 
-    //std::cout << "\n[MaterialDB] LOAD COMPLETE\n";
-    //std::cout << "[MaterialDB] Materials: " << g_materialCount << "\n";
-    //std::cout << "[MaterialDB] Variants: " << g_variantCount << "\n";
 }
 
 // ---------------- GET (FIXED - REQUIRED FOR LINKER) ----------------

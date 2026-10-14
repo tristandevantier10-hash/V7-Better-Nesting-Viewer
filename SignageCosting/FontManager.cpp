@@ -21,7 +21,7 @@ bool FontManager::initialise()
             14);
 
     if (!smallFont)
-        std::cout << "Small font failed: " << TTF_GetError() << std::endl;
+        std::cerr << "Could not load small font: " << TTF_GetError() << std::endl;
 
     normalFont =
         TTF_OpenFont(
@@ -30,11 +30,7 @@ bool FontManager::initialise()
 
     if (!normalFont)
     {
-        std::cout << TTF_GetError() << std::endl;
-    }
-    else
-    {
-        std::cout << "Normal font loaded!" << std::endl;
+        std::cerr << "Could not load normal font: " << TTF_GetError() << std::endl;
     }
 
     headingFont =
@@ -43,7 +39,7 @@ bool FontManager::initialise()
             24);
 
     if (!headingFont)
-        std::cout << "Small font failed: " << TTF_GetError() << std::endl;
+        std::cerr << "Could not load heading font: " << TTF_GetError() << std::endl;
 
     if (!smallFont ||
         !normalFont ||

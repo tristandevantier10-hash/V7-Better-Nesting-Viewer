@@ -13,7 +13,6 @@
 #include "DataGrid.h"
 #include "Panel.h"
 #include "Label.h"
-#include "iostream"
 
 NewJobScreen::NewJobScreen()
 {
@@ -48,9 +47,7 @@ NewJobScreen::NewJobScreen()
         SizePolicy::Fixed,
         Metrics::SidebarWidth);
 
-    sidebar->addItem(
-        "JOB INPUT",
-        []() {});
+    sidebar->addHeading("JOB INPUT");
 
     struct InvisibleSpacer : public Panel
     {
@@ -200,7 +197,7 @@ NewJobScreen::NewJobScreen()
     customerCard->addLayoutElement(
         customerHeader,
         SizePolicy::Fixed,
-        30);
+        20);
 
     customerCompany =
         std::make_shared<Label>();
@@ -214,39 +211,24 @@ NewJobScreen::NewJobScreen()
     customerCard->addLayoutElement(
         customerCompany,
         SizePolicy::Fixed,
-        15);
+        24);
 
     customerContact =
         std::make_shared<Label>();
 
-    customerContact->setText("");
-
     customerContact->setStyle(
-        LabelStyle::Normal);
+        LabelStyle::Small);
+    customerContact->setTextTheme(TextTheme::DarkSecondary);
 
     customerCard->addLayoutElement(
         customerContact,
         SizePolicy::Fixed,
-        15);
-
-
-    customerPhone =
-        std::make_shared<Label>();
-
-    customerPhone->setText("");
-
-    customerPhone->setStyle(
-        LabelStyle::Normal);
-
-    customerCard->addLayoutElement(
-        customerPhone,
-        SizePolicy::Fixed,
-        15);
+        18);
 
     customerCard->setStyle(
         PanelStyle::Card);
 
-    customerCard->setPadding(10);
+    customerCard->setPadding(6);
     customerCard->setSpacing(1);
 
     pageHeader->addLayoutElement(
@@ -510,13 +492,14 @@ NewJobScreen::NewJobScreen()
         SizePolicy::Fixed,
         180);
 
-
     //==================================================
     // Job Item Grid
     //==================================================
 
     itemGrid =
         std::make_shared<DataGrid>();
+    itemGrid->setEmptyMessage(
+        "Add a material above to start this job.");
 
     itemGrid->setSelectionChangedCallback(
         [this](int index)
@@ -554,7 +537,6 @@ NewJobScreen::NewJobScreen()
     addItemButton->setText(
         "Add Item");
 
-
     //--------------------------------------------------
     // Remove Item
     //--------------------------------------------------
@@ -564,7 +546,6 @@ NewJobScreen::NewJobScreen()
 
     removeItemButton->setText(
         "Remove Item");
-
 
     //--------------------------------------------------
     // Button Layout
@@ -615,10 +596,6 @@ NewJobScreen::NewJobScreen()
                 {
                     activeJob->addItem(item);
 
-                    std::cout
-                        << "After Add Item: "
-                        << activeJob->items.size()
-                        << "\n";
                 }
                 else
                 {
@@ -791,15 +768,6 @@ JobItem NewJobScreen::createItem() const
     const MaterialVariant& selectedVariant =
         item.material.variants[item.variantIndex];
 
-    std::cout << "\n===== FORMAT DEBUG =====\n";
-    std::cout << "Roll formats : "
-        << selectedVariant.roll_widths.size()
-        << "\n";
-
-    std::cout << "Sheet formats: "
-        << selectedVariant.sheet_formats.size()
-        << "\n";
-
     //==================================================
     // ROLL MATERIAL
     //==================================================
@@ -839,23 +807,6 @@ JobItem NewJobScreen::createItem() const
     {
         item.autoRoll = true;
     }
-
-    std::cout << "\n===== SELECTED FORMAT =====\n";
-    std::cout << "Selected Index : "
-        << formatSelector->getSelectedIndex()
-        << "\n";
-
-    std::cout << "Selected Text  : "
-        << formatSelector->getSelectedText()
-        << "\n";
-
-    std::cout << "Width          : "
-        << item.selectedSheetFormat.width
-        << "\n";
-
-    std::cout << "Height         : "
-        << item.selectedSheetFormat.height
-        << "\n";
 
     return item;
 }
@@ -1049,11 +1000,15 @@ void NewJobScreen::setJob(Job* job)
     customerCompany->setText(
         activeJob->customer.company);
 
-    customerContact->setText(
-        activeJob->customer.contact);
-
-    customerPhone->setText(
-        activeJob->customer.phone);
+    std::string contactDetails =
+        activeJob->customer.contact;
+    if (!contactDetails.empty() &&
+        !activeJob->customer.phone.empty())
+    {
+        contactDetails += " | ";
+    }
+    contactDetails += activeJob->customer.phone;
+    customerContact->setText(contactDetails);
 
     customerType->setText(
         activeJob->customer.accountType == AccountType::Cash

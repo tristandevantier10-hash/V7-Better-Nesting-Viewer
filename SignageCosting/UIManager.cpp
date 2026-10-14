@@ -1,6 +1,4 @@
 #include "UIManager.h"
-#include <iostream>
-
 
 UIManager::UIManager()
 {}
@@ -14,21 +12,7 @@ void UIManager::update(const SDL_Event& e)
 {
     if (currentScreen)
     {
-        if (e.type == SDL_MOUSEWHEEL)
-        {
-            std::cout
-                << "UIManager forwarding wheel\n";
-        }
-
         currentScreen->update(e);
-    }
-    else
-    {
-        if (e.type == SDL_MOUSEWHEEL)
-        {
-            std::cout
-                << "NO CURRENT SCREEN\n";
-        }
     }
 }
 

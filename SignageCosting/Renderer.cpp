@@ -4,7 +4,14 @@
 #include <SDL2/SDL_image.h>
 #include <algorithm>
 #include <cmath>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4251)
+#endif
 #include <lunasvg/lunasvg.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #include <cstring>
 #include <filesystem>
 #include <iostream>

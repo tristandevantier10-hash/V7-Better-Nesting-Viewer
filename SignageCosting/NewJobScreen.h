@@ -64,7 +64,6 @@ private:
     std::shared_ptr<Label> customerTitle;
     std::shared_ptr<Label> customerCompany;
     std::shared_ptr<Label> customerContact;
-    std::shared_ptr<Label> customerPhone;
     std::shared_ptr<Label> customerType;
 
     Job currentJob;

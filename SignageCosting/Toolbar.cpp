@@ -1,7 +1,6 @@
 #include "Toolbar.h"
 #include "Renderer.h"
 #include "HorizontalLayout.h"
-#include "iostream"
 
 Toolbar::Toolbar()
 {
@@ -66,11 +65,9 @@ void Toolbar::setCalculateCallback(std::function<void()> callback)
     calculateButton->setOnClick(
         [callback]()
         {
-            std::cout << "Toolbar callback fired\n";
 
             callback();
 
-            std::cout << "Toolbar callback returned\n";
         });
 }
 

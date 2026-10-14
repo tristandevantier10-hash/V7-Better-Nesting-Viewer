@@ -1,7 +1,6 @@
 #include "NestingManager.h"
 #include "MaterialDatabase.h"
 #include "NestingCore.h"
-#include "iostream"
 
 std::vector<NestGroup> NestingManager::buildGroups(const Job& job)
 {
@@ -144,13 +143,6 @@ NestingJobResult NestingManager::calculate(
                     (usedArea / totalArea) * 100.0 :
                     0.0;
 
-                std::cout
-                    << "Roll Strategy "
-                    << static_cast<int>(strategy)
-                    << " -> "
-                    << efficiency
-                    << "%\n";
-
                 if (efficiency > bestEfficiency)
                 {
                     bestEfficiency = efficiency;
@@ -220,15 +212,6 @@ NestingJobResult NestingManager::calculate(
 
             double efficiency =
                 (usedArea / totalArea) * 100.0;
-
-            std::cout
-                << "Strategy "
-                << static_cast<int>(strategy)
-                << " -> "
-                << efficiency
-                << "% using "
-                << layouts.size()
-                << " sheets\n";
 
             if (efficiency > bestEfficiency)
             {

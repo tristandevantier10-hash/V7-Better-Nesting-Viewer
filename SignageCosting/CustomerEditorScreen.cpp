@@ -34,8 +34,8 @@ CustomerEditorScreen::CustomerEditorScreen()
         SizePolicy::Fixed,
         Metrics::SidebarWidth);
 
-    sidebarPanel->addItem("CUSTOMER", []() {});
-    sidebarPanel->addItem("INVOICE", []() {});
+    sidebarPanel->addHeading("CUSTOMER");
+    sidebarPanel->addItem("INVOICE", {}, "", false);
 
     // Invisible Spacer matching Selection Screen theme
     struct InvisibleSpacer : public Panel

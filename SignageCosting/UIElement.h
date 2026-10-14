@@ -16,6 +16,8 @@ public:
 
     virtual void render(Renderer& renderer);
 
+    virtual void renderOverlay(Renderer& renderer);
+
     void setPosition(int x, int y);
 
     void setSize(int w, int h);

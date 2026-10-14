@@ -2,7 +2,6 @@
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
 #include "Renderer.h"
-#include "iostream"
 
 Window::Window()
 {
@@ -39,9 +38,6 @@ void Window::addContentPanel(
 
 void Window::update(const SDL_Event& e)
 {
-    if (e.type == SDL_MOUSEWHEEL)
-        std::cout << "Window received wheel\n";
-
     Panel::update(e);
 }
 

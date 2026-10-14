@@ -1,12 +1,6 @@
 ﻿#include "NestingCore.h"
 #include <algorithm>
 #include <limits>
-#include <iostream>
-
-namespace
-{
-    constexpr bool DEBUG_TRY_PLACE = false;
-}
 
 void NestingCore::newSheet(
     std::vector<Sheet>& sheets,
@@ -62,11 +56,6 @@ bool NestingCore::tryPlaceInSheet(
 {
     if (sheet.freeRects.empty())
     {
-        if constexpr (DEBUG_TRY_PLACE)
-        {
-            std::cout << "[TRY] FAIL - no free rects\n";
-        }
-
         return false;
     }
 
@@ -76,25 +65,9 @@ bool NestingCore::tryPlaceInSheet(
     double bestX = 0;
     double bestY = 0;
 
-    if constexpr (DEBUG_TRY_PLACE)
-    {
-        std::cout << "\n[TRY PLACE]\n";
-        std::cout << "FreeRects: " << sheet.freeRects.size()
-            << " | Item: " << w << "x" << h << "\n";
-    }
-
     for (int i = 0; i < (int)sheet.freeRects.size(); i++)
     {
         const auto& fr = sheet.freeRects[i];
-
-        if constexpr (DEBUG_TRY_PLACE)
-        {
-            std::cout << "  FR[" << i << "] "
-                << "x=" << fr.x
-                << " y=" << fr.y
-                << " w=" << fr.width
-                << " h=" << fr.height << "\n";
-        }
 
         auto evaluate = [&](double rw, double rh, bool isRot)
             {
@@ -164,15 +137,6 @@ bool NestingCore::tryPlaceInSheet(
     if (bestIndex == -1)
     {
         return false;
-    }
-
-    if constexpr (DEBUG_TRY_PLACE)
-    {
-        std::cout << "[TRY] SUCCESS -> index=" << bestIndex
-            << " rotated=" << bestRotated
-            << " x=" << bestX
-            << " y=" << bestY
-            << " score=" << bestScore << "\n";
     }
 
     outX = bestX;
@@ -338,10 +302,6 @@ std::vector<Sheet> NestingCore::pack(
     double containerHeight,
     PlacementStrategy strategy)
 {
-
-    std::cout << "\n===== NESTING CORE =====\n";
-    std::cout << "Container Width : " << containerWidth << "\n";
-    std::cout << "Container Height: " << containerHeight << "\n";
 
     // ---------------------------------------
     // Sort largest rectangles first

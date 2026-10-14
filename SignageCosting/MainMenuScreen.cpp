@@ -1,5 +1,4 @@
 #include "MainMenuScreen.h"
-#include <iostream>
 #include "Renderer.h"
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
@@ -142,22 +141,19 @@ MainMenuScreen::MainMenuScreen()
         SizePolicy::Fixed,
         Metrics::NormalRow);
 
-    auto newJobItem =
-        sidebarPanel->addItem(
-            "NEW JOB",
-            [this]()
-            {
-                if (newJobCallback)
-                    newJobCallback();
-            });
+    sidebarPanel->addItem(
+        "NEW JOB",
+        [this]()
+        {
+            if (newJobCallback)
+                newJobCallback();
+        });
 
-    auto materialDatabaseItem =
-        sidebarPanel->addItem(
-            "MATERIAL DATABASE",
-            []()
-            {
-                std::cout << "Material Database clicked\n";
-            });
+    sidebarPanel->addItem(
+        "MATERIAL DATABASE",
+        {},
+        "",
+        false);
 
     sidebarPanel->addItem("QUOTES", [this]()
     {
@@ -165,29 +161,27 @@ MainMenuScreen::MainMenuScreen()
             quotesCallback();
     });
 
-    auto customerDatabaseItem =
-        sidebarPanel->addItem(
-            "CUSTOMER DATABASE",
-            []()
-            {
-                std::cout << "Customer Database clicked\n";
-            });
+    sidebarPanel->addItem(
+        "CUSTOMER DATABASE",
+        [this]()
+        {
+            if (customerDatabaseCallback)
+                customerDatabaseCallback();
+        });
 
-    auto settingsItem =
-        sidebarPanel->addItem(
-            "SETTINGS",
-            []()
-            {
-                std::cout << "Settings clicked\n";
-            });
+    sidebarPanel->addItem(
+        "SETTINGS",
+        {},
+        "",
+        false);
 
-    auto exitItem =
-        sidebarPanel->addItem(
-            "EXIT",
-            []()
-            {
-                std::cout << "Exit clicked\n";
-            });
+    sidebarPanel->addItem(
+        "EXIT",
+        [this]()
+        {
+            if (exitCallback)
+                exitCallback();
+        });
 
 }
 
@@ -211,6 +205,17 @@ void MainMenuScreen::setQuotesCallback(std::function<void()> callback)
     quotesCallback = callback;
 }
 
+void MainMenuScreen::setCustomerDatabaseCallback(
+    std::function<void()> callback)
+{
+    customerDatabaseCallback = callback;
+}
+
+void MainMenuScreen::setExitCallback(std::function<void()> callback)
+{
+    exitCallback = callback;
+}
+
 void MainMenuScreen::refreshStatus()
 {
     auto materials =
@@ -220,7 +225,7 @@ void MainMenuScreen::refreshStatus()
         "Materials : " +
         std::to_string(materials.size()));
 
-    int variantCount = 0;
+    std::size_t variantCount = 0;
 
     for (const auto& id : materials)
     {

@@ -17,7 +17,7 @@ void NavigationItem::render(Renderer& renderer)
     // Selected background
     // ---------------------------------------------------------
 
-    if (selected && !heading)
+    if (selected && !heading && isEnabled())
     {
         SDL_Rect selectedBackground =
         {
@@ -36,7 +36,7 @@ void NavigationItem::render(Renderer& renderer)
     // Selected accent indicator
     // ---------------------------------------------------------
 
-    if (selected && !heading)
+    if (selected && !heading && isEnabled())
     {
         SDL_Rect indicator =
         {
@@ -58,7 +58,11 @@ void NavigationItem::render(Renderer& renderer)
     SDL_Color textColour =
         DefaultTheme.text;
 
-    if (heading)
+    if (!isEnabled())
+    {
+        textColour = DefaultTheme.darkSecondaryText;
+    }
+    else if (heading)
     {
         textColour =
             DefaultTheme.darkSecondaryText;
@@ -220,7 +224,7 @@ void NavigationItem::update(
     if (!visible)
         return;
 
-    if (heading)
+    if (heading || !isEnabled())
         return;
 
     if (e.type == SDL_MOUSEMOTION)

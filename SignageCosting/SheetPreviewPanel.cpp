@@ -142,13 +142,13 @@ float SheetPreviewPanel::calculateScale() const
                 maxWidth = sheet.width;
         }
 
-        float availableWidth =
+        double availableWidth =
             getWidth() - 40;
 
-        float scaleX =
+        double scaleX =
             availableWidth / maxWidth;
 
-        return scaleX * zoom;
+        return static_cast<float>(scaleX * zoom);
     }
     else
     {
@@ -170,19 +170,19 @@ float SheetPreviewPanel::calculateScale() const
 
         totalHeight += 20;              // bottom padding
 
-        float availableWidth =
+        double availableWidth =
             getWidth() - 40;
 
-        float availableHeight =
+        double availableHeight =
             getHeight() - 40;
 
-        float scaleX =
+        double scaleX =
             availableWidth / maxWidth;
 
-        float scaleY =
+        double scaleY =
             availableHeight / totalHeight;
 
-        return std::min(scaleX, scaleY) * zoom;
+        return static_cast<float>(std::min(scaleX, scaleY) * zoom);
     }
 }
 
@@ -190,7 +190,7 @@ float SheetPreviewPanel::calculateContentHeight() const
 {
     float scale = calculateScale();
 
-    float height = 20; // top padding
+    double height = 20; // top padding
 
 
     for (const auto& sheet : sheets)
@@ -204,7 +204,7 @@ float SheetPreviewPanel::calculateContentHeight() const
     }
 
 
-    return height + 20;
+    return static_cast<float>(height + 20);
 }
 
 void SheetPreviewPanel::renderFitWidth(Renderer& renderer)
@@ -231,16 +231,16 @@ void SheetPreviewPanel::renderFitWidth(Renderer& renderer)
     float scale = calculateScale();
 
     int x = 0;
-    int y = panel.y + 55 - scrollY;
+    int y = static_cast<int>(panel.y + 55 - scrollY);
 
     int sheetNumber = 1;
 
     for (const auto& sheet : sheets)
     {
-        float drawnWidth =
+        double drawnWidth =
             sheet.width * scale;
 
-        float drawnHeight =
+        double drawnHeight =
             sheet.height * scale;
 
         x =

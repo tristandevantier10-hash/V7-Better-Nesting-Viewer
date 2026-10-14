@@ -36,7 +36,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
         SizePolicy::Fixed,
         Metrics::SidebarWidth);
 
-    sidebar->addItem("CUSTOMERS", []() {});
+    sidebar->addHeading("CUSTOMERS");
 
     struct InvisibleSpacer : public Panel
     {
@@ -291,7 +291,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
         SizePolicy::Fixed,
         42);
 
-    auto selectButton = std::make_shared<Button>();
+    selectButton = std::make_shared<Button>();
     selectButton->setText("Select");
 
     selectButton->setOnClick(
@@ -369,4 +369,9 @@ void CustomerSelectionScreen::setDeleteCustomerCallback(
 void CustomerSelectionScreen::setBackCallback(std::function<void()> callback)
 {
     backCallback = callback;
+}
+
+void CustomerSelectionScreen::setSelectionMode(bool enabled)
+{
+    selectButton->setVisible(enabled);
 }

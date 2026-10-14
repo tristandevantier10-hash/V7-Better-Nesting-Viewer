@@ -1,6 +1,5 @@
 #include "Application.h"
 #include <iostream>
-#include "InvoicePrinter.h"
 #include "TestJobFactory.h"
 #include "MaterialDatabase.h"
 #include "PricingDatabase.h"
@@ -8,12 +7,9 @@
 #include "HttpClient.h"
 #include "Format.h"
 #include <thread>
-#include <chrono>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <atomic>
-#include <mutex>
-#include "ResultsViewModelBuilder.h"
 #include "TextRenderer.h"
 #include "NewJobScreen.h"
 #include <windows.h>
@@ -86,7 +82,7 @@ bool Application::loadSplashLogos()
 
     if (!estimateSurface)
     {
-        std::cout
+        std::cerr
             << "Could not load EstiMate.png: "
             << IMG_GetError()
             << "\n";
@@ -103,7 +99,7 @@ bool Application::loadSplashLogos()
 
     if (!estimateLogoTexture)
     {
-        std::cout
+        std::cerr
             << "Could not create Estimate logo texture: "
             << SDL_GetError()
             << "\n";
@@ -120,7 +116,7 @@ bool Application::loadSplashLogos()
 
     if (!companySurface)
     {
-        std::cout
+        std::cerr
             << "Could not load E&G Signs cc.png: "
             << IMG_GetError()
             << "\n";
@@ -137,7 +133,7 @@ bool Application::loadSplashLogos()
 
     if (!companyLogoTexture)
     {
-        std::cout
+        std::cerr
             << "Could not create company logo texture: "
             << SDL_GetError()
             << "\n";
@@ -163,7 +159,7 @@ bool Application::loadSplashLogos()
 
         if (!splashArtworkTexture)
         {
-            std::cout
+            std::cerr
                 << "Could not create splash artwork texture: "
                 << SDL_GetError()
                 << "\n";
@@ -180,7 +176,7 @@ bool Application::loadSplashLogos()
     else
     {
         // Optional until your artwork PNG is ready.
-        std::cout
+        std::cerr
             << "Splash artwork not loaded yet: "
             << IMG_GetError()
             << "\n";
@@ -198,8 +194,6 @@ bool Application::loadSplashLogos()
         companyLogoTexture,
         SDL_BLENDMODE_BLEND);
 
-    std::cout << "Splash logos loaded successfully.\n";
-
     return true;
 }
 
@@ -207,25 +201,25 @@ bool Application::initialise()
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
-        std::cout << "SDL_Init Failed\n";
+        std::cerr << "SDL_Init Failed\n";
         return false;
     }
 
     if (!createWindow())
     {
-        std::cout << "FAILED: createWindow()\n";
+        std::cerr << "FAILED: createWindow()\n";
         return false;
     }
 
     if (!createRenderer())
     {
-        std::cout << "FAILED: createRenderer()\n";
+        std::cerr << "FAILED: createRenderer()\n";
         return false;
     }
 
     if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0)
     {
-        std::cout
+        std::cerr
             << "SDL_image PNG initialisation failed: "
             << IMG_GetError()
             << "\n";
@@ -234,7 +228,7 @@ bool Application::initialise()
     {
         if (!loadSplashLogos())
         {
-            std::cout
+            std::cerr
                 << "Warning: One or more splash logos failed to load.\n";
         }
     }
@@ -258,8 +252,6 @@ bool Application::initialise()
     //=================================================
     // Initial Screen
     //=================================================
-
-
 
     //=================================================
     // Callbacks
@@ -295,8 +287,6 @@ bool Application::initialise()
 
                 loginScreen.clearPassword();
 
-                std::cout << "Development access accepted.\n";
-
                 startSplashStartup();
                 return;
             }
@@ -317,16 +307,13 @@ bool Application::initialise()
 
                 loginScreen.clearPassword();
 
-                std::cout
-                    << "Authentication successful.\n";
-
                 startSplashStartup();
             }
             else
             {
                 loginScreen.setStatus(errorMessage);
 
-                std::cout
+                std::cerr
                     << "Authentication failed: "
                     << errorMessage
                     << "\n";
@@ -342,6 +329,8 @@ bool Application::initialise()
     mainMenu.setNewJobCallback(
         [this]()
         {
+            customerSelectionScreen.setSelectionMode(true);
+            customerSelectionScreen.refreshCustomers();
             ui.setScreen(&customerSelectionScreen);
         });
 
@@ -350,6 +339,20 @@ bool Application::initialise()
         {
             quoteHistoryScreen.refreshQuotes();
             ui.setScreen(&quoteHistoryScreen);
+        });
+
+    mainMenu.setCustomerDatabaseCallback(
+        [this]()
+        {
+            customerSelectionScreen.setSelectionMode(false);
+            customerSelectionScreen.refreshCustomers();
+            ui.setScreen(&customerSelectionScreen);
+        });
+
+    mainMenu.setExitCallback(
+        [this]()
+        {
+            state = AppState::Exit;
         });
 
     quoteHistoryScreen.setBackCallback([this]()
@@ -534,7 +537,6 @@ bool Application::initialise()
     resultsScreen.setPrintCallback(
         [this]()
         {
-            std::cout << "PRINT QUOTE\n";
 
             // Existing print functionality can be moved here.
         });
@@ -542,13 +544,11 @@ bool Application::initialise()
     resultsScreen.setExportCallback(
         [this]()
         {
-            std::cout << "EXPORT PDF\n";
 
             std::string errorMessage;
 
             if (resultsScreen.exportQuoteToPdf(errorMessage))
             {
-                std::cout << "PDF exported successfully.\n";
             }
             else
             {
@@ -571,7 +571,7 @@ bool Application::initialise()
                 return true;
             }
 
-            std::cout << "FAILED TO SAVE QUOTE\n";
+            std::cerr << "Failed to save quote.\n";
             return false;
         });
 
@@ -580,7 +580,7 @@ bool Application::initialise()
 
     running = true;
 
-    worker = std::thread(&Application::workerThread, this);
+    jobProcessingService.start();
 
     return true;
 
@@ -686,7 +686,7 @@ bool Application::createWindow()
 
     if (!window)
     {
-        std::cout << "Failed creating window\n";
+            std::cerr << "Failed creating window.\n";
         return false;
     }
 
@@ -714,71 +714,15 @@ bool Application::createRenderer()
 
     if (!renderer)
     {
-        std::cout << "Failed creating renderer\n";
+            std::cerr << "Failed creating renderer.\n";
         return false;
     }
 
     return true;
 }
 
-void Application::workerThread()
-{
-    std::cout << "WORKER STARTED\n";
-
-    while (appRunning)
-    {
-        Job job;
-        bool hasJob = false;
-
-        {
-            std::lock_guard<std::mutex> lock(jobMutex);
-
-            if (!jobQueue.empty())
-            {
-                job = jobQueue.front();
-                jobQueue.pop();
-                hasJob = true;
-            }
-        }
-
-        if (!hasJob)
-        {
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(50));
-            continue;
-        }
-
-        std::cout << "WORKER: Processing job...\n";
-
-        // Calculate
-        CostResult result =
-            engine.calculate(job);
-
-        // Build UI data
-        ResultsViewModel vm =
-            ResultsViewModelBuilder::build(result);
-
-        // Store sheets
-        {
-            std::lock_guard<std::mutex> lock(resultMutex);
-
-            pendingResults.result = result;
-
-            pendingResults.viewModel = vm;
-
-            pendingResults.ready = true;
-        }
-
-        InvoicePrinter::print(result);
-
-    }
-
-    std::cout << "WORKER EXITED\n";
-}
-
 void Application::run()
 {
-    std::cout << "RUN STARTED\n";
 
     while (running)
     {
@@ -798,9 +742,6 @@ void Application::processEvents()
 
     while (SDL_PollEvent(&e))
     {
-
-        if (e.type == SDL_MOUSEWHEEL)
-            std::cout << "Application received wheel\n";
 
         ui.update(e);
 
@@ -898,26 +839,17 @@ void Application::update()
         }
     }
 
+        PendingResults completedResults;
+        if (jobProcessingService.tryTakeResult(completedResults))
         {
-            std::lock_guard<std::mutex> lock(resultMutex);
+            resultsScreen.setViewModel(completedResults.viewModel);
 
-            if (pendingResults.ready)
+            if (!completedResults.result.nestingSheets.empty())
             {
-
-                resultsScreen.setViewModel(
-                    pendingResults.viewModel);
-
-                if (!pendingResults.result.nestingSheets.empty())
-                {
-                    resultsScreen.setSheets(
-                        pendingResults.result.nestingSheets);
-
-                }
-
-                ui.setScreen(&resultsScreen);
-
-                pendingResults.ready = false;
+                resultsScreen.setSheets(completedResults.result.nestingSheets);
             }
+
+            ui.setScreen(&resultsScreen);
         }
 
         switch (state)
@@ -927,8 +859,8 @@ void Application::update()
         {
             if (startupFailed)
             {
-                std::cout
-                    << "FAILED: DatabaseManager\n";
+                std::cerr
+                    << "FAILED: DatabaseManager\\n";
 
                 running = false;
                 break;
@@ -1339,7 +1271,7 @@ void Application::render()
             artH
         };
 
-        // Panel background — visible until the PNG is loaded.
+        // Panel background - visible until the PNG is loaded.
         uiRenderer->fillRoundedRect(
             artPanel,
             artBackground,
@@ -1669,8 +1601,6 @@ void Application::render()
 
     ui.render(*uiRenderer);
 
-    drawSheets();
-
     if (loginToSplashFadingOut)
     {
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -1726,95 +1656,16 @@ void Application::toggleMode()
         : RunMode::Interactive;
 }
 
-/*
-void Application::drawSheets()
-{
-    static bool printed = false;
-
-    if (!printed)
-    {
-        std::cout << "DRAW SHEET CALLED\n";
-        printed = true;
-    }
-
-    std::vector<Sheet> localCopy;
-
-    {
-        std::lock_guard<std::mutex> lock(sheetMutex);
-        localCopy = allSheets;
-    }
-
-    static bool printedCount = false;
-
-    if (!printedCount)
-    {
-        std::cout << "Sheets: " << localCopy.size() << "\n";
-        printedCount = true;
-    }
-
-    int y = 100;
-
-    // ---------------- FIX START ----------------
-    static std::vector<size_t> lastPlacedCount;
-    static std::vector<double> lastW;
-    static std::vector<double> lastH;
-
-    if (lastPlacedCount.size() != localCopy.size())
-    {
-        lastPlacedCount.assign(localCopy.size(), (size_t)-1);
-        lastW.assign(localCopy.size(), -1.0);
-        lastH.assign(localCopy.size(), -1.0);
-    }
-    // ---------------- FIX END ----------------
-
-    for (size_t i = 0; i < localCopy.size(); i++)
-    {
-        const Sheet& sheet = localCopy[i];
-
-        // print ONLY if changed
-        if (sheet.placed.size() != lastPlacedCount[i] ||
-            sheet.width != lastW[i] ||
-            sheet.height != lastH[i])
-        {
-            std::cout << "Rendering sheet with placed: "
-                << sheet.placed.size()
-                << " size: "
-                << sheet.width << "x" << sheet.height
-                << "\n";
-
-            lastPlacedCount[i] = sheet.placed.size();
-            lastW[i] = sheet.width;
-            lastH[i] = sheet.height;
-        }
-
-        nestingRenderer.drawSheet(
-            renderer,
-            sheet,
-            100,
-            y,
-            800,
-            500
-        );
-
-        y += 520;
-    }
-}*/
-
-void Application::drawSheets()
-{}
-
 void Application::beginNewJob()
 {
     currentJob = Job();
 
     newJobScreen.clearEditor();
 
-    pendingResults = PendingResults();
+    jobProcessingService.clearPendingResults();
 
     sheets.clear();
 }
-
-
 
 void Application::destroyRenderer()
 {
@@ -1837,17 +1688,13 @@ void Application::destroyWindow()
 void Application::shutdown()
 {
     running = false;
-    appRunning = false;
 
     if (startupWorker.joinable())
     {
         startupWorker.join();
     }
 
-    if (worker.joinable())
-    {
-        worker.join();
-    }
+    jobProcessingService.stop();
 
     delete uiRenderer;
     uiRenderer = nullptr;
@@ -1887,24 +1734,9 @@ bool Application::isRunning() const
 
 void Application::calculateQuote()
 {
-    std::cout
-        << "JOB ITEMS CREATED: "
-        << currentJob.items.size()
-        << "\n";
-
-    for (const auto& item : currentJob.items)
+    if (!jobProcessingService.submit(currentJob))
     {
-        std::cout
-            << "Material : " << item.material.id << "\n"
-            << "Width    : " << item.width << "\n"
-            << "Height   : " << item.height << "\n"
-            << "Quantity : " << item.quantity << "\n"
-            << "Variant  : " << item.variantIndex << "\n\n";
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(jobMutex);
-        jobQueue.push(currentJob);
+        std::cerr << "Job processing service is not running.\n";
     }
 
     state = AppState::Calculating;

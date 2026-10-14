@@ -19,6 +19,8 @@ public:
 
     void setNewJobCallback(std::function<void()> callback);
     void setQuotesCallback(std::function<void()> callback);
+    void setCustomerDatabaseCallback(std::function<void()> callback);
+    void setExitCallback(std::function<void()> callback);
 
     void update(const SDL_Event& e) override;
 
@@ -54,4 +56,6 @@ private:
 
     std::function<void()> newJobCallback;
     std::function<void()> quotesCallback;
+    std::function<void()> customerDatabaseCallback;
+    std::function<void()> exitCallback;
 };

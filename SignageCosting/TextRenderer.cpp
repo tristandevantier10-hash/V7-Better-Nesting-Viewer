@@ -57,7 +57,7 @@ void TextRenderer::drawText(
 
     if (!surface)
     {
-        std::cout << TTF_GetError() << std::endl;
+        std::cerr << TTF_GetError() << std::endl;
         return;
     }
 
@@ -69,7 +69,7 @@ void TextRenderer::drawText(
     if (!texture)
     {
         SDL_FreeSurface(surface);
-        std::cout << SDL_GetError() << std::endl;
+        std::cerr << SDL_GetError() << std::endl;
         return;
     }
 

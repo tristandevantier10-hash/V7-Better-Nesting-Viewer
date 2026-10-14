@@ -1,3 +1,6 @@
+# UNSUPPORTED LEGACY BUILD FILE
+# This Dev-C++ makefile targets an older 32-bit source/dependency layout and
+# does not build the current application. Use SignageCosting.sln with x64.
 # Project: Signage Costing Program
 # Makefile created by Embarcadero Dev-C++ 6.3
 

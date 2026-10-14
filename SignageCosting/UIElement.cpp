@@ -22,6 +22,9 @@ void UIElement::update(const SDL_Event&)
 void UIElement::render(Renderer&)
 {}
 
+void UIElement::renderOverlay(Renderer&)
+{}
+
 void UIElement::setPosition(int x, int y)
 {
     bounds.x = x;

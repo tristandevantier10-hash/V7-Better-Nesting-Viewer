@@ -1,16 +1,10 @@
-﻿#include "CostEngine.h"
+#include "CostEngine.h"
 #include "PricingRules.h"
-#include "NestingEngine.h"
 #include "PricingDatabase.h"
-#include <iomanip>
 #include <iostream>
 #include <algorithm>
-#include <cctype>
-#include "NestingCalculator.h"
 #include "RollOptimizer.h"
 #include "ProductionPricingDatabase.h"
-#include "NestingCore.h"
-#include <cmath>
 #include "NestGroup.h"
 #include "NestingManager.h"
 
@@ -22,7 +16,6 @@ CostResult CostEngine::calculate(Job job)
 
     result.customer = job.customer;
 
-    NestingEngine nesting;
     NestingManager nestingManager;
 
     auto nestingResult =
@@ -35,23 +28,13 @@ CostResult CostEngine::calculate(Job job)
     result.productionCost = 0.0;
     result.sellPrice = 0.0;
 
-    bool useCoreNesting = true;   // toggle stays for safety
-
     const double labourRate = PricingDatabase::getLabourPerM2();
     const double markup = PricingDatabase::getMarkupPercent();
-
-    int jobCounter = 1;
 
     for (size_t i = 0; i < job.items.size(); i++)
     {
         auto& item = job.items[i];
         const Material& m = item.material;
-
-        std::cout << "\n===== COST ENGINE =====\n";
-        std::cout << "Category : " << item.material.category << "\n";
-        std::cout << "Roll Width : " << item.selectedRollWidth << "\n";
-        std::cout << "Sheet Width : " << item.selectedSheetFormat.width << "\n";
-        std::cout << "Sheet Height: " << item.selectedSheetFormat.height << "\n";
 
         if (m.variants.empty())
         {
@@ -132,16 +115,12 @@ CostResult CostEngine::calculate(Job job)
         // =====================================================
 
         std::string rule = m.cost_model;
-        double resolvedRoll = item.selectedRollWidth;
-
-        RollSolution best{};
 
         if (rule == "ROLL_AREA")
         {
             calculateRollItem(
                 item,
                 itemResult,
-                result,
                 totalArea,
                 materialCost);
         }
@@ -156,8 +135,6 @@ CostResult CostEngine::calculate(Job job)
                 item,
                 *currentGroup,
                 itemResult,
-                result,
-                totalArea,
                 materialCost);
         }
 
@@ -208,37 +185,6 @@ CostResult CostEngine::calculate(Job job)
     // sellPrice already accumulated per item, so margin is valid
     result.margin = result.sellPrice - result.totalCost;
 
-    std::cout << "\n========== NEST GROUPS ==========\n";
-
-    for (const auto& group : nestingResult.groups)
-    {
-        std::cout << "\nMaterial : " << group.materialId << "\n";
-        std::cout << "Variant  : " << group.variant << "\n";
-
-        if (group.isRoll)
-            std::cout << "Roll     : " << group.rollWidth << "\n";
-        else
-            std::cout << "Sheet    : "
-            << group.sheetWidth
-            << " x "
-            << group.sheetHeight
-            << "\n";
-
-        std::cout << "Rects:\n";
-
-        for (const auto& r : group.rects)
-        {
-            std::cout
-                << "   "
-                << r.width
-                << " x "
-                << r.height
-                << " Qty "
-                << r.quantity
-                << "\n";
-        }
-    }
-
     return result;
 }
 
@@ -263,220 +209,55 @@ void CostEngine::calculateGenericItem(
 void CostEngine::calculateRollItem(
     const JobItem& item,
     ItemCostResult& itemResult,
-    CostResult& result,
     double totalArea,
     double& materialCost)
 {
-    const Material& m = item.material;
+    const Material& material = item.material;
+    const MaterialVariant& variant = material.variants[item.variantIndex];
 
-    const MaterialVariant& v =
-        m.variants[item.variantIndex];
+    std::vector<double> rollOptions;
+    if (item.autoRoll)
+    {
+        rollOptions.assign(variant.roll_widths.begin(), variant.roll_widths.end());
+    }
+    else
+    {
+        rollOptions.push_back(item.selectedRollWidth);
+    }
 
-    NestingCore core;
+    RollSolution solution = RollOptimizer::evaluate(
+        item.width,
+        item.height,
+        item.quantity,
+        rollOptions);
 
-    RollSolution best{};
+    const double requiredMeters = solution.lengthUsed;
+    const double usedArea = (solution.rollWidth / 1000.0) * requiredMeters;
+    solution.wasteArea = usedArea - totalArea;
+    solution.efficiency = (totalArea / usedArea) * 100.0;
 
-        std::vector<double> rollOptions;
+    itemResult.rollSolution = solution;
+    itemResult.rollWidth = solution.rollWidth;
 
-        if (item.autoRoll)
-        {
-            // full search space
-            rollOptions.assign(v.roll_widths.begin(), v.roll_widths.end());
-        }
-        else
-        {
-            // constrained search space (ONLY selected width)
-            rollOptions.push_back(item.selectedRollWidth);
-        }
+    materialCost = requiredMeters *
+        PricingDatabase::getMaterialCost(material.id, variant.label);
+}
 
-        best = RollOptimizer::evaluate(
-            item.width,
-            item.height,
-            item.quantity,
-            rollOptions
-        );
-
-        double localResolvedRoll = best.rollWidth;
-        double rollWidthM = localResolvedRoll / 1000.0;
-
-        double requiredMeters = best.lengthUsed;
-
-        best.wasteArea =
-            (best.rollWidth / 1000.0 * requiredMeters) - totalArea;
-
-        best.efficiency =
-            (totalArea /
-                (best.rollWidth / 1000.0 * requiredMeters)) * 100.0;
-
-        itemResult.rollSolution = best;
-        itemResult.rollWidth = localResolvedRoll;
-
-        Rect r
-        {
-            (int)item.width,
-            (int)item.height,
-            item.quantity
-        };
-
-        std::vector<Rect> rects = { r };
-
-        int rollLength =
-            static_cast<int>(
-                std::ceil(best.lengthUsed * 1000.0));
-
-        std::cout << "\n===== ROLL LAYOUT =====\n";
-        std::cout << "Roll Width  : " << best.rollWidth << "\n";
-        std::cout << "Length Used : " << best.lengthUsed << " m\n";
-        std::cout << "Roll Length : " << rollLength << " mm\n";
-        std::cout << "Qty         : " << item.quantity << "\n";
-        std::cout << "Item        : "
-            << item.width << " x "
-            << item.height << "\n";
-
-        std::vector<Sheet> layouts =
-            core.pack(
-                rects,
-                (int)best.rollWidth,
-                rollLength,
-                PlacementStrategy::BestShortSideFit);
-
-        std::cout << "Sheets Produced: "
-            << layouts.size()
-            << "\n";
-
-        std::cout << "\n===== ROLL PREVIEW DEBUG =====\n";
-        std::cout << "Layouts: " << layouts.size() << "\n";
-
-        for (size_t i = 0; i < layouts.size(); i++)
-        {
-            std::cout << "Sheet " << i + 1
-                << " placed: "
-                << layouts[i].placed.size()
-                << "\n";
-        }
-
-        std::cout
-            << "Roll Width : " << best.rollWidth << "\n"
-            << "Roll Length: " << rollLength << "\n";
-
-        materialCost = requiredMeters *
-            PricingDatabase::getMaterialCost(m.id, v.label);
-        }
-
-        void CostEngine::calculateSheetItem(
-            const JobItem& item,
-            const NestGroup& group,
-            ItemCostResult& itemResult,
-            CostResult& result,
-            double totalArea,
-            double& materialCost)
-        {
-
-    const Material& m = item.material;
-
-    const MaterialVariant& v =
-        m.variants[item.variantIndex];
-
-    const auto& sheetLayouts = group.layouts;
-
-    const int sheetCount =
-        static_cast<int>(sheetLayouts.size());
+void CostEngine::calculateSheetItem(
+    const JobItem& item,
+    const NestGroup& group,
+    ItemCostResult& itemResult,
+    double& materialCost)
+{
+    const Material& material = item.material;
+    const MaterialVariant& variant = material.variants[item.variantIndex];
+    const int sheetCount = static_cast<int>(group.layouts.size());
 
     itemResult.sheetsUsed = sheetCount;
-
     itemResult.width = item.selectedSheetFormat.width;
     itemResult.height = item.selectedSheetFormat.height;
 
     const double unitCost =
-        PricingDatabase::getMaterialCost(m.id, v.label);
-
+        PricingDatabase::getMaterialCost(material.id, variant.label);
     materialCost = sheetCount * unitCost;
-
-    std::cout << "\n===== MATERIAL DEBUG =====\n";
-    std::cout << "Material : " << m.id << "\n";
-    std::cout << "Variant  : " << v.label << "\n";
-    std::cout << "UnitCost : " << unitCost << "\n";
-    std::cout << "Sheets   : " << sheetCount << "\n";
-    std::cout << "MaterialCost = " << materialCost << "\n";
-
-    // =====================================================
-    // ORIGINAL DEBUG OUTPUT (UNCHANGED STYLE)
-    // =====================================================
-    std::cout << "\n====================================\n";
-    std::cout << "NESTING DEBUG | Material: " << m.id
-        << " | Variant: " << v.label << "\n";
-
-    std::cout
-        << "Sheet Size        : "
-        << item.selectedSheetFormat.width
-        << " x "
-        << item.selectedSheetFormat.height
-        << " mm\n";
-
-    std::cout
-        << "Input Object Size : "
-        << item.width << " x "
-        << item.height
-        << " mm\n";
-
-    std::cout
-        << "Quantity          : "
-        << item.quantity
-        << "\n";
-
-    std::cout
-        << "Sheets Used       : "
-        << sheetCount
-        << "\n";
-
-    double sheetArea =
-        (
-            item.selectedSheetFormat.width *
-            item.selectedSheetFormat.height
-            ) / 1000000.0;
-
-    double objectArea =
-        (item.width * item.height * item.quantity) / 1000000.0;
-
-    std::cout
-        << "Object Area       : "
-        << objectArea
-        << " m2\n";
-
-    std::cout
-        << "Single Sheet Area : "
-        << sheetArea
-        << " m2\n";
-
-    double usedArea =
-        objectArea / (sheetArea * sheetCount) * 100.0;
-
-    std::cout
-        << "Material Usage    : "
-        << usedArea
-        << "%\n";
-
-    std::cout << "====================================\n";
-
-    for (size_t s = 0; s < sheetLayouts.size(); s++)
-    {
-        const Sheet& sheet = sheetLayouts[s];
-
-        std::cout << "\n--- Sheet " << (s + 1) << " ---\n";
-        std::cout << "Placed Rects: " << sheet.placed.size() << "\n";
-
-        for (size_t i = 0; i < sheet.placed.size(); i++)
-        {
-            const PlacedRect& pr = sheet.placed[i];
-
-            std::cout
-                << "  Rect " << (i + 1)
-                << " | x=" << pr.x
-                << " y=" << pr.y
-                << " w=" << pr.width
-                << " h=" << pr.height
-                << " rot=" << (pr.rotated ? "Y" : "N")
-                << "\n";
-        }
-    }
 }

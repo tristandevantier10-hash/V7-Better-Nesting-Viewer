@@ -1,6 +1,5 @@
 #include "NestingEngine.h"
 #include <algorithm>
-#include <iostream>
 
 // This is the Nesting Code //
 
@@ -69,23 +68,6 @@ void NestingEngine::newSheet(std::vector<Sheet>& sheets)
 
 std::vector<Sheet> NestingEngine::calculateSheets(const std::vector<Rect>& items)
 {
-    std::cout << "\n===== NESTING ENGINE INPUT =====\n";
-    std::cout << "Sheet Width  : " << sheetWidth << "\n";
-    std::cout << "Sheet Height : " << sheetHeight << "\n";
-    std::cout << "Items Count  : " << items.size() << "\n";
-
-    for (const auto& item : items)
-    {
-        std::cout << "Item: "
-            << item.width << " x "
-            << item.height
-            << " Qty: "
-            << item.quantity
-            << "\n";
-    }
-
-    std::cout << "================================\n";
-
 
     std::vector<Sheet> sheets;
 
@@ -138,8 +120,6 @@ std::vector<Sheet> NestingEngine::calculateSheets(const std::vector<Rect>& items
             }
         }
     }
-
-
 
     return sheets;
 }

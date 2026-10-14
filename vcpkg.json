@@ -1,0 +1,14 @@
+{
+  "name": "signage-costing",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "curl",
+    "libharu",
+    "lunasvg",
+    "nlohmann-json",
+    "plutovg",
+    "sdl2",
+    "sdl2-image",
+    "sdl2-ttf"
+  ]
+}

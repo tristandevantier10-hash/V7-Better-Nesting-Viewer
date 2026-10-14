@@ -4,18 +4,15 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include <thread>
-#include <mutex>
-#include <queue>
 #include <atomic>
 #include "AppState.h"
 #include "RunMode.h"
 #include "Job.h"
-#include "CostEngine.h"
+#include "JobProcessingService.h"
 #include "NestingRender.h"
 #include "UIManager.h"
 #include "MainMenuScreen.h"
 #include "ResultsScreen.h"
-#include "PendingResults.h"
 #include "Renderer.h"
 #include "FontManager.h"
 #include "Theme.h"
@@ -143,15 +140,7 @@ private:
 
     void addInteractiveItem();
 
-    void workerThread();
-
     void calculateQuote();
-
-    //=================================================
-    // Rendering
-    //=================================================
-
-    void drawSheets();
 
     //=================================================
     // SDL Objects
@@ -197,21 +186,9 @@ private:
     // Business Objects
     //=================================================
 
-    CostEngine engine;
+    JobProcessingService jobProcessingService;
 
     Job currentJob;
-
-    PendingResults pendingResults;
-
-    std::queue<Job> jobQueue;
-
-    std::mutex jobMutex;
-
-    std::thread worker;
-
-    std::atomic<bool> appRunning{ true };
-
-    std::mutex resultMutex;
 
     //=================================================
     // Rendering Objects
