@@ -175,6 +175,7 @@
     <ClInclude Include="Panel.h" />
     <ClInclude Include="PanelStyle.h" />
     <ClInclude Include="PageHeader.h" />
+    <ClInclude Include="PrimaryNavigation.h" />
     <ClInclude Include="PlacementStrategy.h" />
     <ClInclude Include="QuoteDatabase.h" />
     <ClInclude Include="QuoteHistoryScreen.h" />
@@ -186,6 +187,7 @@
     <ClInclude Include="ResultsViewModelBuilder.h" />
     <ClCompile Include="RollOptimizer.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="SettingsScreen.cpp" />
     <ClCompile Include="SheetPreviewPanel.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="TestJobFactory.cpp" />
@@ -237,6 +239,7 @@
     <ClInclude Include="RollOptimizer.h" />
     <ClInclude Include="RunMode.h" />
     <ClInclude Include="Screen.h" />
+    <ClInclude Include="SettingsScreen.h" />
     <ClInclude Include="SheetPreviewPanel.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="TestJobFactory.h" />

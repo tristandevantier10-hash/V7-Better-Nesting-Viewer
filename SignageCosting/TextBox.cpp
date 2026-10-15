@@ -4,10 +4,11 @@
 #include "Theme.h"
 #include "TextRenderer.h"
 #include "Label.h"
+#include "Metrics.h"
 
 TextBox::TextBox()
 {
-    setSize(200, 32);
+    setSize(200, Metrics::ControlHeight);
 }
 
 void TextBox::setText(const std::string& value)
@@ -106,7 +107,7 @@ void TextBox::render(Renderer& renderer)
     renderer.fillRoundedRect(
         getBounds(),
         { 255,255,255,255 },
-        8);
+        Metrics::ControlRadius);
 
     SDL_Color borderColour =
         focused
@@ -116,7 +117,7 @@ void TextBox::render(Renderer& renderer)
     renderer.drawRoundedRing(
         getBounds(),
         borderColour,
-        8,
+        Metrics::ControlRadius,
         focused ? 2 : 1);
 
     std::string displayText = text;
@@ -128,8 +129,8 @@ void TextBox::render(Renderer& renderer)
     {
         renderer.drawText(
             placeholder,
-            getX() + 8,
-            getY() + 8,
+            getX() + Metrics::ControlPaddingX,
+            getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
             LabelStyle::Normal,
             SDL_Color{ 150,150,150,255 });
     }
@@ -137,8 +138,8 @@ void TextBox::render(Renderer& renderer)
     {
         renderer.drawText(
             displayText,
-            getX() + 8,
-            getY() + 8,
+            getX() + Metrics::ControlPaddingX,
+            getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
             LabelStyle::Normal,
             DefaultTheme.darkText);
     }
@@ -146,7 +147,7 @@ void TextBox::render(Renderer& renderer)
     if (focused && showCaret)
     {
         int caretX =
-            bounds.x + 8 +
+            bounds.x + Metrics::ControlPaddingX +
             TextRenderer::getTextWidth(displayText);
 
         SDL_SetRenderDrawColor(

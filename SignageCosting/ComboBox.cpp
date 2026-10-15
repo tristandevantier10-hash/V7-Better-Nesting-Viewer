@@ -1,6 +1,7 @@
 #include "ComboBox.h"
 #include "Renderer.h"
 #include "Theme.h"
+#include "Metrics.h"
 #include <algorithm>
 
 namespace
@@ -11,7 +12,7 @@ namespace
 
 ComboBox::ComboBox()
 {
-    setSize(200, 32);
+    setSize(200, Metrics::ControlHeight);
 }
 
 ComboBox::~ComboBox()
@@ -108,7 +109,7 @@ void ComboBox::update(const SDL_Event& e)
         const SDL_Rect menu = getDropdownBounds();
         SDL_Point mouse{ e.motion.x, e.motion.y };
         if (SDL_PointInRect(&mouse, &menu))
-            hoveredItem = firstVisibleItem + (e.motion.y - menu.y) / 30;
+            hoveredItem = firstVisibleItem + (e.motion.y - menu.y) / Metrics::DropdownOptionHeight;
         else
             hoveredItem = -1;
         return;
@@ -172,7 +173,7 @@ void ComboBox::update(const SDL_Event& e)
         const SDL_Rect menu = getDropdownBounds();
         if (SDL_PointInRect(&mouse, &menu))
         {
-            const int row = (my - menu.y) / 30;
+            const int row = (my - menu.y) / Metrics::DropdownOptionHeight;
             const int index = firstVisibleItem + row;
             if (index >= 0 && index < static_cast<int>(items.size()))
             {
@@ -209,7 +210,7 @@ SDL_Rect ComboBox::getDropdownBounds() const
 {
     const int visibleCount = std::min(8, static_cast<int>(items.size()));
     const SDL_Rect bounds = getBounds();
-    return { bounds.x, bounds.y + bounds.h, bounds.w, visibleCount * 30 };
+    return { bounds.x, bounds.y + bounds.h, bounds.w, visibleCount * Metrics::DropdownOptionHeight };
 }
 
 void ComboBox::renderOverlay(Renderer& renderer)
@@ -218,21 +219,21 @@ void ComboBox::renderOverlay(Renderer& renderer)
         return;
 
     const SDL_Rect menu = getDropdownBounds();
-    renderer.fillRect(menu, { 255, 255, 255, 255 });
-    renderer.drawRect(menu, DefaultTheme.border);
+    renderer.fillRoundedRect(menu, { 255, 255, 255, 255 }, Metrics::ControlRadius);
+    renderer.drawRoundedRect(menu, DefaultTheme.border, Metrics::ControlRadius);
 
     const int end = std::min(
-        static_cast<int>(items.size()), firstVisibleItem + menu.h / 30);
+        static_cast<int>(items.size()), firstVisibleItem + menu.h / Metrics::DropdownOptionHeight);
     for (int index = firstVisibleItem; index < end; ++index)
     {
-        const SDL_Rect row{ menu.x + 1, menu.y + (index - firstVisibleItem) * 30,
-            menu.w - 2, 30 };
+        const SDL_Rect row{ menu.x + 1, menu.y + (index - firstVisibleItem) * Metrics::DropdownOptionHeight,
+            menu.w - 2, Metrics::DropdownOptionHeight };
         if (index == hoveredItem)
             renderer.fillRect(row, { 235, 243, 249, 255 });
         else if (index == selectedIndex)
             renderer.fillRect(row, { 245, 247, 249, 255 });
 
-        renderer.drawText(items[index], row.x + 11, row.y + 7);
+        renderer.drawText(items[index], row.x + Metrics::ControlPaddingX, row.y + 5);
     }
 
     if (items.size() > 8)
@@ -257,7 +258,7 @@ void ComboBox::render(Renderer& renderer)
     renderer.fillRoundedRect(
         r,
         { 255,255,255,255 },
-        8);
+        Metrics::ControlRadius);
 
     //==================================================
     // Border
@@ -265,9 +266,9 @@ void ComboBox::render(Renderer& renderer)
 
     renderer.drawRoundedRing(
         r,
-        DefaultTheme.border,
-        8,
-        1);
+        dropdownOpen ? DefaultTheme.accent : DefaultTheme.border,
+        Metrics::ControlRadius,
+        dropdownOpen ? 2 : 1);
 
     //==================================================
     // Selected Text
@@ -275,8 +276,8 @@ void ComboBox::render(Renderer& renderer)
 
     renderer.drawText(
         getSelectedText(),
-        getX() + 12,
-        getY() + 8);
+        getX() + Metrics::ControlPaddingX,
+        getY() + (getHeight() - Metrics::ControlTextHeight) / 2);
 
     //==================================================
     // Dropdown Indicator

@@ -68,8 +68,8 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     rightContainer->setLayout(std::make_unique<VerticalLayout>());
     rightContainer->setStyle(PanelStyle::Card);
     rightContainer->setBorderVisible(false);
-    rightContainer->setPadding(30);
-    rightContainer->setSpacing(20);
+    rightContainer->setPadding(Metrics::SpaceXL);
+    rightContainer->setSpacing(Metrics::SpaceL);
 
     contentPanel->addLayoutElement(
         rightContainer,
@@ -157,7 +157,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     workspace->setStyle(PanelStyle::Card);
     workspace->setBorderVisible(false);
     workspace->setPadding(0);
-    workspace->setSpacing(18);
+    workspace->setSpacing(Metrics::SpaceL);
 
     rightContainer->addLayoutElement(
         workspace,
@@ -172,7 +172,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     toolbar->setStyle(PanelStyle::Card);
     toolbar->setBorderVisible(false);
     toolbar->setPadding(0);
-    toolbar->setSpacing(12);
+    toolbar->setSpacing(Metrics::SpaceM);
 
     workspace->addLayoutElement(
         toolbar,
@@ -214,7 +214,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
         std::make_unique<HorizontalLayout>());
 
     searchRow->setBorderVisible(false);
-    searchRow->setSpacing(12);
+    searchRow->setSpacing(Metrics::SpaceM);
     searchRow->setBackgroundColour(
         { 255,255,255,255 });
 

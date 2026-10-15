@@ -1,6 +1,7 @@
 #include "Button.h"
 #include "Renderer.h"
 #include "iostream"
+#include "Metrics.h"
 
 Button::Button()
 {}
@@ -95,12 +96,12 @@ void Button::render(Renderer& renderer)
         renderer.fillRoundedRect(
             bounds,
             background,
-            7);
+            Metrics::ButtonRadius);
 
         renderer.drawRoundedRect(
             bounds,
             border,
-            7);
+            Metrics::ButtonRadius);
 
         renderer.drawText(
             this->text,
@@ -128,7 +129,7 @@ void Button::render(Renderer& renderer)
         renderer.fillRoundedRect(
             bounds,
             backgroundColour,
-            7);
+            Metrics::ButtonRadius);
 
         renderer.drawText(
             text,
@@ -172,7 +173,7 @@ void Button::render(Renderer& renderer)
     renderer.fillRoundedRect(
         bounds,
         backgroundColour,
-        7);
+        Metrics::ButtonRadius);
 
     // White text
     SDL_Color textColour =

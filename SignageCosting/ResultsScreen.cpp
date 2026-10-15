@@ -55,8 +55,8 @@ ResultsScreen::ResultsScreen()
         std::make_unique<VerticalLayout>());
 
     mainContainer->setBorderVisible(false);
-    mainContainer->setPadding(34);
-    mainContainer->setSpacing(18);
+    mainContainer->setPadding(Metrics::SpaceXL);
+    mainContainer->setSpacing(Metrics::SpaceL);
 
     contentPanel->addLayoutElement(
         mainContainer,
@@ -79,7 +79,7 @@ std::shared_ptr<Panel> ResultsScreen::createCard()
 
     card->setStyle(PanelStyle::Card);
     card->setBorderVisible(true);
-    card->setPadding(18);
+    card->setPadding(Metrics::PanelPadding);
 
     card->setLayout(
         std::make_unique<VerticalLayout>());
@@ -502,7 +502,7 @@ void ResultsScreen::buildContentArea()
 
     content->setBorderVisible(false);
 
-    content->setSpacing(18);
+    content->setSpacing(Metrics::SpaceL);
 
     mainContainer->addLayoutElement(
         content,
@@ -519,7 +519,7 @@ void ResultsScreen::buildContentArea()
         std::make_unique<VerticalLayout>());
 
     leftColumn->setBorderVisible(false);
-    leftColumn->setSpacing(16);
+    leftColumn->setSpacing(Metrics::SpaceL);
 
     content->addLayoutElement(
         leftColumn,
@@ -662,7 +662,7 @@ void ResultsScreen::buildContentArea()
         std::make_unique<VerticalLayout>());
 
     rightColumn->setBorderVisible(false);
-    rightColumn->setSpacing(16);
+    rightColumn->setSpacing(Metrics::SpaceL);
 
     content->addLayoutElement(
         rightColumn,
@@ -1399,7 +1399,7 @@ void ResultsScreen::showCostBreakdown()
         std::make_unique<VerticalLayout>());
 
     breakdownLayout->setBorderVisible(false);
-    breakdownLayout->setSpacing(12);
+    breakdownLayout->setSpacing(Metrics::SpaceM);
 
     breakdownCard->addLayoutElement(
         breakdownLayout,
@@ -1518,7 +1518,7 @@ void ResultsScreen::showQuote()
         std::make_unique<HorizontalLayout>());
 
     header->setBorderVisible(false);
-    header->setSpacing(20);
+    header->setSpacing(Metrics::SpaceL);
 
     mainContainer->addLayoutElement(
         header,
@@ -1979,7 +1979,7 @@ void ResultsScreen::showQuote()
 
     accountRow->setBorderVisible(true);
 
-    accountRow->setSpacing(20);
+    accountRow->setSpacing(Metrics::SpaceL);
 
     quoteLayout->addLayoutElement(
         accountRow,
@@ -2561,7 +2561,7 @@ void ResultsScreen::showQuote()
         std::make_unique<HorizontalLayout>());
 
     quoteActions->setBorderVisible(false);
-    quoteActions->setSpacing(12);
+    quoteActions->setSpacing(Metrics::SpaceM);
 
     mainContainer->addLayoutElement(
         quoteActions,

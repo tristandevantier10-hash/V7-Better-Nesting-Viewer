@@ -23,6 +23,7 @@
 #include "LoginScreen.h"
 #include "AuthenticationService.h"
 #include "QuoteHistoryScreen.h"
+#include "SettingsScreen.h"
 
 class Application
 {
@@ -179,6 +180,8 @@ private:
     CustomerEditorScreen customerEditorScreen;
 
     QuoteHistoryScreen quoteHistoryScreen;
+
+    SettingsScreen settingsScreen;
 
     ApplicationShell shell;
 

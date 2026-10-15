@@ -1,6 +1,7 @@
 #include "FormPanel.h"
 #include "VerticalLayout.h"
 #include "PropertyRow.h"
+#include "Metrics.h"
 
 FormPanel::FormPanel()
 {
@@ -13,7 +14,7 @@ void FormPanel::addRow(
     addLayoutElement(
         row,
         SizePolicy::Fixed,
-        32);
+        Metrics::ControlHeight);
 }
 
 std::shared_ptr<PropertyRow> FormPanel::addRow(

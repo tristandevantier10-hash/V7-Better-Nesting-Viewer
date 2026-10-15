@@ -50,29 +50,45 @@ QuoteHistoryScreen::QuoteHistoryScreen()
     header->addLayoutElement(overviewButton, SizePolicy::Fixed, 150);
     addLayoutElement(header, SizePolicy::Fixed, Metrics::HeaderHeight);
 
+    auto pageContent = std::make_shared<Panel>();
+    pageContent->setLayout(std::make_unique<HorizontalLayout>());
+    addLayoutElement(pageContent, SizePolicy::Fill);
+
+    auto navigation = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::Quotes,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        });
+    pageContent->addLayoutElement(
+        navigation,
+        SizePolicy::Fixed,
+        Metrics::SidebarWidth);
+
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
-    body->setPadding(20);
-    body->setSpacing(12);
-    addLayoutElement(body, SizePolicy::Fill);
+    body->setPadding(Metrics::SpaceL);
+    body->setSpacing(Metrics::SpaceM);
+    pageContent->addLayoutElement(body, SizePolicy::Fill);
 
     searchBox = std::make_shared<TextBox>();
     searchBox->setPlaceholder("Search by quote reference, customer, contact, status or date...");
     searchBox->setTextChangedCallback([this](const std::string& query) { filterQuotes(query); });
-    body->addLayoutElement(searchBox, SizePolicy::Fixed, 42);
+    body->addLayoutElement(searchBox, SizePolicy::Fixed, Metrics::ControlHeight);
 
     auto listTitle = std::make_shared<Label>();
     listTitle->setText("QUOTE HISTORY");
     listTitle->setStyle(LabelStyle::Small);
-    body->addLayoutElement(listTitle, SizePolicy::Fixed, 24);
+    body->addLayoutElement(listTitle, SizePolicy::Fixed, Metrics::SmallRow);
 
     quoteGrid = std::make_shared<DataGrid>();
-    quoteGrid->addColumn("Reference", 210);
-    quoteGrid->addColumn("Customer", 280);
-    quoteGrid->addColumn("Date", 170);
-    quoteGrid->addColumn("Status", 130);
-    quoteGrid->addColumn("Total", 160);
-    quoteGrid->setRowHeight(30);
+    quoteGrid->addColumn("Reference", 180);
+    quoteGrid->addColumn("Customer", 210);
+    quoteGrid->addColumn("Date", 140);
+    quoteGrid->addColumn("Status", 110);
+    quoteGrid->addColumn("Total", 130);
+    quoteGrid->setRowHeight(Metrics::NormalRow);
     quoteGrid->setTextStyle(LabelStyle::Small);
     quoteGrid->setSelectionChangedCallback([this](int row) { showQuote(row); });
     body->addLayoutElement(quoteGrid, SizePolicy::Fill);
@@ -80,14 +96,14 @@ QuoteHistoryScreen::QuoteHistoryScreen()
     auto detailTitle = std::make_shared<Label>();
     detailTitle->setText("SELECTED QUOTE");
     detailTitle->setStyle(LabelStyle::Small);
-    body->addLayoutElement(detailTitle, SizePolicy::Fixed, 24);
+    body->addLayoutElement(detailTitle, SizePolicy::Fixed, Metrics::SmallRow);
 
     detailGrid = std::make_shared<DataGrid>();
-    detailGrid->addColumn("Quote details", 190);
-    detailGrid->addColumn("Value", 900);
-    detailGrid->setRowHeight(30);
+    detailGrid->addColumn("Quote details", 170);
+    detailGrid->addColumn("Value", 650);
+    detailGrid->setRowHeight(Metrics::NormalRow);
     detailGrid->setTextStyle(LabelStyle::Small);
-    body->addLayoutElement(detailGrid, SizePolicy::Fixed, 220);
+    body->addLayoutElement(detailGrid, SizePolicy::Fixed, 190);
     refreshQuotes();
 }
 
@@ -104,6 +120,12 @@ void QuoteHistoryScreen::refreshQuotes()
 void QuoteHistoryScreen::setBackCallback(std::function<void()> callback)
 {
     backCallback = callback;
+}
+
+void QuoteHistoryScreen::setNavigationCallback(
+    std::function<void(PrimaryNavigationRoute)> callback)
+{
+    navigationCallback = callback;
 }
 
 void QuoteHistoryScreen::setQuoteSelectedCallback(

@@ -21,6 +21,7 @@
 #include <string>
 #include "QuoteDatabase.h"
 #include "QuotePdfExporter.h"
+#include "PrimaryNavigation.h"
 #include <shellapi.h>
 #include <filesystem>
 #include <system_error>
@@ -348,6 +349,49 @@ bool Application::initialise()
             customerSelectionScreen.refreshCustomers();
             ui.setScreen(&customerSelectionScreen);
         });
+
+    mainMenu.setSettingsCallback(
+        [this]()
+        {
+            ui.setScreen(&settingsScreen);
+        });
+
+    settingsScreen.setBackCallback(
+        [this]()
+        {
+            ui.setScreen(&mainMenu);
+        });
+
+    auto navigateFromPage = [this](PrimaryNavigationRoute route)
+    {
+        switch (route)
+        {
+        case PrimaryNavigationRoute::NewJob:
+            customerSelectionScreen.setSelectionMode(true);
+            customerSelectionScreen.refreshCustomers();
+            ui.setScreen(&customerSelectionScreen);
+            break;
+        case PrimaryNavigationRoute::Quotes:
+            quoteHistoryScreen.refreshQuotes();
+            ui.setScreen(&quoteHistoryScreen);
+            break;
+        case PrimaryNavigationRoute::CustomerDatabase:
+            customerSelectionScreen.setSelectionMode(false);
+            customerSelectionScreen.refreshCustomers();
+            ui.setScreen(&customerSelectionScreen);
+            break;
+        case PrimaryNavigationRoute::Settings:
+            ui.setScreen(&settingsScreen);
+            break;
+        case PrimaryNavigationRoute::Exit:
+            state = AppState::Exit;
+            break;
+        case PrimaryNavigationRoute::MaterialDatabase:
+            break;
+        }
+    };
+    quoteHistoryScreen.setNavigationCallback(navigateFromPage);
+    settingsScreen.setNavigationCallback(navigateFromPage);
 
     mainMenu.setExitCallback(
         [this]()

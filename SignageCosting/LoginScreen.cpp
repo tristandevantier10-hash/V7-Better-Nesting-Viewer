@@ -10,8 +10,8 @@ LoginScreen::LoginScreen()
 {
     setLayout(std::make_unique<VerticalLayout>());
 
-    setPadding(24);
-    setSpacing(12);
+    setPadding(Metrics::PanelPadding);
+    setSpacing(Metrics::SpaceM);
     setBackgroundColour(SDL_Color{ 245, 247, 249, 255 });
     setBorderVisible(false);
 
@@ -82,8 +82,8 @@ LoginScreen::LoginScreen()
     auto loginPanel = std::make_shared<Panel>();
     loginPanel->setStyle(PanelStyle::Card);
     loginPanel->setBorderVisible(true);
-    loginPanel->setPadding(16);
-    loginPanel->setSpacing(8);
+    loginPanel->setPadding(Metrics::SpaceL);
+    loginPanel->setSpacing(Metrics::SpaceS);
 
     loginPanel->setLayout(
         std::make_unique<VerticalLayout>());

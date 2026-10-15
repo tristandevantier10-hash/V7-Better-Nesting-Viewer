@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Theme.h"
 #include "FontManager.h"
+#include "Metrics.h"
 
 SegmentedControl::SegmentedControl()
 {
@@ -126,8 +127,8 @@ void SegmentedControl::render(Renderer& renderer)
     // No fill — just the combined outline
     renderer.drawRoundedRect(
         controlBounds,
-        { 0, 0, 0, 255 },
-        7);
+        DefaultTheme.border,
+        Metrics::ControlRadius);
 
     //--------------------------------------------------
     // Animated green selection pill
@@ -137,18 +138,18 @@ void SegmentedControl::render(Renderer& renderer)
     {
         getX() +
         static_cast<int>(animatedPosition * segmentWidth) +
-        4,
+        Metrics::SpaceXS,
 
         getY() + 4,
 
         segmentWidth - 8,
-        getHeight() - 8
+        getHeight() - (Metrics::SpaceXS * 2)
     };
 
     renderer.fillRoundedRect(
         selected,
         DefaultTheme.accent,
-        7);
+        Metrics::ControlRadius);
 
     //--------------------------------------------------
     // Text

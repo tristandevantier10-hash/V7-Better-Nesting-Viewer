@@ -8,6 +8,7 @@
 #include <functional>
 #include <vector>
 #include "QuoteRecord.h"
+#include "PrimaryNavigation.h"
 
 class QuoteHistoryScreen : public Screen
 {
@@ -16,6 +17,8 @@ public:
     void update(const SDL_Event& e) override;
     void refreshQuotes();
     void setBackCallback(std::function<void()> callback);
+    void setNavigationCallback(
+        std::function<void(PrimaryNavigationRoute)> callback);
     void setQuoteSelectedCallback(std::function<void(const QuoteRecord&)> callback);
     void setViewOverviewCallback(std::function<void(const QuoteRecord&)> callback);
 
@@ -27,6 +30,7 @@ private:
     std::shared_ptr<Button> backButton;
     std::shared_ptr<Button> overviewButton;
     std::function<void()> backCallback;
+    std::function<void(PrimaryNavigationRoute)> navigationCallback;
     std::function<void(const QuoteRecord&)> quoteSelectedCallback;
     std::function<void(const QuoteRecord&)> viewOverviewCallback;
     std::vector<int> visibleQuoteIndices;

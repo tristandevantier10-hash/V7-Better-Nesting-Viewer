@@ -73,8 +73,8 @@ MainMenuScreen::MainMenuScreen()
 
     auto rightPanel = std::make_shared<Panel>();
     rightPanel->setLayout(std::make_unique<VerticalLayout>());
-    rightPanel->setPadding(20);
-    rightPanel->setSpacing(20);
+    rightPanel->setPadding(Metrics::SpaceL);
+    rightPanel->setSpacing(Metrics::SpaceL);
 
     statusPanel = std::make_shared<CardPanel>();
     statusPanel->setTitle("System Status");
@@ -171,9 +171,11 @@ MainMenuScreen::MainMenuScreen()
 
     sidebarPanel->addItem(
         "SETTINGS",
-        {},
-        "",
-        false);
+        [this]()
+        {
+            if (settingsCallback)
+                settingsCallback();
+        });
 
     sidebarPanel->addItem(
         "EXIT",
@@ -214,6 +216,11 @@ void MainMenuScreen::setCustomerDatabaseCallback(
 void MainMenuScreen::setExitCallback(std::function<void()> callback)
 {
     exitCallback = callback;
+}
+
+void MainMenuScreen::setSettingsCallback(std::function<void()> callback)
+{
+    settingsCallback = callback;
 }
 
 void MainMenuScreen::refreshStatus()

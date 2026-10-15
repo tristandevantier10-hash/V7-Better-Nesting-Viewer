@@ -1,6 +1,7 @@
 #include "NavigationPanel.h"
 #include "NavigationItem.h"
 #include "VerticalLayout.h"
+#include "Metrics.h"
 
 NavigationPanel::NavigationPanel()
 {
@@ -42,7 +43,7 @@ std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     addLayoutElement(
         item,
         SizePolicy::Fixed,
-        60);
+        Metrics::NavigationItemHeight);
 
     items.push_back(item);
 

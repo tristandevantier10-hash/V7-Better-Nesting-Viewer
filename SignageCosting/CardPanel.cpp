@@ -2,15 +2,17 @@
 #include "Renderer.h"
 #include "FontManager.h"
 #include "VerticalLayout.h"
+#include "Metrics.h"
 
 CardPanel::CardPanel()
 {
     setStyle(PanelStyle::Card);
     setLayout(std::make_unique<VerticalLayout>());
 
-    setPadding(24);
-    setSpacing(12);
+    setPadding(Metrics::PanelPadding);
+    setSpacing(Metrics::SpaceS);
 
+    headerHeight = 36;
     layout->setTopInset(headerHeight);
 }
 
@@ -41,8 +43,8 @@ void CardPanel::render(Renderer& renderer)
     {
         renderer.drawText(
             title,
-            getX() + 24,
-            getY() + 20,
+            getX() + Metrics::PanelPadding,
+            getY() + 14,
             renderer.getFontManager().getHeadingFont(),
             SDL_Color{ 45,45,45,255 });
     }

@@ -153,6 +153,9 @@
     <ClCompile Include="Screen.cpp">
       <Filter>Screens\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SettingsScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Button.cpp">
       <Filter>UI\Source Files</Filter>
     </ClCompile>
@@ -402,6 +405,12 @@
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Screen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PrimaryNavigation.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Button.h">

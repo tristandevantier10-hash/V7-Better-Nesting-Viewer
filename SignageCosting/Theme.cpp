@@ -30,7 +30,7 @@ Theme DefaultTheme =
     {55,55,55,255},
 
 	// Border //10
-    {70,70,70,255},
+    {205,210,216,255},
 
 	// Text //11 // For the Dashboard Blackbar
     {235,235,235,255},

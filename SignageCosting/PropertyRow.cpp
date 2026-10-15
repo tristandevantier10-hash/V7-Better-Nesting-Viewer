@@ -1,9 +1,10 @@
 #include "PropertyRow.h"
 #include "Renderer.h"
+#include "Metrics.h"
 
 PropertyRow::PropertyRow()
 {
-    setSize(250, 32);
+    setSize(250, Metrics::ControlHeight);
 
     setPadding(0);
     setBorderVisible(false);

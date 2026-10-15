@@ -81,8 +81,8 @@ NewJobScreen::NewJobScreen()
         PanelStyle::Card);
 
     rightContainer->setBorderVisible(false);
-    rightContainer->setPadding(30);
-    rightContainer->setSpacing(20);
+    rightContainer->setPadding(Metrics::SpaceXL);
+    rightContainer->setSpacing(Metrics::SpaceL);
 
     contentPanel->addLayoutElement(
         rightContainer,
@@ -165,7 +165,7 @@ NewJobScreen::NewJobScreen()
 
     customerHeader->setBorderVisible(false);
     customerHeader->setPadding(0);
-    customerHeader->setSpacing(8);
+    customerHeader->setSpacing(Metrics::SpaceS);
 
     customerTitle =
         std::make_shared<Label>();
@@ -251,7 +251,7 @@ NewJobScreen::NewJobScreen()
 
     workspace->setBorderVisible(false);
     workspace->setPadding(0);
-    workspace->setSpacing(18);
+    workspace->setSpacing(Metrics::SpaceL);
 
     rightContainer->addLayoutElement(
         workspace,
@@ -268,7 +268,7 @@ NewJobScreen::NewJobScreen()
     form->setBorderVisible(false);
     form->setBackgroundColour({ 255,255,255,255 });
     form->setPadding(0);
-    form->setSpacing(8);
+    form->setSpacing(Metrics::SpaceS);
 
     material =
         std::make_shared<ComboBox>();
@@ -352,7 +352,7 @@ NewJobScreen::NewJobScreen()
 
     editorHeader->setBorderVisible(false);
     editorHeader->setPadding(0);
-    editorHeader->setSpacing(8);
+    editorHeader->setSpacing(Metrics::SpaceS);
 
     auto editorTitle =
         std::make_shared<Label>();
@@ -409,7 +409,7 @@ NewJobScreen::NewJobScreen()
     actionColumn->setBorderVisible(false);
     actionColumn->setBackgroundColour(
         { 255, 255, 255, 255 });
-    actionColumn->setSpacing(12);
+    actionColumn->setSpacing(Metrics::SpaceM);
 
     //==================================================
     // Input Area
@@ -425,7 +425,7 @@ NewJobScreen::NewJobScreen()
         std::make_unique<HorizontalLayout>());
 
     inputArea->setBorderVisible(false);
-    inputArea->setSpacing(20);
+    inputArea->setSpacing(Metrics::SpaceL);
 
     inputArea->addLayoutElement(
         form,
@@ -457,7 +457,7 @@ NewJobScreen::NewJobScreen()
 
     itemsHeader->setBorderVisible(false);
     itemsHeader->setPadding(0);
-    itemsHeader->setSpacing(10);
+    itemsHeader->setSpacing(Metrics::SpaceM);
 
     workspace->addLayoutElement(
         itemsHeader,

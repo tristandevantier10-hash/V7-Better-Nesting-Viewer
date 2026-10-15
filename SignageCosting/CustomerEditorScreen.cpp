@@ -74,8 +74,8 @@ CustomerEditorScreen::CustomerEditorScreen()
     rightContainer->setLayout(std::make_unique<VerticalLayout>());
     rightContainer->setStyle(PanelStyle::Card);
     rightContainer->setBorderVisible(false);
-    rightContainer->setPadding(30);
-    rightContainer->setSpacing(20);
+    rightContainer->setPadding(Metrics::SpaceXL);
+    rightContainer->setSpacing(Metrics::SpaceL);
 
     contentPanel->addLayoutElement(
         rightContainer,
@@ -131,7 +131,7 @@ CustomerEditorScreen::CustomerEditorScreen()
     editorPanel->setLayout(std::make_unique<VerticalLayout>());
     editorPanel->setStyle(PanelStyle::Card); // Maintains uniform background formatting
     editorPanel->setBorderVisible(false);
-    editorPanel->setSpacing(10); // Standard clean item distribution gap
+    editorPanel->setSpacing(Metrics::SpaceS);
 
     rightContainer->addLayoutElement(
         editorPanel,
@@ -142,40 +142,40 @@ CustomerEditorScreen::CustomerEditorScreen()
     companyLabel->setText("Company");
     companyLabel->setStyle(LabelStyle::Small);
     companyLabel->setTextTheme(TextTheme::DarkSecondary);
-    editorPanel->addLayoutElement(companyLabel, SizePolicy::Fixed, 25);
+    editorPanel->addLayoutElement(companyLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     company = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(company, SizePolicy::Fixed, 40);
+    editorPanel->addLayoutElement(company, SizePolicy::Fixed, Metrics::ControlHeight);
 
     // Form Field: Contact Person
     auto contactLabel = std::make_shared<Label>();
     contactLabel->setText("Contact Person");
     contactLabel->setStyle(LabelStyle::Small);
     contactLabel->setTextTheme(TextTheme::DarkSecondary);
-    editorPanel->addLayoutElement(contactLabel, SizePolicy::Fixed, 25);
+    editorPanel->addLayoutElement(contactLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     contact = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(contact, SizePolicy::Fixed, 40);
+    editorPanel->addLayoutElement(contact, SizePolicy::Fixed, Metrics::ControlHeight);
 
     // Form Field: Phone
     auto phoneLabel = std::make_shared<Label>();
     phoneLabel->setText("Phone");
     phoneLabel->setStyle(LabelStyle::Small);
     phoneLabel->setTextTheme(TextTheme::DarkSecondary);
-    editorPanel->addLayoutElement(phoneLabel, SizePolicy::Fixed, 25);
+    editorPanel->addLayoutElement(phoneLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     phone = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(phone, SizePolicy::Fixed, 40);
+    editorPanel->addLayoutElement(phone, SizePolicy::Fixed, Metrics::ControlHeight);
 
     // Form Field: Email
     auto emailLabel = std::make_shared<Label>();
     emailLabel->setText("Email");
     emailLabel->setStyle(LabelStyle::Small);
     emailLabel->setTextTheme(TextTheme::DarkSecondary);
-    editorPanel->addLayoutElement(emailLabel, SizePolicy::Fixed, 25);
+    editorPanel->addLayoutElement(emailLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     email = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(email, SizePolicy::Fixed, 40);
+    editorPanel->addLayoutElement(email, SizePolicy::Fixed, Metrics::ControlHeight);
 }
 
 void CustomerEditorScreen::setSaveCallback(std::function<void()> callback)
