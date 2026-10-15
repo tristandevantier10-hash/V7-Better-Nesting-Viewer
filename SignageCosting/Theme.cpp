@@ -3,7 +3,7 @@
 Theme DefaultTheme =
 {
     // Window //1
-    {30,30,30,255},
+    {246,248,250,255},
 
     // Background Panels //2
     {255,255,255,255},

@@ -10,8 +10,9 @@ PropertyRow::PropertyRow()
     setBorderVisible(false);
     setBackgroundColour({ 255, 255, 255, 255 });
 
-    setLayout(
-        std::make_unique<HorizontalLayout>());
+    auto rowLayout = std::make_unique<HorizontalLayout>();
+    rowLayout->setCenterChildrenVertically(true);
+    setLayout(std::move(rowLayout));
 
     caption =
         std::make_shared<Label>();

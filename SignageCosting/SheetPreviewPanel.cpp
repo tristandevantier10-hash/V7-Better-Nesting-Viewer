@@ -1,6 +1,8 @@
 #include "SheetPreviewPanel.h"
 #include "NestingRender.h"
 #include "Renderer.h"
+#include "Theme.h"
+#include "Label.h"
 #include "iostream"
 #include <algorithm>
 #include <cmath>
@@ -39,6 +41,16 @@ void SheetPreviewPanel::render(Renderer& renderer)
 
 void SheetPreviewPanel::update(const SDL_Event& e)
 {
+    if (e.type == SDL_MOUSEMOTION)
+    {
+        SDL_Point mouse{ e.motion.x, e.motion.y };
+        hoveredToolbarButton = -1;
+        if (SDL_PointInRect(&mouse, &fitWidthButton)) hoveredToolbarButton = 0;
+        else if (SDL_PointInRect(&mouse, &fitAllButton)) hoveredToolbarButton = 1;
+        else if (SDL_PointInRect(&mouse, &zoomInButton)) hoveredToolbarButton = 2;
+        else if (SDL_PointInRect(&mouse, &zoomOutButton)) hoveredToolbarButton = 3;
+    }
+
     if (e.type == SDL_MOUSEBUTTONDOWN &&
         e.button.button == SDL_BUTTON_LEFT)
     {
@@ -417,13 +429,24 @@ void SheetPreviewPanel::drawButton(
     Renderer& renderer,
     const SDL_Rect& rect,
     const std::string& text,
-    bool active)
+    bool active,
+    bool hovered)
 {
-    renderer.fillRect(
+    const SDL_Color fill = active
+        ? DefaultTheme.accent
+        : (hovered ? SDL_Color{ 241, 248, 242, 255 }
+                   : SDL_Color{ 255, 255, 255, 255 });
+    const SDL_Color foreground = active
+        ? SDL_Color{ 255, 255, 255, 255 }
+        : DefaultTheme.darkText;
+
+    renderer.fillRoundedRect(rect, fill, 7);
+    renderer.drawRoundedRect(
         rect,
-        active
-        ? SDL_Color{ 90,140,220,255 }
-    : SDL_Color{ 60,60,70,255 });
+        active ? DefaultTheme.accent : (hovered
+            ? SDL_Color{ 166, 205, 176, 255 }
+            : SDL_Color{ 220, 226, 233, 255 }),
+        7);
 
     int textWidth =
         renderer.getTextWidth(text);
@@ -433,12 +456,14 @@ void SheetPreviewPanel::drawButton(
         (rect.w - textWidth) / 2;
 
     int textY =
-        rect.y + 8;
+        rect.y + (rect.h - 16) / 2;
 
     renderer.drawText(
         text,
         textX,
-        textY);
+        textY,
+        LabelStyle::Small,
+        foreground);
 }
 
 void SheetPreviewPanel::drawToolbar(
@@ -464,7 +489,8 @@ void SheetPreviewPanel::drawToolbar(
         renderer,
         fitWidthButton,
         "Fit Width",
-        viewMode == ViewMode::FitWidth);
+        viewMode == ViewMode::FitWidth,
+        hoveredToolbarButton == 0);
 
     x += 110;
 
@@ -484,7 +510,8 @@ void SheetPreviewPanel::drawToolbar(
         renderer,
         fitAllButton,
         "Fit All",
-        viewMode == ViewMode::FitAll);
+        viewMode == ViewMode::FitAll,
+        hoveredToolbarButton == 1);
 
     x += 120;
 
@@ -504,7 +531,8 @@ void SheetPreviewPanel::drawToolbar(
         renderer,
         zoomInButton,
         "+",
-        false);
+        false,
+        hoveredToolbarButton == 2);
 
     x += 40;
 
@@ -524,5 +552,6 @@ void SheetPreviewPanel::drawToolbar(
         renderer,
         zoomOutButton,
         "-",
-        false);
+        false,
+        hoveredToolbarButton == 3);
 }

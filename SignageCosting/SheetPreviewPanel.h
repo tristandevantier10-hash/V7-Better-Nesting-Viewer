@@ -34,7 +34,8 @@ public:
         Renderer& renderer,
         const SDL_Rect& rect,
         const std::string& text,
-        bool active);
+        bool active,
+        bool hovered = false);
 
 private:
 
@@ -61,6 +62,8 @@ private:
     SDL_Rect zoomInButton{};
 
     SDL_Rect zoomOutButton{};
+
+    int hoveredToolbarButton = -1;
 
     ViewMode viewMode = ViewMode::FitWidth;
 };

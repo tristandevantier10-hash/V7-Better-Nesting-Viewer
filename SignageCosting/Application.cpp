@@ -19,12 +19,14 @@
 #include <SDL2/SDL_image.h>
 #include <cstdlib>
 #include <string>
+#include <algorithm>
 #include "QuoteDatabase.h"
 #include "QuotePdfExporter.h"
 #include "PrimaryNavigation.h"
 #include <shellapi.h>
 #include <filesystem>
 #include <system_error>
+#include <cmath>
 #pragma comment(lib, "Shell32.lib")
 
 namespace
@@ -241,6 +243,13 @@ bool Application::initialise()
     //=================================================
 
     fontManager.initialise();
+    splashTitleFont = TTF_OpenFont(
+        "Fonts/BasisGrotesqueArabicPro-Bold.ttf",
+        32);
+    splashBodyFont = TTF_OpenFont(
+        "Fonts/BasisGrotesqueArabicPro-Regular.ttf",
+        16);
+    loginScreen.setWelcomeFont(splashTitleFont);
 
     TextRenderer::initialise(&fontManager);
 
@@ -682,8 +691,8 @@ void Application::setSplashWindowSize()
         return;
 
     // Compact popup dimensions for the startup screen.
-    const int splashWidth = 1040;
-    const int splashHeight = 460;
+    const int splashWidth = 1000;
+    const int splashHeight = 400;
 
     SDL_SetWindowSize(
         window,
@@ -723,8 +732,8 @@ bool Application::createWindow()
         "Signage Costing System",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        1040,
-        460,
+        1000,
+        400,
         SDL_WINDOW_SHOWN
     );
 
@@ -1125,9 +1134,9 @@ void Application::render()
 
         SDL_Color background =
         {
-            242,
-            245,
-            248,
+            250,
+            251,
+            253,
             255
         };
 
@@ -1162,27 +1171,21 @@ void Application::render()
 
         SDL_Color light =
         {
-            175,
-            175,
-            175,
+            215,
+            221,
+            228,
             255
         };
 
         SDL_Color accent =
         {
-            35,
-            105,
+            0,
             170,
+            90,
             255
         };
 
-        SDL_Color panel =
-        {
-            255,
-            255,
-            255,
-            255
-        };
+        const SDL_Color versionText = { 145, 153, 165, 255 };
 
         SDL_Color readyGreen =
         {
@@ -1196,17 +1199,14 @@ void Application::render()
         // COMPACT SPLASH LAYOUT
         //=================================================
 
-        const int contentWidth = 1000;
-        const int contentHeight = 410;
+        const int contentWidth = 960;
+        const int contentHeight = 360;
 
         const int leftMargin = (w - contentWidth) / 2;
         const int contentTop = (h - contentHeight) / 2;
 
-        const int contentPadding = 20;
-
         const int leftColumnX = leftMargin + 20;
-        const int leftColumnWidth = 420;
-        const int columnGap = 50;
+        const int leftColumnWidth = 360;
 
         //=================================================
         // ESTIMATE BRANDING
@@ -1230,7 +1230,7 @@ void Application::render()
                 {
                     leftColumnX,
                     contentTop,
-                    260,
+                    280,
                     72
                 };
 
@@ -1270,42 +1270,67 @@ void Application::render()
                 dark);
         }
 
-        // Welcome heading
+        uiRenderer->fillRoundedRect(
+            { leftColumnX, contentTop + 92, 46, 4 },
+            accent,
+            2);
+
+        // Compact two-line welcome heading, using the app's bold face at splash scale.
+        TTF_Font* splashHeadlineFont = splashTitleFont
+            ? splashTitleFont
+            : fontManager.getHeadingFont();
+
         uiRenderer->drawText(
-            "Welcome to EstiMate.",
+            "Your signage estimates,",
             leftColumnX,
-            contentTop + 100,
-            LabelStyle::Heading,
+            contentTop + 118,
+            splashHeadlineFont,
+            dark);
+
+        uiRenderer->drawText(
+            "made simple.",
+            leftColumnX,
+            contentTop + 153,
+            splashHeadlineFont,
             dark);
 
         // Supporting text
-        uiRenderer->drawText(
-            "Your workspace for smarter signage estimating.",
-            leftColumnX,
-            contentTop + 150,
-            LabelStyle::Small,
-            secondary);
+        if (splashBodyFont)
+        {
+            uiRenderer->drawText(
+                "A smarter workspace for signage estimating.",
+                leftColumnX,
+                contentTop + 197,
+                splashBodyFont,
+                secondary);
+        }
+        else
+        {
+            uiRenderer->drawText(
+                "A smarter workspace for signage estimating.",
+                leftColumnX,
+                contentTop + 197,
+                LabelStyle::Small,
+                secondary);
+        }
 
         //=================================================
         // RIGHT-HAND ARTWORK PANEL
         //=================================================
 
-        const int artX = leftMargin + 490;
-        const int artY = contentTop;
-        const int artW = 490;
+        const int artX = leftColumnX + leftColumnWidth + 30;
+        const int artY = contentTop - 8;
+        const int artW = 550;
 
-        const int companyY = contentTop + 330;
-        const int companyLogoHeight = 44;
+        const int companyY = contentTop + 310;
+        const int companyLogoHeight = 38;
 
         // Make the artwork panel end exactly at the bottom
         // of the E&G company logo box.
         const int artH =
             (companyY + companyLogoHeight) - artY;
 
-        SDL_Color artBackground =
-        {
-            220, 239, 241, 255
-        };
+        const SDL_Color artBackground = background;
 
         SDL_Rect artPanel =
         {
@@ -1355,10 +1380,10 @@ void Application::render()
 
                 SDL_Rect imageRect =
                 {
-                    artX,
-                    artY,
-                    artW,
-                    artH
+                    artX + (artW - drawW) / 2,
+                    artY + (artH - drawH) / 2,
+                    drawW,
+                    drawH
                 };
 
                 SDL_RenderCopy(
@@ -1367,6 +1392,37 @@ void Application::render()
                     nullptr,
                     &imageRect
                 );
+
+                constexpr int cornerRadius = 10;
+                for (int row = 0; row < cornerRadius; ++row)
+                {
+                    const float dy = cornerRadius - (row + 0.5f);
+                    const int inset = static_cast<int>(std::ceil(
+                        cornerRadius - std::sqrt(
+                            cornerRadius * cornerRadius - dy * dy)));
+                    const int maskWidth = (std::min)(inset, imageRect.w / 2);
+
+                    uiRenderer->fillRect(
+                        { imageRect.x, imageRect.y + row, maskWidth, 1 },
+                        background);
+                    uiRenderer->fillRect(
+                        { imageRect.x + imageRect.w - maskWidth,
+                          imageRect.y + row, maskWidth, 1 },
+                        background);
+                    uiRenderer->fillRect(
+                        { imageRect.x, imageRect.y + imageRect.h - 1 - row,
+                          maskWidth, 1 },
+                        background);
+                    uiRenderer->fillRect(
+                        { imageRect.x + imageRect.w - maskWidth,
+                          imageRect.y + imageRect.h - 1 - row, maskWidth, 1 },
+                        background);
+                }
+
+                uiRenderer->drawRoundedRect(
+                    imageRect,
+                    { 222, 228, 235, 255 },
+                    cornerRadius);
             }
         }
 
@@ -1377,7 +1433,7 @@ void Application::render()
         SDL_Rect divider =
         {
             leftColumnX,
-            contentTop + 200,
+            contentTop + 230,
             leftColumnWidth,
             1
         };
@@ -1429,7 +1485,7 @@ void Application::render()
         uiRenderer->drawText(
             status,
             leftColumnX,
-            contentTop + 250,
+            contentTop + 256,
             LabelStyle::Small,
             statusColour);
 
@@ -1442,20 +1498,20 @@ void Application::render()
         SDL_Rect loadingTrack =
         {
             leftColumnX,
-            contentTop + 280,
+            contentTop + 274,
             trackWidth,
-            4
+            12
         };
 
         SDL_Color trackColour =
         {
-            225, 225, 225, 255
+            222, 228, 235, 255
         };
 
         uiRenderer->fillRoundedRect(
             loadingTrack,
             trackColour,
-            2);
+            6);
 
         //=================================================
         // Animated loading indicator
@@ -1468,9 +1524,9 @@ void Application::render()
         SDL_Rect loadingProgress =
         {
             leftColumnX,
-            contentTop + 280,
+            contentTop + 274,
             progressWidth,
-            4
+            12
         };
 
         if (progressWidth > 0)
@@ -1478,7 +1534,7 @@ void Application::render()
             uiRenderer->fillRoundedRect(
                 loadingProgress,
                 accent,
-                2);
+                6);
         }
 
         //=================================================
@@ -1503,8 +1559,8 @@ void Application::render()
                 {
                     leftColumnX,
                     companyY,
-                    90,
-                    44
+                    86,
+                    38
                 };
 
                 float scaleX =
@@ -1537,15 +1593,15 @@ void Application::render()
 
         uiRenderer->drawText(
             "E & G SIGNS CC",
-            leftColumnX + 110,
+            leftColumnX + 104,
             companyY + 3,
             LabelStyle::Small,
             dark);
 
         uiRenderer->drawText(
             "SIGNAGE THAT GUIDES SOUTH AFRICA",
-            leftColumnX + 110,
-            companyY + 24,
+            leftColumnX + 104,
+            companyY + 21,
             LabelStyle::Small,
             secondary);
 
@@ -1561,10 +1617,15 @@ void Application::render()
 
         uiRenderer->drawText(
             version,
-            w - versionWidth - 45,
-            h - 40,
+            w - versionWidth - 28,
+            h - 30,
             LabelStyle::Small,
-            light);
+            versionText);
+
+        uiRenderer->drawRoundedRect(
+            { 1, 1, w - 2, h - 2 },
+            { 205, 214, 224, 255 },
+            9);
 
         //=================================================
         // Bottom accent
@@ -1742,6 +1803,18 @@ void Application::shutdown()
 
     delete uiRenderer;
     uiRenderer = nullptr;
+
+    if (splashTitleFont)
+    {
+        TTF_CloseFont(splashTitleFont);
+        splashTitleFont = nullptr;
+    }
+
+    if (splashBodyFont)
+    {
+        TTF_CloseFont(splashBodyFont);
+        splashBodyFont = nullptr;
+    }
 
     fontManager.shutdown();
 

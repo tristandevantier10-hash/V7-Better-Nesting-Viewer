@@ -92,16 +92,17 @@ void Panel::renderBackground(Renderer& renderer)
 
     case PanelStyle::Card:
 
-        renderer.fillRect(
+        renderer.fillRoundedRect(
+            { bounds.x, bounds.y + 2, bounds.w, bounds.h },
+            { 28, 39, 52, 14 },
+            9);
+        renderer.fillRoundedRect(
             bounds,
-            DefaultTheme.panelBackground);
+            DefaultTheme.panelBackground,
+            9);
 
         if (borderVisible)
-        {
-            renderer.drawRect(
-                bounds,
-                DefaultTheme.border);
-        }
+            renderer.drawRoundedRect(bounds, { 224, 229, 235, 255 }, 9);
 
         break;
 

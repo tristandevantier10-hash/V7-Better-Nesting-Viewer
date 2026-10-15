@@ -1,4 +1,7 @@
 #include "HorizontalLayout.h"
+#include "Button.h"
+#include "Label.h"
+#include <algorithm>
 
 void HorizontalLayout::performLayout(
     int x,
@@ -59,6 +62,31 @@ void HorizontalLayout::performLayout(
         item.element->setSize(
             panelWidth,
             h - (padding * 2));
+
+        if (centerChildrenVertically)
+        {
+            int childHeight = h - (padding * 2);
+            auto label = std::dynamic_pointer_cast<Label>(item.element);
+            auto button = std::dynamic_pointer_cast<Button>(item.element);
+
+            if (label)
+            {
+                switch (label->getStyle())
+                {
+                case LabelStyle::Small: childHeight = 18; break;
+                case LabelStyle::Heading: childHeight = 30; break;
+                case LabelStyle::Normal: childHeight = 22; break;
+                }
+            }
+            else if (button)
+            {
+                childHeight = 40;
+            }
+
+            childHeight = std::min(childHeight, h - (padding * 2));
+            item.element->setPosition(currentX, y + (h - childHeight) / 2);
+            item.element->setSize(panelWidth, childHeight);
+        }
 
         currentX += panelWidth + spacing;
     }

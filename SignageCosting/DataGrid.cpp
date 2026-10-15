@@ -115,7 +115,7 @@ void DataGrid::render(Renderer& renderer)
 
     renderer.fillRect(
         header,
-        { 245,245,245,255 });
+        { 246,248,250,255 });
 
     //--------------------------------------------------
     // Column titles
@@ -138,7 +138,7 @@ void DataGrid::render(Renderer& renderer)
         renderer.drawText(
             column.title,
             x + 10,
-            getY() + 10,
+            getY() + (headerHeight - 16) / 2,
             LabelStyle::Normal,
             DefaultTheme.darkText);
 
@@ -151,7 +151,7 @@ void DataGrid::render(Renderer& renderer)
             getY(),
             x,
             getY() + headerHeight,
-            { 220,220,220,255 });
+            { 231,235,239,255 });
     }
 
     //--------------------------------------------------
@@ -163,7 +163,7 @@ void DataGrid::render(Renderer& renderer)
         getY() + headerHeight,
         getX() + getWidth(),
         getY() + headerHeight,
-        { 220,220,220,255 });
+        { 224,229,235,255 });
 
     //--------------------------------------------------
     // Rows
@@ -198,11 +198,11 @@ void DataGrid::render(Renderer& renderer)
 
         if ((int)rowIndex == selectedRow)
         {
-            rowColour = DefaultTheme.accent;
+            rowColour = { 235, 246, 238, 255 };
         }
         else if ((int)rowIndex == hoveredRow)
         {
-            rowColour = { 240,244,248,255 };
+            rowColour = { 245,248,250,255 };
         }
         else
         {
@@ -231,10 +231,7 @@ void DataGrid::render(Renderer& renderer)
             col < columns.size();
             ++col)
         {
-            SDL_Color textColour =
-                ((int)rowIndex == selectedRow)
-                ? SDL_Color{ 255,255,255,255 }
-            : DefaultTheme.darkText;
+            SDL_Color textColour = DefaultTheme.darkText;
 
             SDL_Rect cellClip =
             {
@@ -261,7 +258,7 @@ void DataGrid::render(Renderer& renderer)
                 y,
                 x + columns[col].width,
                 y + rowHeight,
-                { 230,230,230,255 });
+                { 235,238,242,255 });
 
             x += columns[col].width;
         }
@@ -300,7 +297,7 @@ void DataGrid::render(Renderer& renderer)
             getWidth(),
             getHeight()
         },
-        { 220,220,220,255 });
+        { 224,229,235,255 });
 
     renderer.popClip();
 }

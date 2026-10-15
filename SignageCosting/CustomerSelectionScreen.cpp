@@ -100,7 +100,6 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     title->setText("Customers");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
-    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -111,7 +110,6 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     subtitle->setText("Manage your customer database");
     subtitle->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(subtitle);
-    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,
@@ -130,8 +128,9 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     auto newCustomerButtonContainer =
         std::make_shared<Panel>();
 
-    newCustomerButtonContainer->setLayout(
-        std::make_unique<VerticalLayout>());
+    auto newCustomerButtonLayout = std::make_unique<VerticalLayout>();
+    newCustomerButtonLayout->setCenterContent(true);
+    newCustomerButtonContainer->setLayout(std::move(newCustomerButtonLayout));
 
     newCustomerButtonContainer->setBorderVisible(false);
     newCustomerButtonContainer->setBackgroundColour(

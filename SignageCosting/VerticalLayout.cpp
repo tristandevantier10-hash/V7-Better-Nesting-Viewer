@@ -52,6 +52,9 @@ void VerticalLayout::performLayout(
         + padding
         + topInset;
 
+    if (centerContent)
+        currentY += remainingHeight / 2;
+
     for (auto& item : items)
     {
         if (!item.element->isVisible())

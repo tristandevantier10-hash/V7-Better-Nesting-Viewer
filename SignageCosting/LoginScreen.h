@@ -26,6 +26,8 @@ public:
 
     void setStatus(const std::string& message);
 
+    void setWelcomeFont(TTF_Font* font);
+
     void clearPassword();
 
 private:

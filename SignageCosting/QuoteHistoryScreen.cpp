@@ -29,7 +29,6 @@ QuoteHistoryScreen::QuoteHistoryScreen()
     title->setText("Quotes");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
-    title->setAlignment(LabelAlignment::Center);
     header->addLayoutElement(title, SizePolicy::Fill);
     countLabel = std::make_shared<Label>();
     countLabel->setStyle(LabelStyle::Small);

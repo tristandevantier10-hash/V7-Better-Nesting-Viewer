@@ -6,7 +6,7 @@ namespace Metrics
     // Main Layout
     //==================================================
 
-    constexpr int HeaderHeight = 88;
+    constexpr int HeaderHeight = 104;
     constexpr int SidebarWidth = 200;
 
     //==================================================
@@ -18,11 +18,11 @@ namespace Metrics
     constexpr int LargeRow = 36;
     constexpr int ControlHeight = 34;
     constexpr int ControlTextHeight = 20;
-    constexpr int ControlRadius = 4;
+    constexpr int ControlRadius = 8;
     constexpr int ControlPaddingX = 10;
-    constexpr int DropdownOptionHeight = 28;
+    constexpr int DropdownOptionHeight = 36;
     constexpr int NavigationItemHeight = 48;
-    constexpr int ButtonRadius = 4;
+    constexpr int ButtonRadius = 8;
 
     //==================================================
     // Spacing System

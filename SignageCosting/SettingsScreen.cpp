@@ -73,7 +73,6 @@ SettingsScreen::SettingsScreen()
     title->setText("Settings");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
-    title->setAlignment(LabelAlignment::Center);
     header->addLayoutElement(title, SizePolicy::Fill);
 
     auto backButton = std::make_shared<Button>();

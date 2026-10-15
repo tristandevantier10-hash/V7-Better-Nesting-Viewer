@@ -3,6 +3,7 @@
 #include "UIElement.h"
 #include <string>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 class Renderer;
 
@@ -48,6 +49,8 @@ public:
     void render(Renderer& renderer) override;
 
     void setStyle(LabelStyle style);
+    void setCustomFont(TTF_Font* font);
+    LabelStyle getStyle() const { return style; }
 
     void setTextTheme(TextTheme theme);
 
@@ -63,4 +66,5 @@ private:
     TextTheme textTheme = TextTheme::Dark;
     LabelAlignment alignment = LabelAlignment::Left;
     int alignmentOffsetX = 0;
+    TTF_Font* customFont = nullptr;
 };

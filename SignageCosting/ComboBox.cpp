@@ -1,4 +1,5 @@
 #include "ComboBox.h"
+#include "Label.h"
 #include "Renderer.h"
 #include "Theme.h"
 #include "Metrics.h"
@@ -219,21 +220,38 @@ void ComboBox::renderOverlay(Renderer& renderer)
         return;
 
     const SDL_Rect menu = getDropdownBounds();
+    const SDL_Rect shadow{ menu.x + 1, menu.y + 3, menu.w, menu.h };
+    renderer.fillRoundedRect(shadow, { 24, 32, 40, 24 }, 8);
     renderer.fillRoundedRect(menu, { 255, 255, 255, 255 }, Metrics::ControlRadius);
-    renderer.drawRoundedRect(menu, DefaultTheme.border, Metrics::ControlRadius);
+    renderer.drawRoundedRect(menu, { 216, 222, 229, 255 }, 8);
 
     const int end = std::min(
         static_cast<int>(items.size()), firstVisibleItem + menu.h / Metrics::DropdownOptionHeight);
     for (int index = firstVisibleItem; index < end; ++index)
     {
-        const SDL_Rect row{ menu.x + 1, menu.y + (index - firstVisibleItem) * Metrics::DropdownOptionHeight,
-            menu.w - 2, Metrics::DropdownOptionHeight };
+        const SDL_Rect row{ menu.x + 4, menu.y + (index - firstVisibleItem) * Metrics::DropdownOptionHeight + 2,
+            menu.w - 8, Metrics::DropdownOptionHeight - 4 };
         if (index == hoveredItem)
-            renderer.fillRect(row, { 235, 243, 249, 255 });
+            renderer.fillRoundedRect(row, { 239, 246, 236, 255 }, 6);
         else if (index == selectedIndex)
-            renderer.fillRect(row, { 245, 247, 249, 255 });
+            renderer.fillRoundedRect(row, { 244, 249, 241, 255 }, 6);
 
-        renderer.drawText(items[index], row.x + Metrics::ControlPaddingX, row.y + 5);
+        const SDL_Color textColour = index == selectedIndex
+            ? SDL_Color{ 57, 104, 43, 255 }
+            : DefaultTheme.darkText;
+        renderer.drawText(items[index], row.x + Metrics::ControlPaddingX,
+            row.y + (row.h - Metrics::ControlTextHeight) / 2,
+            LabelStyle::Normal, textColour);
+
+        if (index == selectedIndex)
+        {
+            const int checkX = row.x + row.w - 18;
+            const int checkY = row.y + row.h / 2;
+            renderer.drawLine(checkX - 4, checkY, checkX - 1, checkY + 3,
+                SDL_Color{ 76, 145, 56, 255 });
+            renderer.drawLine(checkX - 1, checkY + 3, checkX + 5, checkY - 4,
+                SDL_Color{ 76, 145, 56, 255 });
+        }
     }
 
     if (items.size() > 8)

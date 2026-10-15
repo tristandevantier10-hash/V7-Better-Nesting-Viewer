@@ -25,33 +25,40 @@ MainMenuScreen::MainMenuScreen()
 
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
-    configurePageHeaderTitle(titlePanel);
+    configurePageHeaderTitle(titlePanel, Metrics::SpaceXS);
     addPageHeaderLogo(headerPanel);
     headerPanel->addLayoutElement(titlePanel, SizePolicy::Fill);
+
+    auto workspaceLabel = std::make_shared<Label>();
+    workspaceLabel->setText("WORKSPACE");
+    workspaceLabel->setStyle(LabelStyle::Small);
+    workspaceLabel->setTextTheme(TextTheme::Success);
+    titlePanel->addLayoutElement(workspaceLabel, SizePolicy::Fixed, 16);
 
     auto dashboardLabel = std::make_shared<Label>();
     dashboardLabel->setText("Dashboard");
     dashboardLabel->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(dashboardLabel);
-    dashboardLabel->setAlignment(LabelAlignment::Center);
-    dashboardLabel->setAlignmentOffsetX(-PageHeaderLogoWidth / 2);
 
     titlePanel->addLayoutElement(
         dashboardLabel,
         SizePolicy::Fixed,
-        36);
+        30);
 
     auto subtitleLabel = std::make_shared<Label>();
     subtitleLabel->setText("Signage Costing Suite");
     subtitleLabel->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(subtitleLabel);
-    subtitleLabel->setAlignment(LabelAlignment::Center);
-    subtitleLabel->setAlignmentOffsetX(-PageHeaderLogoWidth / 2);
 
     titlePanel->addLayoutElement(
         subtitleLabel,
         SizePolicy::Fixed,
-        24);
+        18);
+
+    headerPanel->addLayoutElement(
+        std::make_shared<DashboardHeaderControls>(),
+        SizePolicy::Fixed,
+        236);
 
     //==================================================
     // Header

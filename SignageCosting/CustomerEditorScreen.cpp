@@ -106,7 +106,6 @@ CustomerEditorScreen::CustomerEditorScreen()
     title->setText("Customer & Invoice");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
-    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -117,7 +116,6 @@ CustomerEditorScreen::CustomerEditorScreen()
     subtitle->setText("Customer Management");
     subtitle->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(subtitle);
-    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,

@@ -21,22 +21,24 @@ void Label::render(Renderer& renderer)
     if (!visible)
         return;
 
-    TTF_Font* font = nullptr;
-
-    switch (style)
+    TTF_Font* font = customFont;
+    if (!font)
     {
-    case LabelStyle::Small:
-        font = renderer.getFontManager().getSmallFont();
-        break;
+        switch (style)
+        {
+        case LabelStyle::Small:
+            font = renderer.getFontManager().getSmallFont();
+            break;
 
-    case LabelStyle::Heading:
-        font = renderer.getFontManager().getHeadingFont();
-        break;
+        case LabelStyle::Heading:
+            font = renderer.getFontManager().getHeadingFont();
+            break;
 
-    case LabelStyle::Normal:
-    default:
-        font = renderer.getFontManager().getNormalFont();
-        break;
+        case LabelStyle::Normal:
+        default:
+            font = renderer.getFontManager().getNormalFont();
+            break;
+        }
     }
 
     SDL_Color colour;
@@ -105,6 +107,11 @@ void Label::render(Renderer& renderer)
 void Label::setStyle(LabelStyle value)
 {
     style = value;
+}
+
+void Label::setCustomFont(TTF_Font* font)
+{
+    customFont = font;
 }
 
 void Label::setTextTheme(TextTheme theme)

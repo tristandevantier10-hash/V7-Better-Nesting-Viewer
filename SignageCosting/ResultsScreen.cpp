@@ -199,7 +199,7 @@ void ResultsScreen::buildHeader()
     header->setLayout(
         std::make_unique<HorizontalLayout>());
 
-    configurePageHeader(header, 0, Metrics::SpaceM);
+    configurePageHeader(header, 0, Metrics::SpaceXL);
 
     mainContainer->addLayoutElement(
         header,
@@ -232,7 +232,6 @@ void ResultsScreen::buildHeader()
     pageTitle->setStyle(
         LabelStyle::Heading);
     configurePageHeaderTitleLabel(pageTitle);
-    pageTitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         pageTitle,
@@ -249,7 +248,6 @@ void ResultsScreen::buildHeader()
         LabelStyle::Small);
 
     configurePageHeaderSubtitleLabel(pageSubtitle);
-    pageSubtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         pageSubtitle,
@@ -428,8 +426,9 @@ ResultsScreen::createKpiCard(
     auto layout =
         std::make_shared<Panel>();
 
-    layout->setLayout(
-        std::make_unique<VerticalLayout>());
+    auto metricLayout = std::make_unique<VerticalLayout>();
+    metricLayout->setCenterContent(true);
+    layout->setLayout(std::move(metricLayout));
 
     layout->setBorderVisible(false);
     layout->setSpacing(2);

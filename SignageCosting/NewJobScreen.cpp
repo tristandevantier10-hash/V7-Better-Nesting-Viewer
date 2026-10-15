@@ -124,7 +124,6 @@ NewJobScreen::NewJobScreen()
     title->setText("Job Input");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
-    title->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         title,
@@ -140,7 +139,6 @@ NewJobScreen::NewJobScreen()
     subtitle->setStyle(
         LabelStyle::Small);
     configurePageHeaderSubtitleLabel(subtitle);
-    subtitle->setAlignment(LabelAlignment::Center);
 
     titlePanel->addLayoutElement(
         subtitle,
@@ -234,7 +232,7 @@ NewJobScreen::NewJobScreen()
     pageHeader->addLayoutElement(
         customerCard,
         SizePolicy::Fixed,
-        430);
+        330);
 
     //==================================================
     // Main Workspace
@@ -251,11 +249,18 @@ NewJobScreen::NewJobScreen()
 
     workspace->setBorderVisible(false);
     workspace->setPadding(0);
-    workspace->setSpacing(Metrics::SpaceL);
+    workspace->setSpacing(Metrics::SpaceM);
 
     rightContainer->addLayoutElement(
         workspace,
         SizePolicy::Fill);
+
+    auto materialSection = std::make_shared<Panel>();
+    materialSection->setLayout(std::make_unique<VerticalLayout>());
+    materialSection->setStyle(PanelStyle::Card);
+    materialSection->setBorderVisible(true);
+    materialSection->setPadding(Metrics::SpaceL);
+    materialSection->setSpacing(Metrics::SpaceM);
 
     //==================================================
     // Initialise Existing Controls
@@ -344,28 +349,29 @@ NewJobScreen::NewJobScreen()
     auto editorHeader =
         std::make_shared<Panel>();
 
-    editorHeader->setLayout(
-        std::make_unique<HorizontalLayout>());
+    auto editorHeaderLayout = std::make_unique<VerticalLayout>();
+    editorHeaderLayout->setSpacing(Metrics::SpaceXS);
+    editorHeader->setLayout(std::move(editorHeaderLayout));
 
     editorHeader->setStyle(
         PanelStyle::Card);
 
     editorHeader->setBorderVisible(false);
     editorHeader->setPadding(0);
-    editorHeader->setSpacing(Metrics::SpaceS);
+    editorHeader->setSpacing(Metrics::SpaceXS);
 
     auto editorTitle =
         std::make_shared<Label>();
 
     editorTitle->setText(
-        "Material");
+        "Material details");
 
     editorTitle->setStyle(
         LabelStyle::Heading);
 
     editorHeader->addLayoutElement(
         editorTitle,
-        SizePolicy::Fill,
+        SizePolicy::Fixed,
         30);
 
     auto editorHint =
@@ -376,16 +382,17 @@ NewJobScreen::NewJobScreen()
 
     editorHint->setStyle(
         LabelStyle::Small);
+    editorHint->setTextTheme(TextTheme::DarkSecondary);
 
     editorHeader->addLayoutElement(
         editorHint,
         SizePolicy::Fixed,
-        230);
+        18);
 
-    workspace->addLayoutElement(
+    materialSection->addLayoutElement(
         editorHeader,
         SizePolicy::Fixed,
-        32);
+        52);
 
     //==================================================
     // Create Action Column
@@ -409,7 +416,7 @@ NewJobScreen::NewJobScreen()
     actionColumn->setBorderVisible(false);
     actionColumn->setBackgroundColour(
         { 255, 255, 255, 255 });
-    actionColumn->setSpacing(Metrics::SpaceM);
+    actionColumn->setSpacing(Metrics::SpaceS);
 
     //==================================================
     // Input Area
@@ -418,29 +425,29 @@ NewJobScreen::NewJobScreen()
     auto inputArea =
         std::make_shared<Panel>();
 
-    inputArea->setBackgroundColour(
-        { 255,255,255,255 });
-
     inputArea->setLayout(
         std::make_unique<HorizontalLayout>());
 
     inputArea->setBorderVisible(false);
+    inputArea->setPadding(0);
     inputArea->setSpacing(Metrics::SpaceL);
 
-    inputArea->addLayoutElement(
-        form,
-        SizePolicy::Fixed,
-        500);
+    inputArea->addLayoutElement(form, SizePolicy::Fill);
 
     inputArea->addLayoutElement(
         actionColumn,
         SizePolicy::Fixed,
-        220);
+        190);
 
-    workspace->addLayoutElement(
+    materialSection->addLayoutElement(
         inputArea,
         SizePolicy::Fixed,
-        250);
+        234);
+
+    workspace->addLayoutElement(
+        materialSection,
+        SizePolicy::Fixed,
+        324);
 
     //==================================================
     // Job Items Section
@@ -449,8 +456,9 @@ NewJobScreen::NewJobScreen()
     auto itemsHeader =
         std::make_shared<Panel>();
 
-    itemsHeader->setLayout(
-        std::make_unique<HorizontalLayout>());
+    auto itemsHeaderLayout = std::make_unique<HorizontalLayout>();
+    itemsHeaderLayout->setCenterChildrenVertically(true);
+    itemsHeader->setLayout(std::move(itemsHeaderLayout));
 
     itemsHeader->setStyle(
         PanelStyle::Card);

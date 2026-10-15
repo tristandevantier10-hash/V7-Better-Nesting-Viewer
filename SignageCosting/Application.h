@@ -199,6 +199,9 @@ private:
 
     FontManager fontManager;
 
+    TTF_Font* splashTitleFont = nullptr;
+    TTF_Font* splashBodyFont = nullptr;
+
     Renderer* uiRenderer = nullptr;
 
     NestingRenderer nestingRenderer;
