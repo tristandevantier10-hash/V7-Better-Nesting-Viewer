@@ -13,6 +13,10 @@
 #include "DataGrid.h"
 #include "Panel.h"
 #include "Label.h"
+#include "ProductionPricingDatabase.h"
+#include "PrimaryNavigation.h"
+#include <algorithm>
+#include <cctype>
 
 NewJobScreen::NewJobScreen()
 {
@@ -35,37 +39,22 @@ NewJobScreen::NewJobScreen()
     //==================================================
 
     auto sidebar = std::make_shared<NavigationPanel>();
-
-    sidebar->setLayout(
-        std::make_unique<VerticalLayout>());
-
+    sidebar->setLayout(std::make_unique<VerticalLayout>());
     sidebar->setSidebarStyle(true);
+    sidebar->setBorderVisible(false);
     sidebar->setPadding(Metrics::SidebarPadding);
+    sidebar->setSpacing(Metrics::SpaceS);
+    sidebar->addBrand();
 
-    contentPanel->addLayoutElement(
-        sidebar,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
-
-    sidebar->addHeading("JOB INPUT");
-
-    struct InvisibleSpacer : public Panel
+    auto sidebarSpacer = std::make_shared<UIElement>();
+    sidebar->addLayoutElement(sidebarSpacer, SizePolicy::Fill);
+    auto backItem = sidebar->addItem("Back", [this]()
     {
-        void render(Renderer& renderer) override
-        {
-            performLayout();
-            renderChildren(renderer);
-        }
-    };
-
-    auto spacer =
-        std::make_shared<InvisibleSpacer>();
-
-    spacer->setBorderVisible(false);
-
-    sidebar->addLayoutElement(
-        spacer,
-        SizePolicy::Fill);
+        if (navigationCallback)
+            navigationCallback(PrimaryNavigationRoute::NewJob);
+    }, "Assets/Icons/back.svg");
+    backItem->setSelected(false);
+    contentPanel->addLayoutElement(sidebar, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     //==================================================
     // Right Side
@@ -259,7 +248,7 @@ NewJobScreen::NewJobScreen()
     materialSection->setLayout(std::make_unique<VerticalLayout>());
     materialSection->setStyle(PanelStyle::Card);
     materialSection->setBorderVisible(true);
-    materialSection->setPadding(Metrics::SpaceL);
+    materialSection->setPadding(24);
     materialSection->setSpacing(Metrics::SpaceM);
 
     //==================================================
@@ -404,15 +393,6 @@ NewJobScreen::NewJobScreen()
     actionColumn->setLayout(
         std::make_unique<VerticalLayout>());
 
-    auto actionSpacer =
-        std::make_shared<InvisibleSpacer>();
-
-    actionSpacer->setBorderVisible(false);
-
-    actionColumn->addLayoutElement(
-        actionSpacer,
-        SizePolicy::Fill);
-
     actionColumn->setBorderVisible(false);
     actionColumn->setBackgroundColour(
         { 255, 255, 255, 255 });
@@ -444,10 +424,19 @@ NewJobScreen::NewJobScreen()
         SizePolicy::Fixed,
         234);
 
+    processChoicesPanel = std::make_shared<Panel>();
+    processChoicesPanel->setLayout(std::make_unique<HorizontalLayout>());
+    processChoicesPanel->setBorderVisible(false);
+    processChoicesPanel->setPadding(0);
+    processChoicesPanel->setSpacing(Metrics::SpaceL);
+    processChoicesPanel->setScrollable(true);
+    materialSection->addLayoutElement(processChoicesPanel, SizePolicy::Fixed, 100);
+    refreshProcessChoices();
+
     workspace->addLayoutElement(
         materialSection,
         SizePolicy::Fixed,
-        324);
+        424);
 
     //==================================================
     // Job Items Section
@@ -544,6 +533,8 @@ NewJobScreen::NewJobScreen()
 
     addItemButton->setText(
         "Add Item");
+    addItemButton->setStyle(Button::ButtonStyle::Accent);
+    addItemButton->setTextCentered(true);
 
     //--------------------------------------------------
     // Remove Item
@@ -554,6 +545,8 @@ NewJobScreen::NewJobScreen()
 
     removeItemButton->setText(
         "Remove Item");
+    removeItemButton->setStyle(Button::ButtonStyle::Secondary);
+    removeItemButton->setTextCentered(true);
 
     //--------------------------------------------------
     // Button Layout
@@ -727,6 +720,100 @@ NewJobScreen::NewJobScreen()
     formatRow->setVisible(false);
 }
 
+void NewJobScreen::refreshProcessChoices()
+{
+    if (!processChoicesPanel)
+        return;
+    processChoicesPanel->clearChildren();
+    auto processLayout = std::make_unique<HorizontalLayout>();
+    processLayout->setCenterChildrenVertically(true);
+    processChoicesPanel->setLayout(std::move(processLayout));
+    processButtons.clear();
+    processIds.clear();
+    processNames.clear();
+
+    auto title = std::make_shared<Label>();
+    title->setText("Labour processes");
+    title->setStyle(LabelStyle::Small);
+    title->setAlignment(LabelAlignment::Left);
+    processChoicesPanel->addLayoutElement(title, SizePolicy::Fixed, 132);
+
+    auto processRows = std::make_shared<Panel>();
+    auto rowsLayout = std::make_unique<VerticalLayout>();
+    rowsLayout->setCenterContent(true);
+    rowsLayout->setSpacing(Metrics::SpaceS);
+    processRows->setLayout(std::move(rowsLayout));
+    processRows->setBorderVisible(false);
+    processRows->setPadding(0);
+    processChoicesPanel->addLayoutElement(processRows, SizePolicy::Fill);
+
+    const auto& processes = ProductionPricingDatabase::getProcesses();
+    std::vector<std::size_t> enabledProcesses;
+    for (std::size_t i = 0; i < processes.size(); ++i)
+        if (processes[i].enabled)
+            enabledProcesses.push_back(i);
+
+    for (std::size_t start = 0; start < enabledProcesses.size(); start += 3)
+    {
+        auto row = std::make_shared<Panel>();
+        row->setLayout(std::make_unique<HorizontalLayout>());
+        row->setBorderVisible(false);
+        row->setPadding(0);
+        row->setSpacing(Metrics::SpaceS);
+        const std::size_t rowProcessCount = (std::min)(
+            static_cast<std::size_t>(3), enabledProcesses.size() - start);
+        const bool centerPartialRow = rowProcessCount < 3;
+        if (centerPartialRow)
+            row->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fill);
+        for (std::size_t position = start;
+            position < enabledProcesses.size() && position < start + 3; ++position)
+        {
+            const std::size_t i = enabledProcesses[position];
+            auto choice = std::make_shared<Button>();
+            choice->setText(processes[i].name);
+            std::string processKey = processes[i].id + " " + processes[i].name;
+            std::transform(processKey.begin(), processKey.end(), processKey.begin(),
+                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            if (processKey.find("print") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_print.svg");
+            else if (processKey.find("laminat") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_laminate.svg");
+            else if (processKey.find("plotter") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_plotter_cut.svg");
+            else if (processKey.find("router") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_router_cut.svg");
+            else if (processKey.find("application") != std::string::npos ||
+                processKey.find("substrate") != std::string::npos || processKey.find("apply") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_apply_substrate.svg");
+            else if (processKey.find("frame") != std::string::npos)
+                choice->setIcon("Assets/Icons/process_frame.svg");
+            else
+                choice->setIcon("Assets/Icons/process_generic.svg");
+            choice->setStyle(Button::ButtonStyle::FilterChip);
+            choice->setTextCentered(true);
+            const std::string id = processes[i].id;
+            choice->setOnClick([choice]()
+            {
+                choice->setSelected(!choice->selected);
+            });
+            processButtons.push_back(choice);
+            processIds.push_back(id);
+            processNames.push_back(processes[i].name);
+            row->addLayoutElement(choice, SizePolicy::Fixed, 180);
+        }
+        if (centerPartialRow)
+            row->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fill);
+        processRows->addLayoutElement(row, SizePolicy::Fixed, 34);
+    }
+    if (enabledProcesses.empty())
+    {
+        auto none = std::make_shared<Label>();
+        none->setText("No processes enabled. Configure Labour Rates first.");
+        none->setStyle(LabelStyle::Small);
+        processRows->addLayoutElement(none, SizePolicy::Fixed, 30);
+    }
+}
+
 void NewJobScreen::calculate()
 {
     if (!activeJob)
@@ -747,6 +834,12 @@ void NewJobScreen::setCalculateCallback(
     onCalculate = callback;
 }
 
+void NewJobScreen::setNavigationCallback(
+    std::function<void(PrimaryNavigationRoute)> callback)
+{
+    navigationCallback = std::move(callback);
+}
+
 JobItem NewJobScreen::createItem() const
 {
     JobItem item;
@@ -763,6 +856,10 @@ JobItem NewJobScreen::createItem() const
 
     item.quantity =
         std::stoi(quantity->getText());
+
+    for (std::size_t i = 0; i < processButtons.size(); ++i)
+        if (processButtons[i]->selected)
+            item.production.selectedProcessIds.push_back(processIds[i]);
 
     item.variantIndex =
         variant->getSelectedIndex();
@@ -957,6 +1054,17 @@ void NewJobScreen::loadItem(int index)
     const JobItem& item =
         activeJob->items[index];
 
+    refreshProcessChoices();
+    for (std::size_t i = 0; i < processButtons.size(); ++i)
+    {
+        const bool selected = std::find(
+            item.production.selectedProcessIds.begin(),
+            item.production.selectedProcessIds.end(), processIds[i]) !=
+            item.production.selectedProcessIds.end();
+        processButtons[i]->setSelected(selected);
+        processButtons[i]->setText(processNames[i]);
+    }
+
     //=========================
     // Material
     //=========================
@@ -1001,6 +1109,7 @@ void NewJobScreen::loadItem(int index)
 void NewJobScreen::setJob(Job* job)
 {
     activeJob = job;
+    refreshProcessChoices();
 
     if (!activeJob)
         return;

@@ -23,7 +23,10 @@ public:
     void addHeading(
         const std::string& text);
 
+    void addBrand();
+
 private:
 
     std::vector<std::shared_ptr<NavigationItem>> items;
+    bool hasBrand = false;
 };

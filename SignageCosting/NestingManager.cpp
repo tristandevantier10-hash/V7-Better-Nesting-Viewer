@@ -1,6 +1,130 @@
 #include "NestingManager.h"
 #include "MaterialDatabase.h"
 #include "NestingCore.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <utility>
+
+namespace
+{
+    const std::array<PlacementStrategy, 5> kStrategies =
+    {
+        PlacementStrategy::BestShortSideFit,
+        PlacementStrategy::BestLongSideFit,
+        PlacementStrategy::BestAreaFit,
+        PlacementStrategy::BottomLeft,
+        PlacementStrategy::BestContactPoint
+    };
+
+    const std::array<ItemOrder, 12> kItemOrders =
+    {
+        ItemOrder::AreaDescending,
+        ItemOrder::LongSideDescending,
+        ItemOrder::ShortSideDescending,
+        ItemOrder::WidthDescending,
+        ItemOrder::HeightDescending,
+        ItemOrder::PerimeterDescending,
+        ItemOrder::AreaAscending,
+        ItemOrder::LongSideAscending,
+        ItemOrder::ShortSideAscending,
+        ItemOrder::WidthAscending,
+        ItemOrder::HeightAscending,
+        ItemOrder::PerimeterAscending
+    };
+
+
+    size_t placedCount(const NestingPackResult& result)
+    {
+        size_t count = 0;
+        for (const auto& sheet : result.sheets)
+            count += sheet.placed.size();
+        return count;
+    }
+
+    double occupiedEnvelopeArea(const NestingPackResult& result)
+    {
+        double total = 0.0;
+        for (const auto& sheet : result.sheets)
+        {
+            double right = 0.0;
+            double bottom = 0.0;
+            for (const auto& part : sheet.placed)
+            {
+                right = std::max(right, part.x + part.width);
+                bottom = std::max(bottom, part.y + part.height);
+            }
+            total += right * bottom;
+        }
+        return total;
+    }
+
+    bool betterSheetLayout(
+        const NestingPackResult& candidate,
+        const NestingPackResult& current,
+        size_t candidateCapacity,
+        size_t currentCapacity,
+        double sheetArea,
+        double partArea)
+    {
+        const bool candidateComplete = candidate.isValid();
+        const bool currentComplete = current.isValid();
+        if (candidateComplete != currentComplete)
+            return candidateComplete;
+
+        if (!candidateComplete)
+        {
+            if (placedCount(candidate) != placedCount(current))
+                return placedCount(candidate) > placedCount(current);
+            if (candidate.sheets.size() != current.sheets.size())
+                return candidate.sheets.size() < current.sheets.size();
+            if (candidateCapacity != currentCapacity)
+                return candidateCapacity > currentCapacity;
+            return candidate.validationErrors.size() < current.validationErrors.size();
+        }
+
+        if (candidate.sheets.size() != current.sheets.size())
+            return candidate.sheets.size() < current.sheets.size();
+
+        if (candidateCapacity != currentCapacity)
+            return candidateCapacity > currentCapacity;
+
+        const double candidateWaste = sheetArea * candidate.sheets.size() - partArea;
+        const double currentWaste = sheetArea * current.sheets.size() - partArea;
+        if (std::abs(candidateWaste - currentWaste) > 1e-7)
+            return candidateWaste < currentWaste;
+
+        return occupiedEnvelopeArea(candidate) + 1e-7 < occupiedEnvelopeArea(current);
+    }
+
+    bool betterRollLayout(
+        const NestingPackResult& candidate,
+        double candidateLength,
+        const NestingPackResult& current,
+        double currentLength,
+        double rollWidth,
+        double partArea)
+    {
+        const bool candidateComplete = candidate.isValid();
+        const bool currentComplete = current.isValid();
+        if (candidateComplete != currentComplete)
+            return candidateComplete;
+
+        if (!candidateComplete)
+        {
+            if (placedCount(candidate) != placedCount(current))
+                return placedCount(candidate) > placedCount(current);
+            return candidateLength + 1e-7 < currentLength;
+        }
+
+        if (std::abs(candidateLength - currentLength) > 1e-7)
+            return candidateLength < currentLength;
+
+        const double candidateWaste = rollWidth * candidateLength - partArea;
+        const double currentWaste = rollWidth * currentLength - partArea;
+        return candidateWaste + 1e-7 < currentWaste;
+    }
+}
 
 std::vector<NestGroup> NestingManager::buildGroups(const Job& job)
 {
@@ -92,71 +216,62 @@ NestingJobResult NestingManager::calculate(
     {
         if (group.isRoll)
         {
-            std::vector<PlacementStrategy> strategies =
-            {
-                PlacementStrategy::BestShortSideFit,
-                PlacementStrategy::BestLongSideFit,
-                PlacementStrategy::BestAreaFit,
-                PlacementStrategy::BottomLeft
-            };
-
-            std::vector<Sheet> bestLayouts;
-            double bestEfficiency = -1.0;
+            NestingPackResult bestPack;
             double bestUsedLength = 0.0;
+            bool haveBest = false;
+            double partArea = 0.0;
+            for (const auto& item : group.rects)
+                partArea += item.width * item.height * item.quantity;
 
             constexpr double VIRTUAL_ROLL_LENGTH = 100000.0;
 
-            for (auto strategy : strategies)
+            for (auto order : kItemOrders)
             {
-                auto layouts =
-                    core.pack(
-                        group.rects,
-                        group.rollWidth,
-                        VIRTUAL_ROLL_LENGTH,
-                        strategy);
-
-                // Measure actual roll length used
-                double usedLength = 0.0;
-
-                for (auto& sheet : layouts)
+                for (auto strategy : kStrategies)
                 {
-                    for (const auto& p : sheet.placed)
+                    auto packed = core.pack(group.rects, group.rollWidth,
+                        VIRTUAL_ROLL_LENGTH, strategy, order);
+
+                    // Measure actual roll length used.
+                    double usedLength = 0.0;
+                    for (const auto& sheet : packed.sheets)
+                        for (const auto& p : sheet.placed)
+                            usedLength = std::max(usedLength, p.y + p.height);
+
+                    for (auto& sheet : packed.sheets)
+                        sheet.height = usedLength;
+
+                    auto rollErrors = NestingCore::validateLayout(
+                        packed.sheets, group.rollWidth, usedLength);
+                    packed.validationErrors.insert(packed.validationErrors.end(),
+                        rollErrors.begin(), rollErrors.end());
+
+                    if (!haveBest || betterRollLayout(packed, usedLength,
+                        bestPack, bestUsedLength, group.rollWidth, partArea))
                     {
-                        usedLength = std::max(
-                            usedLength,
-                            p.y + p.height);
+                        bestPack = std::move(packed);
+                        bestUsedLength = usedLength;
+                        haveBest = true;
                     }
-
-                    // IMPORTANT: trim the virtual sheet
-                    sheet.height = usedLength;
-                }
-
-                double usedArea = 0.0;
-
-                for (const auto& r : group.rects)
-                    usedArea += r.width * r.height * r.quantity;
-
-                double totalArea = group.rollWidth * usedLength;
-
-                double efficiency =
-                    totalArea > 0.0 ?
-                    (usedArea / totalArea) * 100.0 :
-                    0.0;
-
-                if (efficiency > bestEfficiency)
-                {
-                    bestEfficiency = efficiency;
-                    bestLayouts = layouts;
-                    bestUsedLength = usedLength;
                 }
             }
 
-            group.layouts = bestLayouts;
+
+            group.layouts = bestPack.sheets;
+            group.unplaced = bestPack.unplaced;
+            group.nestingErrors = bestPack.validationErrors;
+            if (!bestPack.isValid())
+            {
+                result.valid = false;
+                result.errors.insert(result.errors.end(), group.nestingErrors.begin(), group.nestingErrors.end());
+                for (const auto& item : group.unplaced)
+                    result.errors.push_back(item.reason + " (" + std::to_string(item.quantity) + " unplaced)");
+            }
 
             result.sheets.insert(
                 result.sheets.end(),
-                bestLayouts.begin(),
-                bestLayouts.end());
+                group.layouts.begin(),
+                group.layouts.end());
 
             group.sheetCount = 1;
 
@@ -179,53 +294,76 @@ NestingJobResult NestingManager::calculate(
             continue;
         }
 
-        std::vector<PlacementStrategy> strategies =
+        NestingPackResult bestPack;
+        bool haveBest = false;
+        size_t bestFitScore = 0;
+        const double sheetAreaMM2 = group.sheetWidth * group.sheetHeight;
+        double partArea = 0.0;
+        for (const auto& item : group.rects)
+            partArea += item.width * item.height * item.quantity;
+
+        for (auto order : kItemOrders)
         {
-            PlacementStrategy::BestShortSideFit,
-            PlacementStrategy::BestLongSideFit,
-            PlacementStrategy::BestAreaFit,
-            PlacementStrategy::BottomLeft
-        };
-
-        std::vector<Sheet> bestLayouts;
-
-        double bestEfficiency = -1.0;
-
-        for (auto strategy : strategies)
-        {
-            auto layouts =
-                core.pack(
-                    group.rects,
-                    group.sheetWidth,
-                    group.sheetHeight,
-                    strategy);
-
-            double sheetArea =
-                group.sheetWidth * group.sheetHeight;
-
-            double usedArea = 0.0;
-
-            for (const auto& r : group.rects)
-                usedArea += r.width * r.height * r.quantity;
-
-            double totalArea = sheetArea * layouts.size();
-
-            double efficiency =
-                (usedArea / totalArea) * 100.0;
-
-            if (efficiency > bestEfficiency)
+            for (auto strategy : kStrategies)
             {
-                bestEfficiency = efficiency;
-                bestLayouts = layouts;
+                auto packed = core.pack(group.rects, group.sheetWidth,
+                    group.sheetHeight, strategy, order);
+                const size_t packedCapacity = core.maxAdditionalFit(packed, group.rects);
+                if (!haveBest || betterSheetLayout(packed, bestPack,
+                    packedCapacity, bestFitScore, sheetAreaMM2, partArea))
+                {
+                    bestPack = std::move(packed);
+                    bestFitScore = packedCapacity;
+                    haveBest = true;
+                }
             }
         }
 
-        group.layouts = bestLayouts;
+        // Try moving a short tail of placements on each sheet, then reinsert
+        // those parts plus any unplaced parts into the preserved free space.
+        for (int pass = 0; pass < 2; ++pass)
+        {
+            const NestingPackResult repairSeed = bestPack;
+            for (size_t sheetIndex = 0; sheetIndex < repairSeed.sheets.size(); ++sheetIndex)
+            {
+                const size_t maxTail = std::min<size_t>(
+                    3, repairSeed.sheets[sheetIndex].placed.size());
+                for (size_t tailCount = 1; tailCount <= maxTail; ++tailCount)
+                {
+                    for (auto strategy : kStrategies)
+                    {
+                        auto repaired = core.repairTail(repairSeed,
+                            group.sheetWidth, group.sheetHeight,
+                            sheetIndex, tailCount, strategy);
+                        const size_t repairedCapacity =
+                            core.maxAdditionalFit(repaired, group.rects);
+                        if (betterSheetLayout(repaired, bestPack,
+                            repairedCapacity, bestFitScore,
+                            sheetAreaMM2, partArea))
+                        {
+                            bestPack = std::move(repaired);
+                            bestFitScore = repairedCapacity;
+                        }
+                    }
+                }
+            }
+        }
+
+        group.layouts = bestPack.sheets;
+        group.unplaced = bestPack.unplaced;
+        group.nestingErrors = bestPack.validationErrors;
+        if (!bestPack.isValid())
+        {
+            result.valid = false;
+            result.errors.insert(result.errors.end(), group.nestingErrors.begin(), group.nestingErrors.end());
+            for (const auto& item : group.unplaced)
+                result.errors.push_back(item.reason + " (" + std::to_string(item.quantity) + " unplaced)");
+        }
 
         result.sheets.insert(
             result.sheets.end(),
-            bestLayouts.begin(),
-            bestLayouts.end());
+            group.layouts.begin(),
+            group.layouts.end());
 
         // -----------------------------
         // GROUP STATISTICS

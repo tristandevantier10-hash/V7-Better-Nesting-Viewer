@@ -150,6 +150,9 @@
     <ClCompile Include="MainMenuScreen.cpp">
       <Filter>Screens\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DashboardContent.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Screen.cpp">
       <Filter>Screens\Source Files</Filter>
     </ClCompile>
@@ -259,6 +262,9 @@
       <Filter>UI\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LoginScreen.cpp">
+      <Filter>Screens\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LabourRatesScreen.cpp">
       <Filter>Screens\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AuthenticationService.cpp">
@@ -401,6 +407,9 @@
     <ClInclude Include="MainMenuScreen.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DashboardContent.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="QuoteHistoryScreen.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
@@ -537,6 +546,9 @@
       <Filter>UI\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LoginScreen.h">
+      <Filter>Screens\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LabourRatesScreen.h">
       <Filter>Screens\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AuthenticationService.h">

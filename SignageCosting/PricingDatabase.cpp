@@ -7,7 +7,6 @@
 
 using json = nlohmann::json;
 
-double PricingDatabase::labourPerM2 = 0.0;
 double PricingDatabase::markupPercent = 0.0;
 
 // ---------------- cached pricing table ----------------
@@ -26,15 +25,6 @@ void PricingDatabase::load(const std::string& jsonData)
     {
         std::cerr << "[PricingDB][FATAL] JSON parse error: " << e.what() << "\n";
         return;
-    }
-
-    // ---------------- LABOUR ----------------
-    if (g_pricingRoot.contains("labour") && g_pricingRoot["labour"].is_object())
-    {
-        labourPerM2 = static_cast<double>(
-            g_pricingRoot["labour"].value("cost_per_m2", 0)
-            );
-
     }
 
     // ---------------- MARKUP ----------------
@@ -90,11 +80,6 @@ double PricingDatabase::getMaterialCost(
 }
 
 // ---------------- GETTERS ----------------
-double PricingDatabase::getLabourPerM2()
-{
-    return labourPerM2;
-}
-
 double PricingDatabase::getMarkupPercent()
 {
     return markupPercent;

@@ -97,6 +97,16 @@ InvoiceViewModelBuilder::build(const CostResult& result)
             job.variant = item.variant;
 
             job.quantity = std::to_string(item.quantity);
+            job.unitSize = formatNumber(item.width) + " x " + formatNumber(item.height) + " mm";
+            job.labourCost = formatCurrency(item.labourCost);
+            for (const auto& line : item.labourBreakdown)
+            {
+                std::ostringstream labour;
+                labour << line.name << ": " << line.quantity << " " << line.unit
+                    << " x R " << std::fixed << std::setprecision(2) << line.rate
+                    << " = R " << line.cost;
+                job.labourBreakdown.push_back(labour.str());
+            }
 
             job.sellPrice =
                 formatCurrency(item.sellPrice);

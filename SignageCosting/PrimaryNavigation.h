@@ -15,6 +15,7 @@ enum class PrimaryNavigationRoute
     MaterialDatabase,
     Quotes,
     CustomerDatabase,
+    LabourRates,
     Settings,
     Exit
 };
@@ -29,6 +30,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     panel->setBorderVisible(false);
     panel->setPadding(Metrics::SidebarPadding);
     panel->setSpacing(Metrics::SpaceS);
+    panel->addBrand();
 
     std::vector<std::pair<PrimaryNavigationRoute, std::shared_ptr<NavigationItem>>> items;
     auto addItem = [&panel, &items, &onNavigate](
@@ -48,12 +50,15 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
         items.emplace_back(route, item);
     };
 
-    addItem("NEW JOB", PrimaryNavigationRoute::NewJob);
-    addItem("MATERIAL DATABASE", PrimaryNavigationRoute::MaterialDatabase, false);
-    addItem("QUOTES", PrimaryNavigationRoute::Quotes);
-    addItem("CUSTOMER DATABASE", PrimaryNavigationRoute::CustomerDatabase);
-    addItem("SETTINGS", PrimaryNavigationRoute::Settings);
-    addItem("EXIT", PrimaryNavigationRoute::Exit);
+    addItem(
+        selectedRoute == PrimaryNavigationRoute::NewJob ? "Job Input" : "New Job",
+        PrimaryNavigationRoute::NewJob);
+    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, false);
+    addItem("Quotes", PrimaryNavigationRoute::Quotes);
+    addItem("Customers", PrimaryNavigationRoute::CustomerDatabase);
+    addItem("Labour Rates", PrimaryNavigationRoute::LabourRates);
+    addItem("Settings", PrimaryNavigationRoute::Settings);
+    addItem("Exit", PrimaryNavigationRoute::Exit);
 
     for (const auto& item : items)
         item.second->setSelected(item.first == selectedRoute);

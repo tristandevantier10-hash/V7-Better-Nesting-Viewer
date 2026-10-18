@@ -3,6 +3,7 @@
 #include "PricingDatabase.h"
 #include <iostream>
 #include <algorithm>
+#include <unordered_set>
 #include "RollOptimizer.h"
 #include "ProductionPricingDatabase.h"
 #include "NestGroup.h"
@@ -22,14 +23,20 @@ CostResult CostEngine::calculate(Job job)
         nestingManager.calculate(job);
 
     result.nestingSheets = nestingResult.sheets;
+    result.nestingValid = nestingResult.valid;
+    result.nestingErrors = nestingResult.errors;
+
+    // Do not calculate material or sell prices from incomplete or invalid nests.
+    if (!nestingResult.valid)
+        return result;
 
     result.materialCost = 0.0;
     result.labourCost = 0.0;
     result.productionCost = 0.0;
     result.sellPrice = 0.0;
 
-    const double labourRate = PricingDatabase::getLabourPerM2();
     const double markup = PricingDatabase::getMarkupPercent();
+    std::unordered_set<std::string> chargedJobProcesses;
 
     for (size_t i = 0; i < job.items.size(); i++)
     {
@@ -80,13 +87,38 @@ CostResult CostEngine::calculate(Job job)
         const double areaPerItem = PricingRules::calculateArea(item.width, item.height);
         const double totalArea = areaPerItem * item.quantity;
 
-        const double baseJobCost = 50.0;
-
-        const double materialFactor =
-            (v.labour_factor > 0.0) ? v.labour_factor : 1.0;
-
-        const double labourCost =
-            baseJobCost + (totalArea * labourRate * materialFactor);
+        double labourCost = 0.0;
+        const double totalLengthM = item.lengthMeters > 0.0
+            ? item.lengthMeters * item.quantity
+            : ((item.width + item.height) * 2.0 / 1000.0) * item.quantity;
+        for (const auto& processId : item.production.selectedProcessIds)
+        {
+            const auto& processes = ProductionPricingDatabase::getProcesses();
+            const auto process = std::find_if(processes.begin(), processes.end(),
+                [&](const LabourProcess& candidate)
+                { return candidate.id == processId && candidate.enabled; });
+            if (process != processes.end() &&
+                (process->unit != ProcessRateUnit::PerJob ||
+                    chargedJobProcesses.insert(processId).second))
+            {
+                const double processQuantity = process->unit == ProcessRateUnit::PerSquareMetre
+                    ? totalArea : process->unit == ProcessRateUnit::PerLinearMetre
+                    ? totalLengthM : process->unit == ProcessRateUnit::PerJob
+                    ? 1.0 : static_cast<double>(item.quantity);
+                const double processCost = ProductionPricingDatabase::calculateProcessCost(
+                    *process, totalArea, totalLengthM, item.quantity);
+                labourCost += processCost;
+                ItemCostResult::LabourLine line;
+                line.name = process->name;
+                line.unit = process->unit == ProcessRateUnit::PerSquareMetre ? "m2"
+                    : process->unit == ProcessRateUnit::PerLinearMetre ? "m"
+                    : process->unit == ProcessRateUnit::PerJob ? "job" : "item";
+                line.rate = process->rate;
+                line.quantity = processQuantity;
+                line.cost = processCost;
+                itemResult.labourBreakdown.push_back(std::move(line));
+            }
+        }
 
         double materialCost = 0.0;
         double productionCostCalc = 0.0;

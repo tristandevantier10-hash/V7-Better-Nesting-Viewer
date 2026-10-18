@@ -94,7 +94,8 @@ void InvoicePanel::rebuildJobPanels(const InvoiceViewModel& vm)
 
         jobPanels.push_back(panel);
 
-        addLayoutElement(panel, SizePolicy::Fixed, 220);
+        addLayoutElement(panel, SizePolicy::Fixed,
+            280 + static_cast<int>(job.labourBreakdown.size()) * 26);
 
         jobNumber++;
     }

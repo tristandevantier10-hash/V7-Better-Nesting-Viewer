@@ -1,13 +1,11 @@
 #include "MainMenuScreen.h"
-#include "Renderer.h"
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
-#include "TextBox.h"
-#include "ComboBox.h"
-#include "MaterialDatabase.h"
-#include "NavigationItem.h"
+#include "Label.h"
 #include "Metrics.h"
 #include "PageHeader.h"
+#include "NavigationItem.h"
+#include <utility>
 
 MainMenuScreen::MainMenuScreen()
 {
@@ -77,22 +75,20 @@ MainMenuScreen::MainMenuScreen()
     sidebarPanel->setBorderVisible(false);
     sidebarPanel->setPadding(Metrics::SidebarPadding);
     sidebarPanel->setSpacing(Metrics::SpaceS);
+    sidebarPanel->addBrand();
 
     auto rightPanel = std::make_shared<Panel>();
     rightPanel->setLayout(std::make_unique<VerticalLayout>());
     rightPanel->setPadding(Metrics::SpaceL);
     rightPanel->setSpacing(Metrics::SpaceL);
 
-    statusPanel = std::make_shared<CardPanel>();
-    statusPanel->setTitle("System Status");
-    statusPanel->setBorderVisible(false);
-    statusPanel->setPadding(Metrics::PanelPadding);
-    statusPanel->setSpacing(Metrics::SpaceS);
+    dashboardContent = std::make_shared<DashboardContent>([this]()
+    {
+        if (quotesCallback)
+            quotesCallback();
+    });
 
-    rightPanel->addLayoutElement(
-        statusPanel,
-        SizePolicy::Fixed,
-        260);
+    rightPanel->addLayoutElement(dashboardContent, SizePolicy::Fill);
 
     contentPanel->addLayoutElement(
         sidebarPanel,
@@ -103,53 +99,8 @@ MainMenuScreen::MainMenuScreen()
         rightPanel,
         SizePolicy::Fill);
 
-    materialsStatus = std::make_shared<Label>();
-    materialsStatus->setText("[OK] Materials Loaded");
-    materialsStatus->setStyle(LabelStyle::Small);
-
-    statusPanel->addLayoutElement(
-        materialsStatus,
-        SizePolicy::Fixed,
-        Metrics::NormalRow);
-
-    pricingStatus = std::make_shared<Label>();
-    pricingStatus->setText("[OK] Pricing Loaded");
-    pricingStatus->setStyle(LabelStyle::Small);
-
-    statusPanel->addLayoutElement(
-        pricingStatus,
-        SizePolicy::Fixed,
-        Metrics::NormalRow);
-
-    productionStatus = std::make_shared<Label>();
-    productionStatus->setText("[OK] Production Pricing Loaded");
-    productionStatus->setStyle(LabelStyle::Small);
-
-    statusPanel->addLayoutElement(
-        productionStatus,
-        SizePolicy::Fixed,
-        Metrics::NormalRow);
-
-    materialCountLabel = std::make_shared<Label>();
-    materialCountLabel->setText("Materials : 0");
-    materialCountLabel->setStyle(LabelStyle::Small);    
-
-    statusPanel->addLayoutElement(
-        materialCountLabel,
-        SizePolicy::Fixed,
-        Metrics::NormalRow);
-
-    variantCountLabel = std::make_shared<Label>();
-    variantCountLabel->setText("Variants : 0");
-    variantCountLabel->setStyle(LabelStyle::Small); 
-
-    statusPanel->addLayoutElement(
-        variantCountLabel,
-        SizePolicy::Fixed,
-        Metrics::NormalRow);
-
     sidebarPanel->addItem(
-        "NEW JOB",
+        "New Job",
         [this]()
         {
             if (newJobCallback)
@@ -157,27 +108,33 @@ MainMenuScreen::MainMenuScreen()
         });
 
     sidebarPanel->addItem(
-        "MATERIAL DATABASE",
+        "Materials",
         {},
         "",
         false);
 
-    sidebarPanel->addItem("QUOTES", [this]()
+    sidebarPanel->addItem("Quotes", [this]()
     {
         if (quotesCallback)
             quotesCallback();
     });
 
     sidebarPanel->addItem(
-        "CUSTOMER DATABASE",
+        "Customers",
         [this]()
         {
             if (customerDatabaseCallback)
                 customerDatabaseCallback();
         });
 
+    labourRatesItem = sidebarPanel->addItem("Labour Rates", [this]()
+    {
+        if (labourRatesCallback)
+            labourRatesCallback();
+    });
+
     sidebarPanel->addItem(
-        "SETTINGS",
+        "Settings",
         [this]()
         {
             if (settingsCallback)
@@ -185,7 +142,7 @@ MainMenuScreen::MainMenuScreen()
         });
 
     sidebarPanel->addItem(
-        "EXIT",
+        "Exit",
         [this]()
         {
             if (exitCallback)
@@ -230,24 +187,19 @@ void MainMenuScreen::setSettingsCallback(std::function<void()> callback)
     settingsCallback = callback;
 }
 
+void MainMenuScreen::setLabourRatesCallback(std::function<void()> callback)
+{
+    labourRatesCallback = std::move(callback);
+}
+
+void MainMenuScreen::setLabourRatesAvailable(bool available)
+{
+    if (labourRatesItem)
+        labourRatesItem->setEnabled(available);
+}
+
 void MainMenuScreen::refreshStatus()
 {
-    auto materials =
-        MaterialDatabase::getBaseMaterials();
-
-    materialCountLabel->setText(
-        "Materials : " +
-        std::to_string(materials.size()));
-
-    std::size_t variantCount = 0;
-
-    for (const auto& id : materials)
-    {
-        variantCount +=
-            MaterialDatabase::get(id).variants.size();
-    }
-
-    variantCountLabel->setText(
-        "Variants : " +
-        std::to_string(variantCount));
+    if (dashboardContent)
+        dashboardContent->refresh();
 }

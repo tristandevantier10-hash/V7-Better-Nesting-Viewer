@@ -12,7 +12,6 @@ class PricingDatabase
 public:
     static void load(const std::string& jsonData);
 
-    static double getLabourPerM2();
     static double getMarkupPercent();
 
     // UPDATED: now uses variant label matching instead of type + usage
@@ -29,6 +28,5 @@ public:
     static double getFrameRate();
 
 private:
-    static double labourPerM2;
     static double markupPercent;
 };

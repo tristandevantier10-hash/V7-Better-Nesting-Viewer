@@ -4,6 +4,7 @@
 #include "Label.h"
 #include "PropertyRow.h"
 #include "JobSummaryViewModel.h"
+#include <vector>
 
 class Renderer;
 
@@ -38,6 +39,9 @@ private:
     std::shared_ptr<PropertyRow> rollWidth;
     std::shared_ptr<PropertyRow> lengthUsed;
     std::shared_ptr<PropertyRow> efficiency;
+    std::shared_ptr<PropertyRow> unitSize;
+    std::shared_ptr<PropertyRow> labour;
+    std::vector<std::shared_ptr<PropertyRow>> labourDetailRows;
 
     bool expanded = true;
 };

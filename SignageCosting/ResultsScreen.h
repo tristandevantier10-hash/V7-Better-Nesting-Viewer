@@ -44,13 +44,8 @@ public:
     void setPrintCallback(
         std::function<void()> callback);
 
-    void setExportCallback(
-        std::function<void()> callback);
-
-    void setSaveQuoteCallback(
-        std::function<bool(InvoiceViewModel&)> callback);
-
-    bool exportQuoteToPdf(std::string& errorMessage);
+    void setSaveAndExportQuoteCallback(
+        std::function<bool(InvoiceViewModel&, std::string&)> callback);
 
     void setOverviewCallback(
         std::function<void()> callback);
@@ -154,7 +149,7 @@ private:
     std::function<void()> newJobCallback;
     std::function<void()> backCallback;
     std::function<void()> printCallback;
-    std::function<void()> exportCallback;
+    std::function<bool(InvoiceViewModel&, std::string&)> saveAndExportQuoteCallback;
 
     std::vector<Sheet> nestingSheets;
 
@@ -163,7 +158,7 @@ private:
     std::function<void()> costBreakdownCallback;
     std::function<void()> quoteCallback;
 
-    std::function<bool(InvoiceViewModel&)> saveQuoteCallback;
+    bool saveAndExportQuote();
 
     // --------------------------------------------------
     // Construction helpers

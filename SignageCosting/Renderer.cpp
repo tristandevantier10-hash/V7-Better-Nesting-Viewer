@@ -264,11 +264,15 @@ void Renderer::drawSVG(
         texture,
         colour.a);
 
+    SDL_Rect translatedDestination = destination;
+    translatedDestination.x += offsetX;
+    translatedDestination.y += offsetY;
+
     SDL_RenderCopy(
         sdlRenderer,
         texture,
         nullptr,
-        &destination);
+        &translatedDestination);
 
     SDL_DestroyTexture(texture);
 }
@@ -309,6 +313,37 @@ void Renderer::drawImage(
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         imageTextures.emplace(path, texture);
     }
+
+    SDL_Rect target = destination;
+    if (preserveAspect)
+    {
+        int imageWidth = 0;
+        int imageHeight = 0;
+        if (SDL_QueryTexture(texture, nullptr, nullptr, &imageWidth, &imageHeight) != 0 ||
+            imageWidth <= 0 || imageHeight <= 0)
+            return;
+
+        const double scale = std::min(
+            static_cast<double>(destination.w) / imageWidth,
+            static_cast<double>(destination.h) / imageHeight);
+        target.w = static_cast<int>(imageWidth * scale);
+        target.h = static_cast<int>(imageHeight * scale);
+        target.x += (destination.w - target.w) / 2;
+        target.y += (destination.h - target.h) / 2;
+    }
+
+    target.x += offsetX;
+    target.y += offsetY;
+    SDL_RenderCopy(sdlRenderer, texture, nullptr, &target);
+}
+
+void Renderer::drawTexture(
+    SDL_Texture* texture,
+    const SDL_Rect& destination,
+    bool preserveAspect)
+{
+    if (!texture || destination.w <= 0 || destination.h <= 0)
+        return;
 
     SDL_Rect target = destination;
     if (preserveAspect)

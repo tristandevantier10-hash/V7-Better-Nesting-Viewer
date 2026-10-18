@@ -1,6 +1,8 @@
-﻿#include "NestingCore.h"
+#include "NestingCore.h"
 #include <algorithm>
 #include <limits>
+#include <cmath>
+#include <utility>
 
 void NestingCore::newSheet(
     std::vector<Sheet>& sheets,
@@ -113,6 +115,34 @@ bool NestingCore::tryPlaceInSheet(
                         fr.y * 1000000.0 +
                         fr.x;
                     break;
+
+                case PlacementStrategy::BestContactPoint:
+                {
+                    constexpr double tolerance = 1e-7;
+                    double contact = 0.0;
+                    if (std::abs(fr.x) <= tolerance) contact += rh;
+                    if (std::abs(fr.y) <= tolerance) contact += rw;
+                    if (std::abs(fr.x + rw - sheet.width) <= tolerance) contact += rh;
+                    if (std::abs(fr.y + rh - sheet.height) <= tolerance) contact += rw;
+
+                    auto overlap = [](double a0, double a1, double b0, double b1)
+                    {
+                        return std::max(0.0, std::min(a1, b1) - std::max(a0, b0));
+                    };
+                    for (const auto& placed : sheet.placed)
+                    {
+                        if (std::abs(placed.x - (fr.x + rw)) <= tolerance ||
+                            std::abs(placed.x + placed.width - fr.x) <= tolerance)
+                            contact += overlap(fr.y, fr.y + rh,
+                                placed.y, placed.y + placed.height);
+                        if (std::abs(placed.y - (fr.y + rh)) <= tolerance ||
+                            std::abs(placed.y + placed.height - fr.y) <= tolerance)
+                            contact += overlap(fr.x, fr.x + rw,
+                                placed.x, placed.x + placed.width);
+                    }
+                    score = -contact + rotationPenalty;
+                    break;
+                }
                 }
 
                 if (score < bestScore)
@@ -147,73 +177,41 @@ bool NestingCore::tryPlaceInSheet(
     return true;
 }
 
-void NestingCore::splitFreeRect(
+void NestingCore::updateFreeRects(
     Sheet& sheet,
-    int index,
     double x,
     double y,
     double w,
     double h)
 {
 
-    if (index < 0 || index >= (int)sheet.freeRects.size())
-        return;
-
-    PlacedRect free = sheet.freeRects[index];
-    sheet.freeRects.erase(sheet.freeRects.begin() + index);
-
-    // Left
-    if (x > free.x)
+    std::vector<PlacedRect> remaining;
+    remaining.reserve(sheet.freeRects.size() * 2);
+    const PlacedRect used{ x, y, w, h, false };
+    auto add = [&](double rx, double ry, double rw, double rh)
     {
-        PlacedRect r;
-        r.x = free.x;
-        r.y = free.y;
-        r.width = x - free.x;
-        r.height = free.height;
+        if (rw > 0.0 && rh > 0.0)
+        {
+            PlacedRect r;
+            r.x = rx; r.y = ry; r.width = rw; r.height = rh;
+            remaining.push_back(r);
+        }
+    };
 
-        if (r.width > 0 && r.height > 0)
-            sheet.freeRects.push_back(r);
-    }
-
-    // Right
-    if (x + w < free.x + free.width)
+    for (const auto& free : sheet.freeRects)
     {
-        PlacedRect r;
-        r.x = x + w;
-        r.y = free.y;
-        r.width = (free.x + free.width) - (x + w);
-        r.height = free.height;
-
-        if (r.width > 0 && r.height > 0)
-            sheet.freeRects.push_back(r);
+        if (!rectanglesIntersect(free, used))
+        {
+            remaining.push_back(free);
+            continue;
+        }
+        // MaxRects free regions overlap by design; split every intersecting one.
+        add(free.x, free.y, x - free.x, free.height);
+        add(x + w, free.y, free.x + free.width - (x + w), free.height);
+        add(free.x, free.y, free.width, y - free.y);
+        add(free.x, y + h, free.width, free.y + free.height - (y + h));
     }
-
-    // Bottom
-    if (y > free.y)
-    {
-        PlacedRect r;
-        r.x = free.x;
-        r.y = free.y;
-        r.width = free.width;
-        r.height = y - free.y;
-
-        if (r.width > 0 && r.height > 0)
-            sheet.freeRects.push_back(r);
-    }
-
-    // Top
-    if (y + h < free.y + free.height)
-    {
-        PlacedRect r;
-        r.x = free.x;
-        r.y = y + h;
-        r.width = free.width;
-        r.height = (free.y + free.height) - (y + h);
-
-        if (r.width > 0 && r.height > 0)
-            sheet.freeRects.push_back(r);
-    }
-
+    sheet.freeRects.swap(remaining);
     pruneFreeRects(sheet);
 }
 
@@ -255,70 +253,88 @@ void NestingCore::pruneFreeRects(Sheet& sheet)
     }
 }
 
-void NestingCore::pruneMaxRects(Sheet& sheet)
-{
-    for (int i = 0; i < (int)sheet.freeRects.size(); i++)
-    {
-        for (int j = i + 1; j < (int)sheet.freeRects.size(); j++)
-        {
-            const PlacedRect& a = sheet.freeRects[i];
-            const PlacedRect& b = sheet.freeRects[j];
-
-            // -----------------------------
-            // A INSIDE B - remove A
-            // -----------------------------
-            if (a.x >= b.x &&
-                a.y >= b.y &&
-                a.x + a.width <= b.x + b.width &&
-                a.y + a.height <= b.y + b.height)
-            {
-                sheet.freeRects.erase(sheet.freeRects.begin() + i);
-                i--;
-                goto next_i;
-            }
-
-            // -----------------------------
-            // B INSIDE A - remove B
-            // -----------------------------
-            if (b.x >= a.x &&
-                b.y >= a.y &&
-                b.x + b.width <= a.x + a.width &&
-                b.y + b.height <= a.y + a.height)
-            {
-                sheet.freeRects.erase(sheet.freeRects.begin() + j);
-                j--;
-            }
-        }
-
-    next_i:
-        continue;
-    }
-}
-
-std::vector<Sheet> NestingCore::pack(
+NestingPackResult NestingCore::pack(
 
     const std::vector<Rect>& items,
     double containerWidth,
     double containerHeight,
-    PlacementStrategy strategy)
+    PlacementStrategy strategy,
+    ItemOrder order)
 {
+
+    NestingPackResult result;
+    if (!std::isfinite(containerWidth) || !std::isfinite(containerHeight) ||
+        containerWidth <= 0.0 || containerHeight <= 0.0)
+    {
+        result.validationErrors.push_back("Container dimensions must be finite and greater than zero.");
+        return result;
+    }
 
     // ---------------------------------------
     // Sort largest rectangles first
     // ---------------------------------------
 
-    std::vector<Rect> sortedItems = items;
+    std::vector<Rect> sortedItems;
+    sortedItems.reserve(items.size());
+    for (const auto& item : items)
+    {
+        if (!std::isfinite(item.width) || !std::isfinite(item.height) ||
+            item.width <= 0.0 || item.height <= 0.0 || item.quantity < 0)
+        {
+            result.validationErrors.push_back(
+                "Item dimensions must be finite and greater than zero, and quantity cannot be negative.");
+            if (item.quantity > 0)
+                result.unplaced.push_back({ item.width, item.height, item.quantity,
+                    "Invalid item dimensions or quantity." });
+            continue;
+        }
+        if (item.quantity > 0)
+            sortedItems.push_back(item);
+    }
 
-    std::sort(
+    auto orderKey = [order](const Rect& item)
+    {
+        const double longSide = std::max(item.width, item.height);
+        const double shortSide = std::min(item.width, item.height);
+        const double area = item.width * item.height;
+        const double perimeter = item.width + item.height;
+        switch (order)
+        {
+        case ItemOrder::LongSideDescending: return std::make_pair(longSide, area);
+        case ItemOrder::ShortSideDescending: return std::make_pair(shortSide, area);
+        case ItemOrder::WidthDescending: return std::make_pair(item.width, item.height);
+        case ItemOrder::HeightDescending: return std::make_pair(item.height, item.width);
+        case ItemOrder::PerimeterDescending: return std::make_pair(perimeter, area);
+        case ItemOrder::AreaAscending: return std::make_pair(area, longSide);
+        case ItemOrder::LongSideAscending: return std::make_pair(longSide, area);
+        case ItemOrder::ShortSideAscending: return std::make_pair(shortSide, area);
+        case ItemOrder::WidthAscending: return std::make_pair(item.width, item.height);
+        case ItemOrder::HeightAscending: return std::make_pair(item.height, item.width);
+        case ItemOrder::PerimeterAscending: return std::make_pair(perimeter, area);
+        case ItemOrder::AreaDescending:
+        default: return std::make_pair(area, longSide);
+        }
+    };
+    const bool ascending =
+        order == ItemOrder::AreaAscending ||
+        order == ItemOrder::LongSideAscending ||
+        order == ItemOrder::ShortSideAscending ||
+        order == ItemOrder::WidthAscending ||
+        order == ItemOrder::HeightAscending ||
+        order == ItemOrder::PerimeterAscending;
+
+    std::stable_sort(
         sortedItems.begin(),
         sortedItems.end(),
-        [](const Rect& a, const Rect& b)
+        [&](const Rect& a, const Rect& b)
         {
-            return (a.width * a.height) >
-                (b.width * b.height);
+            return ascending ? orderKey(a) < orderKey(b) : orderKey(a) > orderKey(b);
         });
 
-    std::vector<Sheet> sheets;
+    if (sortedItems.empty())
+        return result;
+
+    std::vector<Sheet>& sheets = result.sheets;
 
     newSheet(sheets, containerWidth, containerHeight);
 
@@ -334,7 +350,11 @@ std::vector<Sheet> NestingCore::pack(
                 (item.height <= containerWidth && item.width <= containerHeight);
 
             if (!canFit)
-                continue;
+            {
+                result.unplaced.push_back({ item.width, item.height, item.quantity - q,
+                    "Item does not fit inside the container in either orientation." });
+                break;
+            }
 
             for (auto& sheet : sheets)
             {
@@ -363,13 +383,9 @@ std::vector<Sheet> NestingCore::pack(
 
                     sheet.placed.push_back(p);
 
-                    if (index >= 0 && index < (int)sheet.freeRects.size())
-                    {
-                        double usedW = rotated ? item.height : item.width;
-                        double usedH = rotated ? item.width : item.height;
-
-                        splitFreeRect(sheet, index, x, y, usedW, usedH);
-                    }
+                    double usedW = rotated ? item.height : item.width;
+                    double usedH = rotated ? item.width : item.height;
+                    updateFreeRects(sheet, x, y, usedW, usedH);
 
                     placed = true;
                     break;
@@ -393,7 +409,10 @@ std::vector<Sheet> NestingCore::pack(
                 if (!tryPlaceInSheet(sheet, item.width, item.height, strategy,
                     rotated, x, y, index))
                 {
-                    continue;
+                    sheets.pop_back();
+                    result.unplaced.push_back({ item.width, item.height, item.quantity - q,
+                        "No valid placement was found in a new container." });
+                    break;
                 }
 
                 PlacedRect p;
@@ -405,16 +424,223 @@ std::vector<Sheet> NestingCore::pack(
 
                 sheet.placed.push_back(p);
 
-                if (index >= 0 && index < (int)sheet.freeRects.size())
-                {
-                    double usedW = rotated ? item.height : item.width;
-                    double usedH = rotated ? item.width : item.height;
+                double usedW = rotated ? item.height : item.width;
+                double usedH = rotated ? item.width : item.height;
+                updateFreeRects(sheet, x, y, usedW, usedH);
+            }
+        }
+    }
 
-                    splitFreeRect(sheet, index, x, y, usedW, usedH);
+    auto layoutErrors = validateLayout(result.sheets, containerWidth, containerHeight);
+    result.validationErrors.insert(result.validationErrors.end(),
+        layoutErrors.begin(), layoutErrors.end());
+    return result;
+}
+
+NestingPackResult NestingCore::repairTail(
+    const NestingPackResult& seed,
+    double containerWidth,
+    double containerHeight,
+    size_t sheetIndex,
+    size_t tailCount,
+    PlacementStrategy strategy)
+{
+    if (sheetIndex >= seed.sheets.size() || tailCount == 0 ||
+        tailCount > seed.sheets[sheetIndex].placed.size())
+        return seed;
+
+    NestingPackResult repaired = seed;
+    std::vector<Rect> pending;
+    auto& target = repaired.sheets[sheetIndex];
+    const size_t firstRemoved = target.placed.size() - tailCount;
+    for (size_t i = firstRemoved; i < target.placed.size(); ++i)
+    {
+        const auto& placed = target.placed[i];
+        pending.push_back({
+            placed.rotated ? placed.height : placed.width,
+            placed.rotated ? placed.width : placed.height,
+            1
+        });
+    }
+    target.placed.erase(target.placed.begin() + firstRemoved, target.placed.end());
+
+    for (const auto& unplaced : seed.unplaced)
+        pending.push_back({ unplaced.width, unplaced.height, unplaced.quantity });
+
+    for (const auto& item : pending)
+    {
+        if (!std::isfinite(item.width) || !std::isfinite(item.height) ||
+            item.width <= 0.0 || item.height <= 0.0 || item.quantity < 0)
+            return seed;
+    }
+
+    repaired.unplaced.clear();
+    repaired.validationErrors.clear();
+
+    // Rebuild each sheet's free-space state around the placements being kept.
+    for (auto& sheet : repaired.sheets)
+    {
+        sheet.freeRects.clear();
+        PlacedRect full;
+        full.width = containerWidth;
+        full.height = containerHeight;
+        sheet.freeRects.push_back(full);
+        for (const auto& placed : sheet.placed)
+            updateFreeRects(sheet, placed.x, placed.y, placed.width, placed.height);
+    }
+
+    std::stable_sort(pending.begin(), pending.end(),
+        [](const Rect& a, const Rect& b)
+        {
+            return a.width * a.height > b.width * b.height;
+        });
+
+    for (const auto& item : pending)
+    {
+        for (int q = 0; q < item.quantity; ++q)
+        {
+            bool placed = false;
+            for (auto& sheet : repaired.sheets)
+            {
+                bool rotated = false;
+                double x = 0.0;
+                double y = 0.0;
+                int usedIndex = -1;
+                if (!tryPlaceInSheet(sheet, item.width, item.height, strategy,
+                    rotated, x, y, usedIndex))
+                    continue;
+
+                PlacedRect part;
+                part.x = x;
+                part.y = y;
+                part.width = rotated ? item.height : item.width;
+                part.height = rotated ? item.width : item.height;
+                part.rotated = rotated;
+                sheet.placed.push_back(part);
+                updateFreeRects(sheet, x, y, part.width, part.height);
+                placed = true;
+                break;
+            }
+
+            if (!placed)
+            {
+                newSheet(repaired.sheets, containerWidth, containerHeight);
+                auto& sheet = repaired.sheets.back();
+                bool rotated = false;
+                double x = 0.0;
+                double y = 0.0;
+                int usedIndex = -1;
+                if (tryPlaceInSheet(sheet, item.width, item.height, strategy,
+                    rotated, x, y, usedIndex))
+                {
+                    PlacedRect part;
+                    part.x = x;
+                    part.y = y;
+                    part.width = rotated ? item.height : item.width;
+                    part.height = rotated ? item.width : item.height;
+                    part.rotated = rotated;
+                    sheet.placed.push_back(part);
+                    updateFreeRects(sheet, x, y, part.width, part.height);
+                }
+                else
+                {
+                    repaired.sheets.pop_back();
+                    repaired.unplaced.push_back({ item.width, item.height,
+                        item.quantity - q, "No valid placement was found during local repair." });
+                    break;
                 }
             }
         }
     }
 
-    return sheets;
+    repaired.validationErrors = validateLayout(
+        repaired.sheets, containerWidth, containerHeight);
+    return repaired;
+}
+
+size_t NestingCore::maxAdditionalFit(
+    const NestingPackResult& layout,
+    const std::vector<Rect>& itemTypes)
+{
+    size_t bestCapacity = 0;
+    std::vector<std::pair<double, double>> evaluatedTypes;
+    for (const auto& item : itemTypes)
+    {
+        if (!std::isfinite(item.width) || !std::isfinite(item.height) ||
+            item.width <= 0.0 || item.height <= 0.0)
+            continue;
+        const auto normalized = std::minmax(item.width, item.height);
+        const std::pair<double, double> typeKey{ normalized.first, normalized.second };
+        if (std::find(evaluatedTypes.begin(), evaluatedTypes.end(), typeKey) != evaluatedTypes.end())
+            continue;
+        evaluatedTypes.push_back(typeKey);
+
+        std::vector<Sheet> trialSheets = layout.sheets;
+        size_t fitCount = 0;
+        while (fitCount < 32)
+        {
+            bool placed = false;
+            for (auto& sheet : trialSheets)
+            {
+                bool rotated = false;
+                double x = 0.0;
+                double y = 0.0;
+                int usedIndex = -1;
+                if (!tryPlaceInSheet(sheet, item.width, item.height,
+                    PlacementStrategy::BestShortSideFit,
+                    rotated, x, y, usedIndex))
+                    continue;
+
+                PlacedRect part;
+                part.x = x;
+                part.y = y;
+                part.width = rotated ? item.height : item.width;
+                part.height = rotated ? item.width : item.height;
+                part.rotated = rotated;
+                sheet.placed.push_back(part);
+                updateFreeRects(sheet, x, y, part.width, part.height);
+                placed = true;
+                ++fitCount;
+                break;
+            }
+            if (!placed)
+                break;
+        }
+        bestCapacity = std::max(bestCapacity, fitCount);
+    }
+    return bestCapacity;
+}
+
+std::vector<std::string> NestingCore::validateLayout(
+    const std::vector<Sheet>& sheets,
+    double containerWidth,
+    double containerHeight)
+{
+    std::vector<std::string> errors;
+    constexpr double tolerance = 1e-7;
+    for (size_t s = 0; s < sheets.size(); ++s)
+    {
+        const auto& sheet = sheets[s];
+        if (!std::isfinite(sheet.width) || !std::isfinite(sheet.height) ||
+            sheet.width <= 0.0 || sheet.height <= 0.0 ||
+            sheet.width > containerWidth + tolerance || sheet.height > containerHeight + tolerance)
+            errors.push_back("Sheet " + std::to_string(s + 1) + " has invalid container bounds.");
+
+        for (size_t i = 0; i < sheet.placed.size(); ++i)
+        {
+            const auto& p = sheet.placed[i];
+            if (!std::isfinite(p.x) || !std::isfinite(p.y) ||
+                !std::isfinite(p.width) || !std::isfinite(p.height) ||
+                p.width <= 0.0 || p.height <= 0.0 || p.x < -tolerance || p.y < -tolerance ||
+                p.x + p.width > sheet.width + tolerance || p.y + p.height > sheet.height + tolerance)
+            {
+                errors.push_back("Sheet " + std::to_string(s + 1) + " contains a part outside its bounds.");
+                continue;
+            }
+            for (size_t j = i + 1; j < sheet.placed.size(); ++j)
+                if (rectanglesIntersect(p, sheet.placed[j]))
+                    errors.push_back("Sheet " + std::to_string(s + 1) + " contains overlapping parts.");
+        }
+    }
+    return errors;
 }

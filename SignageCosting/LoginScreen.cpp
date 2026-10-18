@@ -8,18 +8,14 @@
 
 namespace
 {
-    constexpr SDL_Color LoginSurface{ 250, 251, 253, 255 };
+    constexpr SDL_Color LoginSurface{ 255, 255, 255, 255 };
 
-    class LoginCardPanel : public Panel
+    class LoginHeadingBanner : public Panel
     {
     protected:
         void renderBackground(Renderer& renderer) override
         {
-            Panel::renderBackground(renderer);
-            renderer.fillRoundedRect(
-                { getX() + 16, getY() + 5, 46, 4 },
-                SDL_Color{ 0, 170, 90, 255 },
-                2);
+            renderer.fillRect(getBounds(), backgroundColour);
         }
     };
 }
@@ -27,144 +23,113 @@ namespace
 LoginScreen::LoginScreen()
 {
     setLayout(std::make_unique<VerticalLayout>());
-
-    setPadding(12);
-    setSpacing(8);
+    setPadding(0);
+    setSpacing(0);
     setBackgroundColour(LoginSurface);
     setBorderVisible(false);
 
-    //==================================================
-    // CENTRED BRAND HEADER
-    //==================================================
-
-    auto headerPanel = std::make_shared<Panel>();
-
-    headerPanel->setLayout(
-        std::make_unique<HorizontalLayout>());
-    headerPanel->setPadding(0);
-    headerPanel->setSpacing(0);
-    headerPanel->setBorderVisible(false);
-    headerPanel->setBackgroundColour(LoginSurface);
-
-    addLayoutElement(
-        headerPanel,
-        SizePolicy::Fixed,
-        90);
-
-    auto headerLeftSpacer = std::make_shared<Panel>();
-    headerLeftSpacer->setBorderVisible(false);
-    headerLeftSpacer->setBackgroundColour(LoginSurface);
-
-    auto brandGroup = std::make_shared<PageHeaderPanel>();
-    brandGroup->setLayout(std::make_unique<HorizontalLayout>());
-    configurePageHeader(brandGroup, 0, 36);
-    brandGroup->setBackgroundColour(LoginSurface);
-    brandGroup->setBottomAccentVisible(false);
-
-    auto headerRightSpacer = std::make_shared<Panel>();
-    headerRightSpacer->setBorderVisible(false);
-    headerRightSpacer->setBackgroundColour(LoginSurface);
-
-    headerPanel->addLayoutElement(headerLeftSpacer, SizePolicy::Fill);
-    headerPanel->addLayoutElement(brandGroup, SizePolicy::Fixed, 650);
-    headerPanel->addLayoutElement(headerRightSpacer, SizePolicy::Fill);
-
-    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
-    titlePanel->setLayout(std::make_unique<VerticalLayout>());
-    configurePageHeaderTitle(titlePanel, Metrics::SpaceM);
-    brandGroup->addLayoutElement(
-        std::make_shared<PageHeaderLogo>(),
-        SizePolicy::Fixed,
-        230);
-    brandGroup->addLayoutElement(titlePanel, SizePolicy::Fill);
-
-    titleLabel = std::make_shared<Label>();
-    titleLabel->setText("Welcome to EstiMate");
-    titleLabel->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(titleLabel);
-
-    titlePanel->addLayoutElement(
-        titleLabel,
-        SizePolicy::Fixed,
-        38);
-
-    subtitleLabel = std::make_shared<Label>();
-    subtitleLabel->setText(
-        "Sign in to access your estimating workspace.");
-
-    subtitleLabel->setStyle(LabelStyle::Small);
-    configurePageHeaderSubtitleLabel(subtitleLabel);
-
-    titlePanel->addLayoutElement(
-        subtitleLabel,
-        SizePolicy::Fixed,
-        18);
-
-    //==================================================
-    // CENTRED LOGIN CARD
-    //==================================================
-
+    // Center the brand and sign-in form in a compact, Slack-inspired layout.
     auto bodyPanel = std::make_shared<Panel>();
-    bodyPanel->setLayout(
-        std::make_unique<HorizontalLayout>());
+    bodyPanel->setLayout(std::make_unique<HorizontalLayout>());
     bodyPanel->setPadding(0);
     bodyPanel->setSpacing(0);
     bodyPanel->setBorderVisible(false);
     bodyPanel->setBackgroundColour(LoginSurface);
-
-    addLayoutElement(
-        bodyPanel,
-        SizePolicy::Fill);
-
-    auto leftSpacer = std::make_shared<Panel>();
-    leftSpacer->setBorderVisible(false);
-    leftSpacer->setBackgroundColour(LoginSurface);
+    addLayoutElement(bodyPanel, SizePolicy::Fill);
 
     auto centerPanel = std::make_shared<Panel>();
     auto centeredLayout = std::make_unique<VerticalLayout>();
     centeredLayout->setCenterContent(true);
+    // Keep the sign-in stack high enough to leave room for a footer disclaimer.
+    centeredLayout->setTopInset(-100);
+    centeredLayout->setSpacing(15);
     centerPanel->setLayout(std::move(centeredLayout));
     centerPanel->setBorderVisible(false);
     centerPanel->setBackgroundColour(LoginSurface);
 
-    auto loginPanel = std::make_shared<LoginCardPanel>();
-    loginPanel->setStyle(PanelStyle::Card);
-    loginPanel->setBorderVisible(true);
-    loginPanel->setPadding(10);
+    bodyPanel->addLayoutElement(centerPanel, SizePolicy::Fill);
+
+    auto brandPanel = std::make_shared<Panel>();
+    brandPanel->setLayout(std::make_unique<HorizontalLayout>());
+    brandPanel->setPadding(0);
+    brandPanel->setSpacing(0);
+    brandPanel->setBorderVisible(false);
+    brandPanel->setBackgroundColour(LoginSurface);
+
+    auto brandLeftSpacer = std::make_shared<Panel>();
+    brandLeftSpacer->setBorderVisible(false);
+    brandLeftSpacer->setBackgroundColour(LoginSurface);
+    auto brandRightSpacer = std::make_shared<Panel>();
+    brandRightSpacer->setBorderVisible(false);
+    brandRightSpacer->setBackgroundColour(LoginSurface);
+
+    brandPanel->addLayoutElement(brandLeftSpacer, SizePolicy::Fill);
+    brandPanel->addLayoutElement(
+        std::make_shared<PageHeaderLogo>(),
+        SizePolicy::Fixed,
+        300);
+    brandPanel->addLayoutElement(brandRightSpacer, SizePolicy::Fill);
+    centerPanel->addLayoutElement(brandPanel, SizePolicy::Fixed, 100);
+
+    auto headingBanner = std::make_shared<LoginHeadingBanner>();
+    auto headingLayout = std::make_unique<VerticalLayout>();
+    headingLayout->setCenterContent(true);
+    headingLayout->setSpacing(2);
+    headingBanner->setLayout(std::move(headingLayout));
+    headingBanner->setPadding(10);
+    headingBanner->setBorderVisible(false);
+    headingBanner->setBackgroundColour(SDL_Color{ 20, 20, 20, 255 });
+
+    titleLabel = std::make_shared<Label>();
+    titleLabel->setText("Sign in to EstiMate");
+    titleLabel->setStyle(LabelStyle::Heading);
+    titleLabel->setTextTheme(TextTheme::Light);
+    titleLabel->setAlignment(LabelAlignment::Center);
+    headingBanner->addLayoutElement(titleLabel, SizePolicy::Fixed, 34);
+
+    subtitleLabel = std::make_shared<Label>();
+    subtitleLabel->setText("Use your company account to continue.");
+    subtitleLabel->setStyle(LabelStyle::Small);
+    subtitleLabel->setTextTheme(TextTheme::LightSecondary);
+    subtitleLabel->setAlignment(LabelAlignment::Center);
+    headingBanner->addLayoutElement(subtitleLabel, SizePolicy::Fixed, 22);
+    centerPanel->addLayoutElement(headingBanner, SizePolicy::Fixed, 78);
+
+    auto loginPanel = std::make_shared<Panel>();
+    loginPanel->setBorderVisible(false);
+    loginPanel->setBackgroundColour(LoginSurface);
+    loginPanel->setPadding(24);
 
     auto loginLayout = std::make_unique<VerticalLayout>();
-    loginLayout->setSpacing(10);
+    loginLayout->setSpacing(15);
     loginPanel->setLayout(std::move(loginLayout));
 
-    centerPanel->addLayoutElement(
-        loginPanel,
-        SizePolicy::Fixed,
-        268);
+    auto loginCardRow = std::make_shared<Panel>();
+    loginCardRow->setLayout(std::make_unique<HorizontalLayout>());
+    loginCardRow->setPadding(0);
+    loginCardRow->setSpacing(0);
+    loginCardRow->setBorderVisible(false);
+    loginCardRow->setBackgroundColour(LoginSurface);
+    auto cardLeftSpacer = std::make_shared<Panel>();
+    cardLeftSpacer->setBorderVisible(false);
+    cardLeftSpacer->setBackgroundColour(LoginSurface);
+    auto cardRightSpacer = std::make_shared<Panel>();
+    cardRightSpacer->setBorderVisible(false);
+    cardRightSpacer->setBackgroundColour(LoginSurface);
+    loginCardRow->addLayoutElement(cardLeftSpacer, SizePolicy::Fill);
+    loginCardRow->addLayoutElement(loginPanel, SizePolicy::Fixed, 440);
+    loginCardRow->addLayoutElement(cardRightSpacer, SizePolicy::Fill);
+    centerPanel->addLayoutElement(loginCardRow, SizePolicy::Fixed, 270);
 
     auto formTitle = std::make_shared<Label>();
-    formTitle->setText("Account Login");
-    formTitle->setStyle(LabelStyle::Heading);
+    formTitle->setText("SIGN IN WITH YOUR ACCOUNT");
+    formTitle->setStyle(LabelStyle::Normal);
+    formTitle->setTextTheme(TextTheme::Dark);
+    formTitle->setAlignment(LabelAlignment::Center);
     loginPanel->addLayoutElement(
         formTitle,
         SizePolicy::Fixed,
         28);
-
-    auto rightSpacer = std::make_shared<Panel>();
-    rightSpacer->setBorderVisible(false);
-    rightSpacer->setBackgroundColour(LoginSurface);
-
-    bodyPanel->addLayoutElement(
-        leftSpacer,
-        SizePolicy::Fill);
-
-    bodyPanel->addLayoutElement(
-        centerPanel,
-        SizePolicy::Fixed,
-        520);
-
-    bodyPanel->addLayoutElement(
-        rightSpacer,
-        SizePolicy::Fill);
 
     //==================================================
     // USERNAME
@@ -173,20 +138,23 @@ LoginScreen::LoginScreen()
     usernameLabel = std::make_shared<Label>();
     usernameLabel->setText("Username");
     usernameLabel->setStyle(LabelStyle::Small);
+    usernameLabel->setTextTheme(TextTheme::DarkSecondary);
+    usernameLabel->setAlignment(LabelAlignment::Center);
 
     loginPanel->addLayoutElement(
         usernameLabel,
         SizePolicy::Fixed,
-        18);
+        14);
 
     usernameTextBox = std::make_shared<TextBox>();
     usernameTextBox->setPlaceholder("Enter your username");
-    usernameTextBox->setSize(360, 36);
+    usernameTextBox->setSize(360, 42);
+    usernameTextBox->setTextCentered(true);
 
     loginPanel->addLayoutElement(
         usernameTextBox,
         SizePolicy::Fixed,
-        36);
+        42);
 
     //==================================================
     // PASSWORD
@@ -195,34 +163,24 @@ LoginScreen::LoginScreen()
     passwordLabel = std::make_shared<Label>();
     passwordLabel->setText("Password");
     passwordLabel->setStyle(LabelStyle::Small);
+    passwordLabel->setTextTheme(TextTheme::DarkSecondary);
+    passwordLabel->setAlignment(LabelAlignment::Center);
 
     loginPanel->addLayoutElement(
         passwordLabel,
         SizePolicy::Fixed,
-        18);
+        14);
 
     passwordTextBox = std::make_shared<TextBox>();
     passwordTextBox->setPlaceholder("Enter your password");
     passwordTextBox->setPasswordMode(true);
-    passwordTextBox->setSize(360, 36);
+    passwordTextBox->setSize(360, 42);
+    passwordTextBox->setTextCentered(true);
 
     loginPanel->addLayoutElement(
         passwordTextBox,
         SizePolicy::Fixed,
-        36);
-
-    //==================================================
-    // STATUS MESSAGE
-    //==================================================
-
-    statusLabel = std::make_shared<Label>();
-    statusLabel->setText("");
-    statusLabel->setStyle(LabelStyle::Small);
-
-    loginPanel->addLayoutElement(
-        statusLabel,
-        SizePolicy::Fixed,
-        16);
+        42);
 
     //==================================================
     // LOGIN BUTTON
@@ -230,6 +188,8 @@ LoginScreen::LoginScreen()
 
     loginButton = std::make_shared<Button>();
     loginButton->setText("SIGN IN");
+    loginButton->setStyle(Button::ButtonStyle::Primary);
+    loginButton->setTextCentered(true);
 
     loginButton->setOnClick(
         [this]()
@@ -264,7 +224,7 @@ LoginScreen::LoginScreen()
     loginPanel->addLayoutElement(
         loginButton,
         SizePolicy::Fixed,
-        36);
+        42);
 }
 
 void LoginScreen::update(const SDL_Event& e)
@@ -275,16 +235,6 @@ void LoginScreen::update(const SDL_Event& e)
 void LoginScreen::render(Renderer& renderer)
 {
     Screen::render(renderer);
-
-    const SDL_Rect bounds = getBounds();
-    renderer.drawRoundedRect(
-        { bounds.x + 1, bounds.y + 1, bounds.w - 2, bounds.h - 2 },
-        SDL_Color{ 205, 214, 224, 255 },
-        9);
-    renderer.fillRoundedRect(
-        { bounds.x + 2, bounds.y + bounds.h - 5, bounds.w - 4, 4 },
-        SDL_Color{ 0, 170, 90, 255 },
-        2);
 }
 
 void LoginScreen::setLoginCallback(
@@ -300,8 +250,21 @@ void LoginScreen::setStatus(
 {
     statusMessage = message;
 
-    if (statusLabel)
-        statusLabel->setText(statusMessage);
+    if (subtitleLabel)
+    {
+        subtitleLabel->setText(
+            message.empty()
+            ? "Use your company account to continue."
+            : statusMessage);
+
+        if (message.empty() || message == "Signing in...")
+            subtitleLabel->setTextTheme(TextTheme::LightSecondary);
+        else if (message.find("successful") != std::string::npos ||
+            message.find("accepted") != std::string::npos)
+            subtitleLabel->setTextTheme(TextTheme::Success);
+        else
+            subtitleLabel->setTextTheme(TextTheme::Error);
+    }
 }
 
 void LoginScreen::setWelcomeFont(TTF_Font* font)

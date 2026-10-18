@@ -21,15 +21,16 @@ void NavigationItem::render(Renderer& renderer)
     {
         SDL_Rect selectedBackground =
         {
-            bounds.x + 8,
-            bounds.y + 4,
-            bounds.w - 16,
-            bounds.h - 8
+            bounds.x + 4,
+            bounds.y + 2,
+            bounds.w - 8,
+            bounds.h - 4
         };
 
-        renderer.fillRect(
+        renderer.fillRoundedRect(
             selectedBackground,
-            DefaultTheme.sidebarSelected);
+            { 44, 72, 43, 255 },
+            9);
     }
 
     // ---------------------------------------------------------
@@ -40,10 +41,10 @@ void NavigationItem::render(Renderer& renderer)
     {
         SDL_Rect indicator =
         {
-            bounds.x,
-            bounds.y + 4,
+            bounds.x + 2,
+            bounds.y + 7,
             4,
-            bounds.h - 8
+            bounds.h - 14
         };
 
         renderer.fillRect(
@@ -100,12 +101,11 @@ void NavigationItem::render(Renderer& renderer)
     // ---------------------------------------------------------
     // Navigation item
     //
-    // Icon + text are treated as ONE group and centred
-    // horizontally inside the navigation item.
+    // Keep the icon and label in a consistent left-aligned column.
     // ---------------------------------------------------------
 
     constexpr int IconSize = 22;
-    constexpr int IconTextGap = 10;
+    constexpr int IconTextGap = 14;
 
     TTF_Font* font =
         renderer.getFontManager().getSmallFont();
@@ -121,19 +121,10 @@ void NavigationItem::render(Renderer& renderer)
             &textWidth,
             &textHeight);
     }
+    (void)textWidth;
 
     const bool hasIcon =
         !iconPath.empty();
-
-    int groupWidth =
-        textWidth;
-
-    if (hasIcon)
-    {
-        groupWidth +=
-            IconSize +
-            IconTextGap;
-    }
 
     int groupX =
         bounds.x + 22;
@@ -241,20 +232,29 @@ void NavigationItem::update(
                 &bounds);
     }
 
-    if (e.type == SDL_MOUSEBUTTONDOWN)
+    if (e.type == SDL_MOUSEBUTTONDOWN ||
+        e.type == SDL_MOUSEBUTTONUP)
     {
-        if (hovered)
-            pressed = true;
-    }
-
-    if (e.type == SDL_MOUSEBUTTONUP)
-    {
-        if (pressed && hovered)
+        SDL_Point mouse =
         {
-            if (onClick)
+            e.button.x,
+            e.button.y
+        };
+        hovered = SDL_PointInRect(&mouse, &bounds);
+
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if (e.button.button == SDL_BUTTON_LEFT)
+                pressed = hovered;
+        }
+        else
+        {
+            const bool activate =
+                e.button.button == SDL_BUTTON_LEFT && pressed && hovered;
+            pressed = false;
+
+            if (activate && onClick)
                 onClick();
         }
-
-        pressed = false;
     }
 }

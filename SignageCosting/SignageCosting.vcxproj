@@ -94,6 +94,7 @@
     <ClCompile Include="CustomerEditorScreen.cpp" />
     <ClCompile Include="CustomerSelectionScreen.cpp" />
     <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="DashboardContent.cpp" />
     <ClCompile Include="DataGrid.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="FocusManager.cpp" />
@@ -113,6 +114,7 @@
     <ClCompile Include="Layout.cpp" />
     <ClCompile Include="ListView.cpp" />
     <ClCompile Include="LoginScreen.cpp" />
+    <ClCompile Include="LabourRatesScreen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuScreen.cpp" />
     <ClCompile Include="MaterialDatabase.cpp" />
@@ -164,6 +166,7 @@
     <ClInclude Include="Label.h" />
     <ClInclude Include="ListView.h" />
     <ClInclude Include="LoginScreen.h" />
+    <ClInclude Include="LabourRatesScreen.h" />
     <ClInclude Include="MainMenuScreen.h" />
     <ClInclude Include="Metrics.h" />
     <ClInclude Include="NavigationItem.h" />
@@ -209,6 +212,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="AppState.h" />
     <ClInclude Include="CostEngine.h" />
+    <ClInclude Include="DashboardContent.h" />
     <ClInclude Include="Format.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="HttpClient.h" />

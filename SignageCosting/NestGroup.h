@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "NestingEngine.h"
+#include "NestingCore.h"
 
 struct NestGroup
 {
@@ -21,6 +22,8 @@ struct NestGroup
     std::vector<int> jobItemIndices;
 
     std::vector<Sheet> layouts;
+    std::vector<UnplacedRect> unplaced;
+    std::vector<std::string> nestingErrors;
 
     // NEW
     int sheetCount = 0;

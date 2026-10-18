@@ -5,5 +5,6 @@ enum class PlacementStrategy
     BestAreaFit,
     BottomLeft,
     BestShortSideFit,
-    BestLongSideFit
+    BestLongSideFit,
+    BestContactPoint
 };

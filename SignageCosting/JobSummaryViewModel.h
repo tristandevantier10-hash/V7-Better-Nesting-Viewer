@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct JobSummaryViewModel
 {
@@ -9,6 +10,9 @@ struct JobSummaryViewModel
     std::string quantity;
     std::string area;
     std::string sellPrice;
+    std::string unitSize;
+    std::string labourCost;
+    std::vector<std::string> labourBreakdown;
 
     bool isRoll = true;
 

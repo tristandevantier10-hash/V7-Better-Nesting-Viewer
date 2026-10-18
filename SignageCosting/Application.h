@@ -24,6 +24,7 @@
 #include "AuthenticationService.h"
 #include "QuoteHistoryScreen.h"
 #include "SettingsScreen.h"
+#include "LabourRatesScreen.h"
 
 class Application
 {
@@ -155,9 +156,13 @@ private:
 
     SDL_Texture* companyLogoTexture = nullptr;
 
-    SDL_Texture* splashArtworkTexture = nullptr;
+    std::vector<SDL_Texture*> splashGifFrames;
+    std::vector<int> splashGifFrameDelays;
+    std::size_t splashGifFrame = 0;
+    Uint32 splashGifFrameStartedAt = 0;
 
     bool loadSplashLogos();
+    bool splashAssetsLoaded = false;
 
     //=================================================
     // UI
@@ -182,6 +187,8 @@ private:
     QuoteHistoryScreen quoteHistoryScreen;
 
     SettingsScreen settingsScreen;
+
+    LabourRatesScreen labourRatesScreen;
 
     ApplicationShell shell;
 

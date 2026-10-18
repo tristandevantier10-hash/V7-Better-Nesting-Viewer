@@ -76,8 +76,7 @@ bool DatabaseManager::loadCustomers()
 
     if (!QuoteDatabase::initialise())
     {
-        // Database initialization failed.
-        // We will add proper error handling here.
+        return false;
     }
 
     return true;

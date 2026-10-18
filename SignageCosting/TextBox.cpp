@@ -5,6 +5,7 @@
 #include "TextRenderer.h"
 #include "Label.h"
 #include "Metrics.h"
+#include <algorithm>
 
 TextBox::TextBox()
 {
@@ -29,6 +30,11 @@ const std::string& TextBox::getText() const
 void TextBox::setPasswordMode(bool enabled)
 {
     passwordMode = enabled;
+}
+
+void TextBox::setTextCentered(bool centered)
+{
+    textCentered = centered;
 }
 
 void TextBox::update(const SDL_Event& e)
@@ -125,11 +131,23 @@ void TextBox::render(Renderer& renderer)
     if (passwordMode)
         displayText = std::string(text.length(), '*');
 
+    const std::string& alignedText = text.empty() ? placeholder : displayText;
+    const int contentLeft = getX() + Metrics::ControlPaddingX;
+    const int contentWidth = getWidth() - Metrics::ControlPaddingX * 2;
+    int textX = contentLeft;
+
+    if (textCentered)
+    {
+        textX += std::max(
+            0,
+            (contentWidth - TextRenderer::getTextWidth(alignedText)) / 2);
+    }
+
     if (text.empty())
     {
         renderer.drawText(
             placeholder,
-            getX() + Metrics::ControlPaddingX,
+            textX,
             getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
             LabelStyle::Normal,
             SDL_Color{ 150,150,150,255 });
@@ -138,7 +156,7 @@ void TextBox::render(Renderer& renderer)
     {
         renderer.drawText(
             displayText,
-            getX() + Metrics::ControlPaddingX,
+            textX,
             getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
             LabelStyle::Normal,
             DefaultTheme.darkText);
@@ -146,8 +164,12 @@ void TextBox::render(Renderer& renderer)
 
     if (focused && showCaret)
     {
-        int caretX =
-            bounds.x + Metrics::ControlPaddingX +
+        int caretX = contentLeft +
+            (textCentered
+                ? std::max(
+                    0,
+                    (contentWidth - TextRenderer::getTextWidth(displayText)) / 2)
+                : 0) +
             TextRenderer::getTextWidth(displayText);
 
         SDL_SetRenderDrawColor(

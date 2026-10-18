@@ -24,6 +24,8 @@ public:
 
     void setPasswordMode(bool enabled);
 
+    void setTextCentered(bool centered);
+
     void setTextChangedCallback(
         std::function<void(const std::string&)> callback);
 
@@ -36,6 +38,8 @@ private:
     bool focused = false;
 
     bool passwordMode = false;
+
+    bool textCentered = false;
 
     Uint32 lastBlink = 0;
 

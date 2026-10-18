@@ -284,7 +284,7 @@ namespace
         const JobSummaryViewModel& job,
         std::size_t index)
     {
-        constexpr float ROW_HEIGHT = 43.0f;
+        const float ROW_HEIGHT = 43.0f + 10.0f * static_cast<float>(job.labourBreakdown.size());
         constexpr float QTY_RIGHT = 370.0f;
         constexpr float AREA_RIGHT = 446.0f;
         constexpr float PRICE_RIGHT = PAGE_WIDTH - MARGIN - 10.0f;
@@ -321,7 +321,7 @@ namespace
         drawText(
             doc,
             MARGIN + 9.0f,
-            bottom + 25.0f,
+            bottom + ROW_HEIGHT - 13.0f,
             description,
             doc.bold,
             8.0f);
@@ -363,10 +363,15 @@ namespace
             }
         }
 
+        if (!job.unitSize.empty())
+        {
+            if (!detail.empty()) detail += "  |  ";
+            detail += "Unit: " + job.unitSize;
+        }
         drawText(
             doc,
             MARGIN + 9.0f,
-            bottom + 11.0f,
+            bottom + ROW_HEIGHT - 27.0f,
             detail,
             doc.regular,
             6.8f,
@@ -374,10 +379,18 @@ namespace
             MUTED,
             MUTED);
 
+        float labourY = bottom + 1.0f;
+        for (const auto& labour : job.labourBreakdown)
+        {
+            drawText(doc, MARGIN + 9.0f, labourY, labour, doc.regular, 6.4f,
+                MUTED, MUTED, MUTED);
+            labourY += 9.0f;
+        }
+
         drawRightText(
             doc,
             QTY_RIGHT,
-            bottom + 18.0f,
+            bottom + ROW_HEIGHT * 0.56f,
             job.quantity,
             doc.regular,
             8.0f);
@@ -385,7 +398,7 @@ namespace
         drawRightText(
             doc,
             AREA_RIGHT,
-            bottom + 18.0f,
+            bottom + ROW_HEIGHT * 0.56f,
             job.area,
             doc.regular,
             8.0f);
@@ -393,7 +406,7 @@ namespace
         drawRightText(
             doc,
             PRICE_RIGHT,
-            bottom + 18.0f,
+            bottom + ROW_HEIGHT * 0.56f,
             job.sellPrice,
             doc.bold,
             8.0f);

@@ -47,6 +47,15 @@ struct ItemCostResult
 
     double materialCost = 0.0;
     double labourCost = 0.0;
+    struct LabourLine
+    {
+        std::string name;
+        std::string unit;
+        double rate = 0.0;
+        double quantity = 0.0;
+        double cost = 0.0;
+    };
+    std::vector<LabourLine> labourBreakdown;
 
     double markupValue = 0.0;
     double totalCost = 0.0;
@@ -81,6 +90,8 @@ struct CostResult
 
     std::vector<ItemCostResult> items;
     std::vector<Sheet> nestingSheets;
+    bool nestingValid = true;
+    std::vector<std::string> nestingErrors;
 
     double materialCost = 0.0;
     double labourCost = 0.0;

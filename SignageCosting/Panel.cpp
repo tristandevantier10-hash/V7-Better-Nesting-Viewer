@@ -17,6 +17,16 @@ void Panel::add(std::shared_ptr<UIElement> element)
 
 void Panel::update(const SDL_Event& e)
 {
+    // Input is processed before the next render in the main loop. Refresh the
+    // layout first so hit testing uses the current page and window geometry.
+    if (e.type == SDL_MOUSEMOTION ||
+        e.type == SDL_MOUSEBUTTONDOWN ||
+        e.type == SDL_MOUSEBUTTONUP ||
+        e.type == SDL_MOUSEWHEEL)
+    {
+        performLayout();
+    }
+
     if (scrollable &&
         e.type == SDL_MOUSEWHEEL)
     {
@@ -71,7 +81,7 @@ void Panel::renderBackground(Renderer& renderer)
 
         renderer.fillRect(
             bounds,
-            SDL_Color{ 15,15,15,255 });
+            SDL_Color{ 15, 15, 15, 255 });
 
         break;
 

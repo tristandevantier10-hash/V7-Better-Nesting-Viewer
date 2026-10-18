@@ -23,11 +23,9 @@
 #include "QuoteDatabase.h"
 #include "QuotePdfExporter.h"
 #include "PrimaryNavigation.h"
-#include <shellapi.h>
 #include <filesystem>
 #include <system_error>
 #include <cmath>
-#pragma comment(lib, "Shell32.lib")
 
 namespace
 {
@@ -48,6 +46,7 @@ namespace
             const fs::path candidates[] =
             {
                 directory / filename,
+                directory / "Quotes" / filename,
                 directory / "SignageCosting" / filename
             };
             for (const auto& candidate : candidates)
@@ -145,44 +144,42 @@ bool Application::loadSplashLogos()
     }
 
     //=================================================
-    // SPLASH ARTWORK PNG
+    // SPLASH ANIMATED GIF
     //=================================================
 
-    SDL_Surface* artworkSurface =
-        IMG_Load("Assets/Images/SplashArtwork.png");
+    IMG_Animation* splashAnimation =
+        IMG_LoadAnimation("Assets/Images/EstiMate_LaserReveal.gif");
 
-    if (artworkSurface)
+    if (splashAnimation)
     {
-        splashArtworkTexture =
-            SDL_CreateTextureFromSurface(
+        splashGifFrames.reserve(splashAnimation->count);
+        splashGifFrameDelays.reserve(splashAnimation->count);
+
+        for (int i = 0; i < splashAnimation->count; ++i)
+        {
+            SDL_Texture* frameTexture = SDL_CreateTextureFromSurface(
                 renderer,
-                artworkSurface);
+                splashAnimation->frames[i]);
 
-        SDL_FreeSurface(artworkSurface);
+            if (!frameTexture)
+            {
+                std::cerr << "Could not create splash GIF frame: "
+                    << SDL_GetError() << "\n";
+                break;
+            }
 
-        if (!splashArtworkTexture)
-        {
-            std::cerr
-                << "Could not create splash artwork texture: "
-                << SDL_GetError()
-                << "\n";
-
-            // Artwork is optional while building the template.
+            SDL_SetTextureBlendMode(frameTexture, SDL_BLENDMODE_BLEND);
+            splashGifFrames.push_back(frameTexture);
+            splashGifFrameDelays.push_back(
+                (std::max)(20, splashAnimation->delays[i]));
         }
-        else
-        {
-            SDL_SetTextureBlendMode(
-                splashArtworkTexture,
-                SDL_BLENDMODE_BLEND);
-        }
+
+        IMG_FreeAnimation(splashAnimation);
     }
-    else
+
+    if (splashGifFrames.empty())
     {
-        // Optional until your artwork PNG is ready.
-        std::cerr
-            << "Splash artwork not loaded yet: "
-            << IMG_GetError()
-            << "\n";
+        std::cerr << "Could not load splash GIF: " << IMG_GetError() << "\n";
     }
 
     //=================================================
@@ -226,14 +223,6 @@ bool Application::initialise()
             << "SDL_image PNG initialisation failed: "
             << IMG_GetError()
             << "\n";
-    }
-    else
-    {
-        if (!loadSplashLogos())
-        {
-            std::cerr
-                << "Warning: One or more splash logos failed to load.\n";
-        }
     }
 
     SDL_StartTextInput();
@@ -365,6 +354,15 @@ bool Application::initialise()
             ui.setScreen(&settingsScreen);
         });
 
+    mainMenu.setLabourRatesCallback([this]()
+    {
+        if (!authenticationService.isAdmin() && mode != RunMode::Test)
+            return;
+        labourRatesScreen.refresh();
+        ui.setScreen(&labourRatesScreen);
+    });
+    labourRatesScreen.setBackCallback([this]() { ui.setScreen(&mainMenu); });
+
     settingsScreen.setBackCallback(
         [this]()
         {
@@ -392,6 +390,13 @@ bool Application::initialise()
         case PrimaryNavigationRoute::Settings:
             ui.setScreen(&settingsScreen);
             break;
+        case PrimaryNavigationRoute::LabourRates:
+            if (authenticationService.isAdmin() || mode == RunMode::Test)
+            {
+                labourRatesScreen.refresh();
+                ui.setScreen(&labourRatesScreen);
+            }
+            break;
         case PrimaryNavigationRoute::Exit:
             state = AppState::Exit;
             break;
@@ -401,6 +406,8 @@ bool Application::initialise()
     };
     quoteHistoryScreen.setNavigationCallback(navigateFromPage);
     settingsScreen.setNavigationCallback(navigateFromPage);
+    labourRatesScreen.setNavigationCallback(navigateFromPage);
+    newJobScreen.setNavigationCallback(navigateFromPage);
 
     mainMenu.setExitCallback(
         [this]()
@@ -419,30 +426,22 @@ bool Application::initialise()
             if (pdfPath.empty())
             {
                 std::filesystem::path generatedPath =
-                    std::filesystem::path(FileSystem::getDataFolder()) /
+                    std::filesystem::path(FileSystem::getQuotesFolder()) /
                     ((quote.invoice.jobref.empty() ? std::string("Quote") : quote.invoice.jobref) + ".pdf");
                 std::string errorMessage;
                 if (!QuotePdfExporter::exportToPdf(
                     quote.invoice, generatedPath.string(), errorMessage))
                 {
                     std::cerr << "Could not create quote PDF: " << errorMessage << std::endl;
-                    return;
+                    return std::string{};
                 }
-                SDL_ShowSimpleMessageBox(
-                    SDL_MESSAGEBOX_INFORMATION,
-                    "Original PDF Missing",
-                    "The original PDF was missing. A replacement was recreated from the saved quote information.",
-                    window);
                 std::error_code error;
                 pdfPath = std::filesystem::absolute(generatedPath, error).string();
                 if (error)
                     pdfPath = generatedPath.string();
             }
 
-            const INT_PTR result = reinterpret_cast<INT_PTR>(
-                ShellExecuteA(nullptr, "open", pdfPath.c_str(), nullptr, nullptr, SW_SHOWNORMAL));
-            if (result <= 32)
-                std::cerr << "Could not open quote PDF (ShellExecute error " << result << ")." << std::endl;
+            return pdfPath;
         });
     quoteHistoryScreen.setViewOverviewCallback(
         [this](const QuoteRecord& quote)
@@ -594,38 +593,56 @@ bool Application::initialise()
             // Existing print functionality can be moved here.
         });
 
-    resultsScreen.setExportCallback(
-        [this]()
+    resultsScreen.setSaveAndExportQuoteCallback(
+        [this](InvoiceViewModel& invoice, std::string& errorMessage) -> bool
         {
-
-            std::string errorMessage;
-
-            if (resultsScreen.exportQuoteToPdf(errorMessage))
+            if (invoice.jobs.empty())
             {
-            }
-            else
-            {
-                std::cerr
-                    << "PDF export failed: "
-                    << errorMessage
-                    << '\n';
-            }
-        });
-
-    resultsScreen.setSaveQuoteCallback(
-        [this](InvoiceViewModel& invoice) -> bool
-        {
-            if (QuoteDatabase::saveQuote(invoice))
-            {
-                std::cout << "QUOTE SAVED SUCCESSFULLY\n";
-                std::cout << "Quote Reference: "
-                    << invoice.jobref << "\n";
-
-                return true;
+                errorMessage = "There are no quotation items to save or export.";
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_ERROR,
+                    "Quote Has No Items",
+                    errorMessage.c_str(),
+                    window);
+                return false;
             }
 
-            std::cerr << "Failed to save quote.\n";
-            return false;
+            const bool quoteNeedsSaving = invoice.jobref.empty();
+
+            if (quoteNeedsSaving && !QuoteDatabase::saveQuote(invoice))
+            {
+                errorMessage = "The quote could not be saved.";
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_ERROR,
+                    "Quote Save Failed",
+                    errorMessage.c_str(),
+                    window);
+                return false;
+            }
+
+            if (quoteNeedsSaving)
+            {
+                std::cout << "QUOTE SAVED: " << invoice.jobref << '\n';
+            }
+
+            const std::string outputPath =
+                FileSystem::getQuotesFolder() + invoice.jobref + ".pdf";
+            if (!QuotePdfExporter::exportToPdf(invoice, outputPath, errorMessage))
+            {
+                std::cerr << "PDF export failed: " << errorMessage << '\n';
+                const std::string message =
+                    "The quote was saved as " + invoice.jobref +
+                    ", but its PDF could not be created. " + errorMessage +
+                    "\n\nClick the button again to retry the PDF export.";
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_ERROR,
+                    "PDF Export Failed",
+                    message.c_str(),
+                    window);
+                return false;
+            }
+
+            return true;
         });
 
     state = AppState::Login;
@@ -640,8 +657,16 @@ bool Application::initialise()
 }
 
 void Application::startSplashStartup() {
+    // Splash visuals are not needed to sign in. Defer their synchronous image
+    // and GIF loading until after authentication so the login appears quickly.
+    if (!splashAssetsLoaded)
+    {
+        if (!loadSplashLogos())
+            std::cerr << "Warning: One or more splash logos failed to load.\n";
+        splashAssetsLoaded = true;
+    }
+
     // 1. Reset state flags
-    setSplashWindowSize();
     running = true;
 
     // 2. Initialize timing & animation properties
@@ -649,6 +674,8 @@ void Application::startSplashStartup() {
     startupStageStartTime = 0;
     readyStartTime = 0;
     splashAnimation = 0.0f;
+    splashGifFrame = 0;
+    splashGifFrameStartedAt = SDL_GetTicks();
     startupProgress = 0.0f;
     displayedProgress = 0.0f;
 
@@ -732,8 +759,8 @@ bool Application::createWindow()
         "Signage Costing System",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        1000,
-        400,
+        600,
+        600,
         SDL_WINDOW_SHOWN
     );
 
@@ -819,10 +846,14 @@ void Application::update()
         if (loginToSplashAlpha >= 255.0f)
         {
             loginToSplashAlpha = 255.0f;
+            // Keep the login at full size until its fade is complete.
+            setSplashWindowSize();
             loginToSplashFadingOut = false;
             loginToSplashFadingIn = true;
             state = AppState::Splash;
             splashStartTime = now;
+            splashGifFrame = 0;
+            splashGifFrameStartedAt = now;
             startupStageStartTime = now;
         }
     }
@@ -861,6 +892,8 @@ void Application::update()
                 &currentJob);
 
             mainMenu.refreshStatus();
+            mainMenu.setLabourRatesAvailable(
+                authenticationService.isAdmin() || mode == RunMode::Test);
 
             customerSelectionScreen.refreshCustomers();
 
@@ -914,6 +947,12 @@ void Application::update()
             {
                 std::cerr
                     << "FAILED: DatabaseManager\\n";
+
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_ERROR,
+                    "Startup Failed",
+                    "The application could not load its required data. Check your internet connection and make sure Quotes/quotes.json is available and valid, then restart.",
+                    window);
 
                 running = false;
                 break;
@@ -1347,14 +1386,28 @@ void Application::render()
             12
         );
 
-        // Draw the supplied PNG, preserving its aspect ratio.
-        if (splashArtworkTexture != nullptr)
+        // Draw the supplied GIF frame, preserving its aspect ratio.
+        if (!splashGifFrames.empty())
         {
             int textureWidth = 0;
             int textureHeight = 0;
 
+            const Uint32 now = SDL_GetTicks();
+            if (splashGifFrame >= splashGifFrames.size())
+                splashGifFrame = 0;
+
+            while (now - splashGifFrameStartedAt >= static_cast<Uint32>(
+                splashGifFrameDelays[splashGifFrame]))
+            {
+                splashGifFrameStartedAt += static_cast<Uint32>(
+                    splashGifFrameDelays[splashGifFrame]);
+                splashGifFrame = (splashGifFrame + 1) % splashGifFrames.size();
+            }
+
+            SDL_Texture* currentFrame = splashGifFrames[splashGifFrame];
+
             SDL_QueryTexture(
-                splashArtworkTexture,
+                currentFrame,
                 nullptr,
                 nullptr,
                 &textureWidth,
@@ -1388,7 +1441,7 @@ void Application::render()
 
                 SDL_RenderCopy(
                     renderer,
-                    splashArtworkTexture,
+                    currentFrame,
                     nullptr,
                     &imageRect
                 );
@@ -1829,6 +1882,14 @@ void Application::shutdown()
         SDL_DestroyTexture(companyLogoTexture);
         companyLogoTexture = nullptr;
     }
+
+    for (SDL_Texture* frameTexture : splashGifFrames)
+    {
+        if (frameTexture)
+            SDL_DestroyTexture(frameTexture);
+    }
+    splashGifFrames.clear();
+    splashGifFrameDelays.clear();
 
     IMG_Quit();
 

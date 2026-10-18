@@ -36,8 +36,6 @@ private:
     std::shared_ptr<Label> subtitleLabel;
     std::shared_ptr<Label> usernameLabel;
     std::shared_ptr<Label> passwordLabel;
-    std::shared_ptr<Label> statusLabel;
-
     std::shared_ptr<TextBox> usernameTextBox;
     std::shared_ptr<TextBox> passwordTextBox;
 

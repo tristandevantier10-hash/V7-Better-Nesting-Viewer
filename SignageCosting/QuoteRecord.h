@@ -12,4 +12,7 @@ struct QuoteRecord
 
     // Date and time the quote was saved
     std::string savedAt;
+
+    // Date and time the quote status last changed
+    std::string statusUpdatedAt;
 };

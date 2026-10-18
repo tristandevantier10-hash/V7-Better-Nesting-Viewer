@@ -3,6 +3,8 @@
 #include "Screen.h"
 #include <memory>
 #include <functional>
+#include <string>
+#include <vector>
 #include "Job.h"
 #include "Label.h"
 
@@ -12,6 +14,8 @@ class TextBox;
 class Button;
 class PropertyRow;
 class DataGrid;
+class Panel;
+enum class PrimaryNavigationRoute;
 
 class NewJobScreen : public Screen
 {
@@ -21,6 +25,9 @@ public:
 
     void setCalculateCallback(
         std::function<void()> callback);
+
+    void setNavigationCallback(
+        std::function<void(PrimaryNavigationRoute)> callback);
 
     void initialiseMaterials();
 
@@ -36,9 +43,12 @@ private:
 
     void loadFormats();
 
+    void refreshProcessChoices();
+
     void loadItem(int index);
 
     std::function<void()> onCalculate;
+    std::function<void(PrimaryNavigationRoute)> navigationCallback;
 
     std::shared_ptr<FormPanel> form;
 
@@ -59,6 +69,10 @@ private:
     std::shared_ptr<Button> calculateButton;
 
     std::shared_ptr<DataGrid> itemGrid;
+    std::shared_ptr<Panel> processChoicesPanel;
+    std::vector<std::shared_ptr<Button>> processButtons;
+    std::vector<std::string> processIds;
+    std::vector<std::string> processNames;
 
     std::shared_ptr<Panel> customerCard;
     std::shared_ptr<Label> customerTitle;

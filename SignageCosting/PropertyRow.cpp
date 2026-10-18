@@ -20,7 +20,7 @@ PropertyRow::PropertyRow()
     addLayoutElement(
         caption,
         SizePolicy::Fixed,
-        110);
+        144);
 }
 
 void PropertyRow::setControl(std::shared_ptr<UIElement> control)

@@ -1,0 +1,617 @@
+{
+    "quotes": [
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-12",
+                "jobref": "EG-Q-2026-0001",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-12 14:11:22",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0002",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:23:07",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0003",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:23:57",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0004",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:25:23",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0005",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:26:55",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0006",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:29:17",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0007",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-13 07:39:57",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0008",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    },
+                    {
+                        "area": "0.80 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "20",
+                        "rollWidth": "",
+                        "sellPrice": "R 1920.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "1.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 1.0mm"
+                    }
+                ],
+                "labourCost": "R 1960.00",
+                "markup": "R 5960.00",
+                "materialCost": "R 4000.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 11920.00",
+                "subtotal": "R 5960.00",
+                "total": "R 13708.00",
+                "vat": "R 1788.00"
+            },
+            "savedAt": "2026-10-13 08:59:08",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0009",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    },
+                    {
+                        "area": "0.80 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "20",
+                        "rollWidth": "",
+                        "sellPrice": "R 2152.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "1.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 1.2mm"
+                    }
+                ],
+                "labourCost": "R 1976.00",
+                "markup": "R 6076.00",
+                "materialCost": "R 4100.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 12152.00",
+                "subtotal": "R 6076.00",
+                "total": "R 13974.80",
+                "vat": "R 1822.80"
+            },
+            "savedAt": "2026-10-13 09:06:27",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0010",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    },
+                    {
+                        "area": "0.80 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "20",
+                        "rollWidth": "",
+                        "sellPrice": "R 1920.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "1.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 1.0mm"
+                    }
+                ],
+                "labourCost": "R 1960.00",
+                "markup": "R 5960.00",
+                "materialCost": "R 4000.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 11920.00",
+                "subtotal": "R 5960.00",
+                "total": "R 13708.00",
+                "vat": "R 1788.00"
+            },
+            "savedAt": "2026-10-13 14:27:49",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-13",
+                "jobref": "EG-Q-2026-0011",
+                "jobs": [
+                    {
+                        "area": "11.90 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 11360.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 2430.00",
+                "markup": "R 5680.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 11360.00",
+                "subtotal": "R 5680.00",
+                "total": "R 13064.00",
+                "vat": "R 1704.00"
+            },
+            "savedAt": "2026-10-13 18:52:49",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-17",
+                "jobref": "EG-Q-2026-0012",
+                "jobs": [
+                    {
+                        "area": "10.20 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10680.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 2090.00",
+                "markup": "R 5340.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10680.00",
+                "subtotal": "R 5340.00",
+                "total": "R 12282.00",
+                "vat": "R 1602.00"
+            },
+            "savedAt": "2026-10-17 11:59:25",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-17",
+                "jobref": "EG-Q-2026-0013",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 10000.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 1750.00",
+                "markup": "R 5000.00",
+                "materialCost": "R 3250.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 10000.00",
+                "subtotal": "R 5000.00",
+                "total": "R 11500.00",
+                "vat": "R 1500.00"
+            },
+            "savedAt": "2026-10-17 12:08:23",
+            "status": "Draft",
+            "statusUpdatedAt": ""
+        },
+        {
+            "invoice": {
+                "customer": "Unik Civils",
+                "customerContact": "Barry",
+                "customerEmail": "pffft@gmail",
+                "customerPhone": "088 666 7777",
+                "invoiceDate": "2026-10-18",
+                "jobref": "EG-Q-2026-0014",
+                "jobs": [
+                    {
+                        "area": "8.50 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [],
+                        "labourCost": "R 0.00",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "34",
+                        "rollWidth": "",
+                        "sellPrice": "R 6500.00",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "2440 x 1220 mm",
+                        "variant": "Chromadek 0.8mm"
+                    },
+                    {
+                        "area": "1.62 m²",
+                        "efficiency": "",
+                        "isRoll": false,
+                        "labourBreakdown": [
+                            "Print: 1.62 m2 x R 120.00 = R 194.40",
+                            "Apply to substrate: 1.62 m2 x R 90.00 = R 145.80"
+                        ],
+                        "labourCost": "R 340.20",
+                        "lengthUsed": "",
+                        "material": "CHROMADEK",
+                        "quantity": "54",
+                        "rollWidth": "",
+                        "sellPrice": "R 7180.40",
+                        "sheetSize": "2440 x 1220 mm",
+                        "sheetsUsed": "5.00",
+                        "unitSize": "2440 x 1220 mm",
+                        "variant": "Chromadek 0.8mm"
+                    }
+                ],
+                "labourCost": "R 340.20",
+                "markup": "R 6840.20",
+                "materialCost": "R 6500.00",
+                "productionCost": "R 0.00",
+                "sellPrice": "R 13680.40",
+                "subtotal": "R 6840.20",
+                "total": "R 15732.46",
+                "vat": "R 2052.06"
+            },
+            "savedAt": "2026-10-18 11:14:34",
+            "status": "Draft",
+            "statusUpdatedAt": "2026-10-18 11:14:34"
+        }
+    ]
+}

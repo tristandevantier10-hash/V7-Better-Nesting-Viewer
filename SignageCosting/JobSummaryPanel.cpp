@@ -15,6 +15,8 @@ JobSummaryPanel::JobSummaryPanel()
     rollWidth = std::make_shared<PropertyRow>();
     lengthUsed = std::make_shared<PropertyRow>();
     efficiency = std::make_shared<PropertyRow>();
+    unitSize = std::make_shared<PropertyRow>();
+    labour = std::make_shared<PropertyRow>();
 
     title->setText("Job Summary");
 
@@ -25,6 +27,8 @@ JobSummaryPanel::JobSummaryPanel()
     rollWidth->setCaption("Roll Width");
     lengthUsed->setCaption("Length Used");
     efficiency->setCaption("Efficiency");
+    unitSize->setCaption("Unit Size");
+    labour->setCaption("Labour");
 
     addLayoutElement(title, SizePolicy::Fixed, 35);
 
@@ -35,6 +39,8 @@ JobSummaryPanel::JobSummaryPanel()
     addLayoutElement(rollWidth, SizePolicy::Fixed, 26);
     addLayoutElement(lengthUsed, SizePolicy::Fixed, 26);
     addLayoutElement(efficiency, SizePolicy::Fixed, 26);
+    addLayoutElement(unitSize, SizePolicy::Fixed, 26);
+    addLayoutElement(labour, SizePolicy::Fixed, 26);
 
     setExpanded(true);
 }
@@ -90,6 +96,19 @@ void JobSummaryPanel::setViewModel(const JobSummaryViewModel& vm)
     variant->setValue(vm.variant);
     quantity->setValue(vm.quantity);
     area->setValue(vm.area);
+    unitSize->setValue(vm.unitSize);
+    labour->setValue(vm.labourCost);
+    for (const auto& row : labourDetailRows)
+        row->setVisible(false);
+    labourDetailRows.clear();
+    for (const auto& detail : vm.labourBreakdown)
+    {
+        auto row = std::make_shared<PropertyRow>();
+        row->setCaption("Process");
+        row->setValue(detail);
+        labourDetailRows.push_back(row);
+        addLayoutElement(row, SizePolicy::Fixed, 26);
+    }
 
     if (vm.isRoll)
     {
@@ -131,6 +150,8 @@ void JobSummaryPanel::setExpanded(bool value)
     rollWidth->setVisible(expanded);
     lengthUsed->setVisible(expanded);
     efficiency->setVisible(expanded);
+    unitSize->setVisible(expanded);
+    labour->setVisible(expanded);
 }
 
 bool JobSummaryPanel::isExpanded() const

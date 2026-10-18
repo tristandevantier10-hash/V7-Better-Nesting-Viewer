@@ -29,6 +29,7 @@ ApplicationShell::ApplicationShell()
     navigationPanel = std::make_shared<NavigationPanel>();
     navigationPanel->setLayout(std::make_unique<VerticalLayout>());
     navigationPanel->setSidebarStyle(true);
+    navigationPanel->addBrand();
 
     bodyPanel->addLayoutElement(
         navigationPanel,

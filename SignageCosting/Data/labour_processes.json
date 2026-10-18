@@ -1,0 +1,44 @@
+[
+  {
+    "enabled": true,
+    "id": "print",
+    "name": "Print",
+    "rate": 120.0,
+    "unit": "area"
+  },
+  {
+    "enabled": true,
+    "id": "laminate",
+    "name": "Laminate",
+    "rate": 80.0,
+    "unit": "area"
+  },
+  {
+    "enabled": true,
+    "id": "plotter-cut",
+    "name": "Plotter cut",
+    "rate": 15.0,
+    "unit": "length"
+  },
+  {
+    "enabled": true,
+    "id": "router-cut",
+    "name": "Router cut",
+    "rate": 45.0,
+    "unit": "length"
+  },
+  {
+    "enabled": true,
+    "id": "application",
+    "name": "Apply to substrate",
+    "rate": 90.0,
+    "unit": "area"
+  },
+  {
+    "enabled": true,
+    "id": "frame",
+    "name": "Frame",
+    "rate": 150.0,
+    "unit": "area"
+  }
+]

@@ -129,6 +129,11 @@ public:
         const SDL_Rect& destination,
         bool preserveAspect = true);
 
+    void drawTexture(
+        SDL_Texture* texture,
+        const SDL_Rect& destination,
+        bool preserveAspect = true);
+
     //============================
     // Temporary bridge
     //============================

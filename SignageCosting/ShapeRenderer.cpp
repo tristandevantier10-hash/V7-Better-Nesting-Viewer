@@ -264,7 +264,7 @@ void ShapeRenderer::drawRoundedRing(
         SDL_Rect r =
         {
             rect.x + i,
-            rect.y + 2 + i,
+            rect.y + i,
             rect.w - i * 2,
             rect.h - i * 2
         };

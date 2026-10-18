@@ -8,10 +8,7 @@
 #include "TextRenderer.h"
 #include <algorithm>
 #include <string>
-#include <iostream>
 #include "ScrollPanel.h"
-#include <hpdf.h>
-#include "QuotePdfExporter.h"
 #include "PageHeader.h"
 
 ResultsScreen::ResultsScreen()
@@ -898,20 +895,16 @@ void ResultsScreen::buildBottomActions()
         SizePolicy::Fill);
 
     // --------------------------------------------------
-    // Export
-    // --------------------------------------------------
-
     exportButton =
         std::make_shared<Button>();
 
     exportButton->setText(
-        "Export PDF");
+        "Save");
 
     exportButton->setOnClick(
         [this]()
         {
-            if (exportCallback)
-                exportCallback();
+            saveAndExportQuote();
         });
 
     row->addLayoutElement(
@@ -939,6 +932,18 @@ void ResultsScreen::refreshView()
 {
     const auto& invoice =
         viewModel.invoice;
+
+    if (pageSubtitle && !viewModel.nestingValid)
+    {
+        std::string message = "Nesting failed. Pricing is unavailable until every part fits.";
+        if (!viewModel.nestingErrors.empty())
+            message += " " + viewModel.nestingErrors.front();
+        pageSubtitle->setText(message);
+    }
+    else if (pageSubtitle)
+    {
+        pageSubtitle->setText("Job costing summary and details");
+    }
 
     if (totalPriceValueLabel)
     {
@@ -1050,6 +1055,14 @@ void ResultsScreen::refreshCostBreakdown()
             viewModel.invoice.markup,
             viewModel.invoice.sellPrice
         });
+    costBreakdownGrid->addRow(
+        {"Labour", viewModel.invoice.labourCost, "", viewModel.invoice.labourCost});
+    for (std::size_t i = 0; i < viewModel.invoice.jobs.size(); ++i)
+    {
+        const auto& job = viewModel.invoice.jobs[i];
+        for (const auto& detail : job.labourBreakdown)
+            costBreakdownGrid->addRow({"  " + job.material + " / " + detail, "", "", ""});
+    }
 }
 
 
@@ -1081,6 +1094,7 @@ void ResultsScreen::refreshJobItems()
             size =
                 job.sheetSize;
         }
+        size = "Unit: " + job.unitSize + " | " + size;
 
         jobItemsGrid->addRow(
             {
@@ -1159,16 +1173,34 @@ void ResultsScreen::setPrintCallback(
     printCallback = callback;
 }
 
-void ResultsScreen::setExportCallback(
-    std::function<void()> callback)
+void ResultsScreen::setSaveAndExportQuoteCallback(
+    std::function<bool(InvoiceViewModel&, std::string&)> callback)
 {
-    exportCallback = callback;
+    saveAndExportQuoteCallback = callback;
 }
 
-void ResultsScreen::setSaveQuoteCallback(
-    std::function<bool(InvoiceViewModel&)> callback)
+bool ResultsScreen::saveAndExportQuote()
 {
-    saveQuoteCallback = callback;
+    if (!saveAndExportQuoteCallback)
+        return false;
+
+    std::string errorMessage;
+    const bool wasAlreadySaved = !viewModel.invoice.jobref.empty();
+    if (!saveAndExportQuoteCallback(viewModel.invoice, errorMessage))
+    {
+        // Saving can succeed before PDF creation fails. Refresh the quote
+        // view so its generated reference is shown and the next click retries
+        // only the PDF export.
+        if (!wasAlreadySaved && !viewModel.invoice.jobref.empty())
+            pendingQuoteRefresh = true;
+
+        return false;
+    }
+
+    if (!wasAlreadySaved)
+        pendingQuoteRefresh = true;
+
+    return true;
 }
 
 void ResultsScreen::setOverviewCallback(std::function<void()> callback)
@@ -2201,6 +2233,7 @@ void ResultsScreen::showQuote()
                 " - " +
                 job.sheetSize;
         }
+        description += " | Unit: " + job.unitSize;
 
         std::string code =
             "ITEM-" +
@@ -2577,35 +2610,17 @@ void ResultsScreen::showQuote()
         actionSpacer,
         SizePolicy::Fill);
 
-    // Save Quote
+    // Save the quote and export its PDF in one action.
     saveQuoteButton =
         std::make_shared<Button>();
 
     saveQuoteButton->setText(
-        viewModel.invoice.jobref.empty()
-        ? "Save Quote"
-        : "Quote Saved");
+        "Save");
 
     saveQuoteButton->setOnClick(
         [this]()
         {
-            if (!saveQuoteCallback)
-                return;
-
-            if (!viewModel.invoice.jobref.empty())
-            {
-                saveQuoteButton->setText("Quote Saved");
-                return;
-            }
-
-            if (saveQuoteCallback(viewModel.invoice))
-            {
-                saveQuoteButton->setText("Quote Saved");
-
-                // Do not rebuild the UI while the current
-                // SDL event is still being processed.
-                pendingQuoteRefresh = true;
-            }
+            saveAndExportQuote();
         });
 
     quoteActions->addLayoutElement(
@@ -2613,41 +2628,4 @@ void ResultsScreen::showQuote()
         SizePolicy::Fixed,
         150);
 
-    // Export PDF
-    exportButton = std::make_shared<Button>();
-    exportButton->setText("Export PDF");
-
-    exportButton->setOnClick([this]()
-        {
-            if (exportCallback)
-            {
-                exportCallback();
-            }
-        });
-
-    quoteActions->addLayoutElement(
-        exportButton, SizePolicy::Fixed, 150);
-
-}
-
-bool ResultsScreen::exportQuoteToPdf(
-    std::string& errorMessage)
-{
-    if (viewModel.invoice.jobs.empty())
-    {
-        errorMessage =
-            "There are no quotation items to export.";
-
-        return false;
-    }
-
-    std::string outputPath =
-        viewModel.invoice.jobref.empty()
-        ? "Quotation.pdf"
-        : viewModel.invoice.jobref + ".pdf";
-
-    return QuotePdfExporter::exportToPdf(
-        viewModel.invoice,
-        outputPath,
-        errorMessage);
 }

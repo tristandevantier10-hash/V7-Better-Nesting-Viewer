@@ -68,6 +68,9 @@ namespace
                 {"quantity", job.quantity},
                 {"area", job.area},
                 {"sellPrice", job.sellPrice},
+                {"unitSize", job.unitSize},
+                {"labourCost", job.labourCost},
+                {"labourBreakdown", job.labourBreakdown},
                 {"isRoll", job.isRoll},
 
                 {"rollWidth", job.rollWidth},
@@ -148,6 +151,10 @@ namespace
 
                 job.sellPrice =
                     item.value("sellPrice", std::string{});
+                job.unitSize = item.value("unitSize", std::string{});
+                job.labourCost = item.value("labourCost", std::string{});
+                if (item.contains("labourBreakdown") && item["labourBreakdown"].is_array())
+                    job.labourBreakdown = item["labourBreakdown"].get<std::vector<std::string>>();
 
                 job.isRoll =
                     item.value("isRoll", true);
@@ -182,7 +189,24 @@ bool QuoteDatabase::initialise()
         FileSystem::initialise();
 
         const std::string filename =
+            FileSystem::getQuotesFolder() + "quotes.json";
+
+        const std::string legacyFilename =
             FileSystem::getDataFolder() + "quotes.json";
+
+        // Keep existing quote history when moving the database into Quotes/.
+        if (!fs::exists(filename) && fs::exists(legacyFilename))
+        {
+            std::error_code copyError;
+            fs::copy_file(
+                legacyFilename,
+                filename,
+                fs::copy_options::skip_existing,
+                copyError);
+
+            if (copyError)
+                return false;
+        }
 
         if (!fs::exists(filename))
         {
@@ -208,7 +232,7 @@ bool QuoteDatabase::initialise()
 bool QuoteDatabase::load()
 {
     const std::string filename =
-        FileSystem::getDataFolder() + "quotes.json";
+        FileSystem::getQuotesFolder() + "quotes.json";
 
     std::ifstream file(filename);
 
@@ -248,6 +272,9 @@ bool QuoteDatabase::load()
             record.savedAt =
                 item.value("savedAt", std::string{});
 
+            record.statusUpdatedAt =
+                item.value("statusUpdatedAt", std::string{});
+
             loadedQuotes.push_back(record);
         }
 
@@ -268,7 +295,7 @@ bool QuoteDatabase::save()
         FileSystem::initialise();
 
         const std::string filename =
-            FileSystem::getDataFolder() + "quotes.json";
+            FileSystem::getQuotesFolder() + "quotes.json";
 
         const std::string temporaryFilename =
             filename + ".tmp";
@@ -284,7 +311,8 @@ bool QuoteDatabase::save()
             root["quotes"].push_back({
                 {"invoice", invoiceToJson(quote.invoice)},
                 {"status", quote.status},
-                {"savedAt", quote.savedAt}
+                {"savedAt", quote.savedAt},
+                {"statusUpdatedAt", quote.statusUpdatedAt}
                 });
         }
 
@@ -410,6 +438,7 @@ bool QuoteDatabase::saveQuote(
     record.invoice = invoice;
     record.status = status;
     record.savedAt = currentDateTime();
+    record.statusUpdatedAt = record.savedAt;
 
     quotes.push_back(record);
 
@@ -456,12 +485,15 @@ bool QuoteDatabase::updateStatus(
         if (quote.invoice.jobref == reference)
         {
             const std::string previousStatus = quote.status;
+            const std::string previousStatusUpdatedAt = quote.statusUpdatedAt;
 
             quote.status = status;
+            quote.statusUpdatedAt = currentDateTime();
 
             if (!save())
             {
                 quote.status = previousStatus;
+                quote.statusUpdatedAt = previousStatusUpdatedAt;
                 return false;
             }
 

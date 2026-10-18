@@ -11,6 +11,11 @@ void Button::setText(const std::string& newText)
     text = newText;
 }
 
+void Button::setIcon(const std::string& path)
+{
+    iconPath = path;
+}
+
 void Button::setOnClick(std::function<void()> callback)
 {
     onClick = callback;
@@ -103,10 +108,26 @@ void Button::render(Renderer& renderer)
             border,
             Metrics::ButtonRadius);
 
+        constexpr int iconSize = 19;
+        constexpr int iconTextGap = 9;
+        const int textWidth = renderer.getTextWidth(this->text);
+        const int groupWidth = textWidth +
+            (iconPath.empty() ? 0 : iconSize + iconTextGap);
+        const int groupX = textCentered
+            ? bounds.x + (bounds.w - groupWidth) / 2
+            : bounds.x + 18;
+        if (!iconPath.empty())
+        {
+            renderer.drawSVG(iconPath,
+                { groupX, bounds.y + (bounds.h - iconSize) / 2,
+                    iconSize, iconSize }, text);
+        }
+        const int filterTextX = groupX +
+            (iconPath.empty() ? 0 : iconSize + iconTextGap);
         renderer.drawText(
             this->text,
-            bounds.x + 18,
-            bounds.y + 11,
+            filterTextX,
+            bounds.y + (bounds.h - 20) / 2,
             text);
 
         return;
@@ -131,12 +152,47 @@ void Button::render(Renderer& renderer)
             backgroundColour,
             Metrics::ButtonRadius);
 
+        const int textX = textCentered
+            ? bounds.x + (bounds.w - renderer.getTextWidth(text)) / 2
+            : bounds.x + 12;
+
         renderer.drawText(
             text,
-            bounds.x + 12,
+            textX,
             bounds.y + 10,
             DefaultTheme.lightText);
 
+        return;
+    }
+
+    if (style == ButtonStyle::Accent)
+    {
+        const SDL_Color backgroundColour = pressed
+            ? SDL_Color{ 0, 140, 75, 255 }
+            : hovered
+                ? SDL_Color{ 75, 170, 45, 255 }
+                : DefaultTheme.accent;
+        renderer.fillRoundedRect(bounds, backgroundColour, Metrics::ButtonRadius);
+        const int textX = textCentered
+            ? bounds.x + (bounds.w - renderer.getTextWidth(text)) / 2
+            : bounds.x + 12;
+        renderer.drawText(text, textX, bounds.y + (bounds.h - 20) / 2,
+            DefaultTheme.lightText);
+        return;
+    }
+
+    if (style == ButtonStyle::Secondary)
+    {
+        const SDL_Color backgroundColour = hovered
+            ? SDL_Color{ 243, 246, 249, 255 }
+            : SDL_Color{ 255, 255, 255, 255 };
+        renderer.fillRoundedRect(bounds, backgroundColour, Metrics::ButtonRadius);
+        renderer.drawRoundedRect(bounds, DefaultTheme.border, Metrics::ButtonRadius);
+        const int textX = textCentered
+            ? bounds.x + (bounds.w - renderer.getTextWidth(text)) / 2
+            : bounds.x + 12;
+        renderer.drawText(text, textX, bounds.y + (bounds.h - 20) / 2,
+            DefaultTheme.darkText);
         return;
     }
 
