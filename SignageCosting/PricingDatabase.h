@@ -10,7 +10,7 @@
 class PricingDatabase
 {
 public:
-    static void load(const std::string& jsonData);
+    static bool load(const std::string& jsonData);
 
     static double getMarkupPercent();
 

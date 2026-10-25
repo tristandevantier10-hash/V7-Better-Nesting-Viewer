@@ -88,6 +88,7 @@ NewJobScreen::NewJobScreen()
         std::make_unique<HorizontalLayout>());
 
     configurePageHeader(pageHeader);
+    pageHeader->setDividerVisible(false);
 
     rightContainer->addLayoutElement(
         pageHeader,
@@ -101,7 +102,6 @@ NewJobScreen::NewJobScreen()
         std::make_unique<VerticalLayout>());
 
     configurePageHeaderTitle(titlePanel);
-    addPageHeaderLogo(pageHeader);
 
     pageHeader->addLayoutElement(
         titlePanel,
@@ -233,9 +233,6 @@ NewJobScreen::NewJobScreen()
     workspace->setLayout(
         std::make_unique<VerticalLayout>());
 
-    workspace->setStyle(
-        PanelStyle::Card);
-
     workspace->setBorderVisible(false);
     workspace->setPadding(0);
     workspace->setSpacing(Metrics::SpaceM);
@@ -248,7 +245,7 @@ NewJobScreen::NewJobScreen()
     materialSection->setLayout(std::make_unique<VerticalLayout>());
     materialSection->setStyle(PanelStyle::Card);
     materialSection->setBorderVisible(true);
-    materialSection->setPadding(24);
+    materialSection->setPadding(Metrics::SpaceXL);
     materialSection->setSpacing(Metrics::SpaceM);
 
     //==================================================
@@ -342,9 +339,6 @@ NewJobScreen::NewJobScreen()
     editorHeaderLayout->setSpacing(Metrics::SpaceXS);
     editorHeader->setLayout(std::move(editorHeaderLayout));
 
-    editorHeader->setStyle(
-        PanelStyle::Card);
-
     editorHeader->setBorderVisible(false);
     editorHeader->setPadding(0);
     editorHeader->setSpacing(Metrics::SpaceXS);
@@ -430,7 +424,7 @@ NewJobScreen::NewJobScreen()
     processChoicesPanel->setPadding(0);
     processChoicesPanel->setSpacing(Metrics::SpaceL);
     processChoicesPanel->setScrollable(true);
-    materialSection->addLayoutElement(processChoicesPanel, SizePolicy::Fixed, 100);
+    materialSection->addLayoutElement(processChoicesPanel, SizePolicy::Fixed, 74);
     refreshProcessChoices();
 
     workspace->addLayoutElement(
@@ -448,9 +442,6 @@ NewJobScreen::NewJobScreen()
     auto itemsHeaderLayout = std::make_unique<HorizontalLayout>();
     itemsHeaderLayout->setCenterChildrenVertically(true);
     itemsHeader->setLayout(std::move(itemsHeaderLayout));
-
-    itemsHeader->setStyle(
-        PanelStyle::Card);
 
     itemsHeader->setBorderVisible(false);
     itemsHeader->setPadding(0);
@@ -683,6 +674,8 @@ NewJobScreen::NewJobScreen()
 
     calculateButton->setText(
         "Calculate");
+    calculateButton->setStyle(Button::ButtonStyle::Accent);
+    calculateButton->setTextCentered(true);
 
     calculateButton->setOnClick(
         [this]()

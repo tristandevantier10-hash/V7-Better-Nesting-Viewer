@@ -33,6 +33,9 @@ namespace Metrics
     constexpr int SpaceM = 10;
     constexpr int SpaceL = 14;
     constexpr int SpaceXL = 20;
+    constexpr int CardPadding = 16;
+    constexpr int CardRadius = 10;
+    constexpr int CardInnerRadius = 9;
 
     //==================================================
     // Panel Padding
@@ -48,4 +51,6 @@ namespace Metrics
 
     constexpr int NavigationIndent = 24;
     constexpr int NavigationIndicatorWidth = 4;
+    constexpr int NavigationIconSize = 20;
+    constexpr int NavigationIconGap = SpaceM;
 }

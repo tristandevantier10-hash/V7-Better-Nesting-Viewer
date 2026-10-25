@@ -6,6 +6,7 @@
 #include "Label.h"
 #include "HorizontalLayout.h"
 #include "VerticalLayout.h"
+#include "Theme.h"
 #include <algorithm>
 #include <memory>
 
@@ -14,6 +15,11 @@ inline constexpr int PageHeaderLogoWidth = 190;
 class PageHeaderPanel : public Panel
 {
 public:
+    void setDividerVisible(bool visible)
+    {
+        dividerVisible = visible;
+    }
+
     void setBottomAccentVisible(bool visible)
     {
         bottomAccentVisible = visible;
@@ -43,21 +49,25 @@ protected:
 
             dividerX = (renderedLogoRight + titleStartX) / 2;
         }
-        renderer.drawLine(
-            dividerX,
-            bounds.y + 22,
-            dividerX,
-            bounds.y + bounds.h - 22,
-            SDL_Color{ 228, 231, 234, 255 });
+        if (dividerVisible)
+        {
+            renderer.drawLine(
+                dividerX,
+                bounds.y + 22,
+                dividerX,
+                bounds.y + bounds.h - 22,
+                DefaultTheme.border);
+        }
         if (bottomAccentVisible)
         {
             renderer.fillRect(
                 { bounds.x, bounds.y + bounds.h - 2, bounds.w, 2 },
-                SDL_Color{ 111, 159, 48, 255 });
+                DefaultTheme.accent);
         }
     }
 
 private:
+    bool dividerVisible = true;
     bool bottomAccentVisible = true;
 };
 

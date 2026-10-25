@@ -2,8 +2,6 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <algorithm>
-#include <thread>
-#include <chrono>
 #include <limits>
 
 using json = nlohmann::json;
@@ -14,15 +12,13 @@ static int g_materialCount = 0;
 static int g_variantCount = 0;
 
 // ---------------- LOAD ----------------
-void MaterialDatabase::load(const std::string& jsonData)
+bool MaterialDatabase::load(const std::string& jsonData)
 {
     materials.clear();
     g_materialCount = 0;
     g_variantCount = 0;
 
     json j;
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 1 second
 
     try
     {
@@ -31,13 +27,13 @@ void MaterialDatabase::load(const std::string& jsonData)
     catch (const std::exception& e)
     {
         std::cerr << "[MaterialDB][FATAL] JSON PARSE ERROR: " << e.what() << "\n";
-        return;
+        return false;
     }
 
     if (!j.contains("materials") || !j["materials"].is_array())
     {
         std::cerr << "[MaterialDB][FATAL] Missing 'materials' array\n";
-        return;
+        return false;
     }
 
     for (const auto& item : j["materials"])
@@ -110,6 +106,7 @@ void MaterialDatabase::load(const std::string& jsonData)
         g_materialCount++;
     }
 
+    return !materials.empty();
 }
 
 // ---------------- GET (FIXED - REQUIRED FOR LINKER) ----------------

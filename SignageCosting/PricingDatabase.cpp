@@ -2,8 +2,6 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <algorithm>
-#include <thread>
-#include <chrono>
 
 using json = nlohmann::json;
 
@@ -13,10 +11,8 @@ double PricingDatabase::markupPercent = 0.0;
 static json g_pricingRoot;
 
 // ---------------- LOAD ----------------
-void PricingDatabase::load(const std::string& jsonData)
+bool PricingDatabase::load(const std::string& jsonData)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 1 second
-
     try
     {
         g_pricingRoot = json::parse(jsonData);
@@ -24,7 +20,15 @@ void PricingDatabase::load(const std::string& jsonData)
     catch (const std::exception& e)
     {
         std::cerr << "[PricingDB][FATAL] JSON parse error: " << e.what() << "\n";
-        return;
+        return false;
+    }
+
+    if (!g_pricingRoot.is_object() ||
+        !g_pricingRoot.contains("materials") ||
+        !g_pricingRoot["materials"].is_array())
+    {
+        std::cerr << "[PricingDB][FATAL] Missing 'materials' array\n";
+        return false;
     }
 
     // ---------------- MARKUP ----------------
@@ -35,6 +39,8 @@ void PricingDatabase::load(const std::string& jsonData)
             );
     }
 
+    return true;
+
 }
 
 // ---------------- MATERIAL COST LOOKUP ----------------
@@ -42,11 +48,8 @@ double PricingDatabase::getMaterialCost(
     const std::string& materialId,
     const std::string& variantLabel)
 {
-
     if (!g_pricingRoot.contains("materials"))
-    {
         return 0.0;
-    }
 
     for (const auto& mat : g_pricingRoot["materials"])
     {

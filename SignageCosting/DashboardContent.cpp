@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "FontManager.h"
 #include "Metrics.h"
+#include "Theme.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,14 +18,14 @@
 
 namespace
 {
-    const SDL_Color Ink{ 39, 43, 48, 255 };
-    const SDL_Color Secondary{ 112, 119, 127, 255 };
-    const SDL_Color Border{ 226, 230, 234, 255 };
-    const SDL_Color Green{ 30, 137, 65, 255 };
-    const SDL_Color GreenSoft{ 232, 246, 235, 255 };
-    const SDL_Color Amber{ 229, 150, 22, 255 };
-    const SDL_Color AmberSoft{ 255, 246, 226, 255 };
-    const SDL_Color Blue{ 28, 121, 196, 255 };
+    const SDL_Color Ink = DefaultTheme.darkText;
+    const SDL_Color Secondary = DefaultTheme.darkSecondaryText;
+    const SDL_Color Border = DefaultTheme.border;
+    const SDL_Color Green = DefaultTheme.accent;
+    const SDL_Color GreenSoft = DefaultTheme.successSurface;
+    const SDL_Color Amber = DefaultTheme.warningText;
+    const SDL_Color AmberSoft = DefaultTheme.warningSurface;
+    const SDL_Color Blue = DefaultTheme.infoText;
 
     std::string recordDate(const QuoteRecord& quote)
     {
@@ -186,9 +187,9 @@ namespace
         TTF_Font* normalFont,
         TTF_Font* smallFont)
     {
-        renderer.fillRoundedRect(card, { 255, 255, 255, 255 }, 10);
-        renderer.drawRoundedRect(card, Border, 10);
-        renderer.drawText("System Status", card.x + 16, card.y + 12, headingFont, Ink);
+        renderer.fillRoundedRect(card, DefaultTheme.panelBackground, Metrics::CardRadius);
+        renderer.drawRoundedRect(card, Border, Metrics::CardRadius);
+        renderer.drawText("System Status", card.x + Metrics::CardPadding, card.y + 12, headingFont, Ink);
 
         const int contentY = card.y + 67;
         const int summaryWidth = (std::max)(140, static_cast<int>(card.w * 0.22f));
@@ -196,13 +197,13 @@ namespace
         renderer.drawLine(separatorX, card.y + 28, separatorX, card.y + card.h - 22, Border);
 
         const int statusWidth = (separatorX - card.x - 36) / 3;
-        const char* statuses[] = { "Materials Loaded", "Pricing Loaded", "Production Pricing Loaded" };
+        const char* statuses[] = { "Materials loaded", "Pricing loaded", "Production pricing loaded" };
         for (int i = 0; i < 3; ++i)
         {
             const int itemX = card.x + 18 + statusWidth * i;
             drawCheck(renderer, itemX + 10, contentY + 1);
             renderer.drawText(
-                std::string("[OK] ") + statuses[i],
+                statuses[i],
                 itemX + 28,
                 contentY - 8,
                 smallFont,
@@ -226,12 +227,12 @@ namespace
     SDL_Color quoteStatusColor(const std::string& status)
     {
         if (status == "Accepted" || status == "Approved")
-            return { 225, 247, 234, 255 };
+            return DefaultTheme.successSurface;
         if (status == "Sent")
-            return { 226, 242, 253, 255 };
+            return DefaultTheme.infoSurface;
         if (status == "Declined" || status == "Expired")
-            return { 253, 232, 232, 255 };
-        return { 239, 241, 243, 255 };
+            return DefaultTheme.errorSurface;
+        return DefaultTheme.mutedSurface;
     }
 
     SDL_Color quoteStatusTextColor(const std::string& status)
@@ -239,9 +240,9 @@ namespace
         if (status == "Accepted" || status == "Approved")
             return Green;
         if (status == "Sent")
-            return { 24, 111, 183, 255 };
+            return DefaultTheme.infoText;
         if (status == "Declined" || status == "Expired")
-            return { 177, 58, 58, 255 };
+            return DefaultTheme.errorText;
         return Ink;
     }
 
@@ -378,17 +379,17 @@ void DashboardContent::render(Renderer& renderer)
     const SDL_Rect recentCard{ bounds.x + leftWidth + columnGap, lowerY,
         bounds.w - leftWidth - columnGap, lowerHeight };
 
-    renderer.fillRoundedRect(glanceCard, { 255, 255, 255, 255 }, 10);
-    renderer.drawRoundedRect(glanceCard, Border, 10);
-    renderer.drawText("At a glance", glanceCard.x + 16, glanceCard.y + 14, headingFont, Ink);
+    renderer.fillRoundedRect(glanceCard, DefaultTheme.panelBackground, Metrics::CardRadius);
+    renderer.drawRoundedRect(glanceCard, Border, Metrics::CardRadius);
+    renderer.drawText("At a glance", glanceCard.x + Metrics::CardPadding, glanceCard.y + 14, headingFont, Ink);
 
-    const int metricX = glanceCard.x + 16;
-    const int metricWidth = glanceCard.w - 32;
+    const int metricX = glanceCard.x + Metrics::CardPadding;
+    const int metricWidth = glanceCard.w - 2 * Metrics::CardPadding;
     const int metricHeight = 76;
     const int metricGap = 9;
     const int metricY = glanceCard.y + 55;
     const int iconSize = 48;
-    const int textX = metricX + 16 + iconSize + 13;
+    const int textX = metricX + Metrics::CardPadding + iconSize + Metrics::SpaceM;
 
     const SDL_Rect metricRects[] = {
         { metricX, metricY, metricWidth, metricHeight },
@@ -397,11 +398,11 @@ void DashboardContent::render(Renderer& renderer)
     };
     for (const auto& rect : metricRects)
     {
-        renderer.fillRoundedRect(rect, { 255, 255, 255, 255 }, 9);
-        renderer.drawRoundedRect(rect, Border, 9);
+        renderer.fillRoundedRect(rect, DefaultTheme.panelBackground, Metrics::CardInnerRadius);
+        renderer.drawRoundedRect(rect, Border, Metrics::CardInnerRadius);
     }
 
-    drawMetricIcon(renderer, 0, { metricX + 16, metricY + 14, iconSize, iconSize });
+    drawMetricIcon(renderer, 0, { metricX + Metrics::CardPadding, metricY + 14, iconSize, iconSize });
     renderer.drawText("Quotes this month", textX, metricY + 14, smallFont, Ink);
     renderer.drawText(std::to_string(quotesThisMonth), textX, metricY + 36, headingFont, Ink);
     if (metricWidth > 340)
@@ -420,7 +421,7 @@ void DashboardContent::render(Renderer& renderer)
             const int percentage = static_cast<int>(std::round(
                 100.0 * (quotesThisMonth - quotesLastMonth) / quotesLastMonth));
             trendText = (percentage > 0 ? "+" : "") + std::to_string(percentage) + "%";
-            trendColor = percentage >= 0 ? Green : SDL_Color{ 177, 58, 58, 255 };
+            trendColor = percentage >= 0 ? Green : DefaultTheme.errorText;
             trendDown = percentage < 0;
         }
         const int arrowTipY = metricY + (trendDown ? 32 : 24);
@@ -433,12 +434,12 @@ void DashboardContent::render(Renderer& renderer)
     }
 
     const int secondY = metricY + metricHeight + metricGap;
-    drawMetricIcon(renderer, 1, { metricX + 16, secondY + 14, iconSize, iconSize });
+    drawMetricIcon(renderer, 1, { metricX + Metrics::CardPadding, secondY + 14, iconSize, iconSize });
     renderer.drawText("Awaiting response", textX, secondY + 14, smallFont, Ink);
     renderer.drawText(std::to_string(awaitingResponse), textX, secondY + 36, headingFont, Ink);
 
     const int thirdY = metricY + 2 * (metricHeight + metricGap);
-    drawMetricIcon(renderer, 2, { metricX + 16, thirdY + 14, iconSize, iconSize });
+    drawMetricIcon(renderer, 2, { metricX + Metrics::CardPadding, thirdY + 14, iconSize, iconSize });
     renderer.drawText("Quoted this month", textX, thirdY + 11, smallFont, Ink);
     renderer.drawText(formatAmount(quotedThisMonth), textX, thirdY + 30, headingFont, Ink);
     renderer.drawText("Across " + std::to_string(quotesThisMonth) + " quotes",
@@ -477,10 +478,10 @@ void DashboardContent::render(Renderer& renderer)
         }
     }
 
-    renderer.fillRoundedRect(recentCard, { 255, 255, 255, 255 }, 10);
-    renderer.drawRoundedRect(recentCard, Border, 10);
-    renderer.drawText("Recent quotes", recentCard.x + 16, recentCard.y + 14, headingFont, Ink);
-    renderer.drawText("Your most recent quote activity.", recentCard.x + 16,
+    renderer.fillRoundedRect(recentCard, DefaultTheme.panelBackground, Metrics::CardRadius);
+    renderer.drawRoundedRect(recentCard, Border, Metrics::CardRadius);
+    renderer.drawText("Recent quotes", recentCard.x + Metrics::CardPadding, recentCard.y + 14, headingFont, Ink);
+    renderer.drawText("Your most recent quote activity.", recentCard.x + Metrics::CardPadding,
         recentCard.y + 43, smallFont, Secondary);
     const std::string viewAllText = "View all quotes";
     int viewAllWidth = 0;
@@ -493,19 +494,19 @@ void DashboardContent::render(Renderer& renderer)
     renderer.drawLine(chevronX - 3, viewAllY + 1, chevronX, viewAllY + 5, Green);
     renderer.drawLine(chevronX, viewAllY + 5, chevronX - 3, viewAllY + 9, Green);
 
-    const int tableX = recentCard.x + 14;
+    const int tableX = recentCard.x + Metrics::CardPadding;
     const int tableY = recentCard.y + 81;
-    const int tableWidth = recentCard.w - 28;
+    const int tableWidth = recentCard.w - 2 * Metrics::CardPadding;
     const int tableHeaderHeight = 39;
     const int rowHeight = 58;
-    renderer.fillRect({ tableX, tableY, tableWidth, tableHeaderHeight }, { 247, 248, 249, 255 });
+    renderer.fillRect({ tableX, tableY, tableWidth, tableHeaderHeight }, DefaultTheme.mutedSurface);
     renderer.drawRect({ tableX, tableY, tableWidth, tableHeaderHeight }, Border);
 
     const int referenceWidth = static_cast<int>(tableWidth * 0.29f);
     const int customerWidth = static_cast<int>(tableWidth * 0.34f);
     const int totalWidth = static_cast<int>(tableWidth * 0.20f);
     const int statusWidth = tableWidth - referenceWidth - customerWidth - totalWidth;
-    const int referenceX = tableX + 12;
+    const int referenceX = tableX + Metrics::SpaceM;
     const int customerX = tableX + referenceWidth + 8;
     const int totalX = tableX + referenceWidth + customerWidth + 6;
     const int statusX = tableX + referenceWidth + customerWidth + totalWidth;
@@ -516,7 +517,8 @@ void DashboardContent::render(Renderer& renderer)
 
     if (recentQuotes.empty())
     {
-        renderer.drawText("No quotes saved yet.", tableX + 12, tableY + tableHeaderHeight + 16,
+        renderer.drawText("No quotes saved yet.", tableX + Metrics::SpaceM,
+            tableY + tableHeaderHeight + Metrics::CardPadding,
             smallFont, Secondary);
     }
     else
@@ -525,7 +527,7 @@ void DashboardContent::render(Renderer& renderer)
         {
             const int rowY = tableY + tableHeaderHeight + static_cast<int>(i) * rowHeight;
             const auto& quote = recentQuotes[i];
-            renderer.fillRect({ tableX, rowY, tableWidth, rowHeight }, { 255, 255, 255, 255 });
+            renderer.fillRect({ tableX, rowY, tableWidth, rowHeight }, DefaultTheme.panelBackground);
             renderer.drawRect({ tableX, rowY, tableWidth, rowHeight }, Border);
 
             renderer.drawText(truncateText(smallFont,

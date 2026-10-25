@@ -1,6 +1,7 @@
 #include "DataGrid.h"
 #include "Renderer.h"
 #include "Label.h"
+#include "Theme.h"
 #include <algorithm>
 
 DataGrid::DataGrid()
@@ -99,7 +100,7 @@ void DataGrid::render(Renderer& renderer)
 
     renderer.fillRect(
         background,
-        { 255,255,255,255 });
+        DefaultTheme.panelBackground);
 
     //--------------------------------------------------
     // Header
@@ -115,7 +116,7 @@ void DataGrid::render(Renderer& renderer)
 
     renderer.fillRect(
         header,
-        { 246,248,250,255 });
+        DefaultTheme.mutedSurface);
 
     //--------------------------------------------------
     // Column titles
@@ -151,7 +152,7 @@ void DataGrid::render(Renderer& renderer)
             getY(),
             x,
             getY() + headerHeight,
-            { 231,235,239,255 });
+            DefaultTheme.border);
     }
 
     //--------------------------------------------------
@@ -163,7 +164,7 @@ void DataGrid::render(Renderer& renderer)
         getY() + headerHeight,
         getX() + getWidth(),
         getY() + headerHeight,
-        { 224,229,235,255 });
+        DefaultTheme.border);
 
     //--------------------------------------------------
     // Rows
@@ -198,18 +199,18 @@ void DataGrid::render(Renderer& renderer)
 
         if ((int)rowIndex == selectedRow)
         {
-            rowColour = { 235, 246, 238, 255 };
+            rowColour = DefaultTheme.successSurface;
         }
         else if ((int)rowIndex == hoveredRow)
         {
-            rowColour = { 245,248,250,255 };
+            rowColour = DefaultTheme.windowBackground;
         }
         else
         {
             rowColour =
                 (rowIndex % 2 == 0)
-                ? SDL_Color{ 255,255,255,255 }
-            : SDL_Color{ 250,250,250,255 };
+                ? DefaultTheme.panelBackground
+                : DefaultTheme.mutedSurface;
         }
 
         SDL_Rect rowRect =
@@ -258,7 +259,7 @@ void DataGrid::render(Renderer& renderer)
                 y,
                 x + columns[col].width,
                 y + rowHeight,
-                { 235,238,242,255 });
+                DefaultTheme.border);
 
             x += columns[col].width;
         }
@@ -273,7 +274,7 @@ void DataGrid::render(Renderer& renderer)
         const int trackX = getX() + getWidth() - 7;
         renderer.fillRect(
             { trackX, getY() + headerHeight, 5, viewportHeight },
-            { 238, 240, 243, 255 });
+            DefaultTheme.mutedSurface);
 
         const int thumbHeight = std::max(20,
             viewportHeight * viewportHeight / contentHeight);
@@ -283,7 +284,7 @@ void DataGrid::render(Renderer& renderer)
             (maxScroll > 0 ? scrollOffset * thumbTravel / maxScroll : 0);
         renderer.fillRect(
             { trackX, thumbY, 5, thumbHeight },
-            { 150, 158, 168, 255 });
+            DefaultTheme.darkSecondaryText);
     }
 
     //--------------------------------------------------
@@ -297,7 +298,7 @@ void DataGrid::render(Renderer& renderer)
             getWidth(),
             getHeight()
         },
-        { 224,229,235,255 });
+        DefaultTheme.border);
 
     renderer.popClip();
 }

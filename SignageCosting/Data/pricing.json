@@ -1,0 +1,123 @@
+{
+  "materials": [
+    {
+      "id": "VINYL",
+      "pricing": [
+        {
+          "label": "Monomeric Economy Indoor",
+          "cost_per_m2": 55
+        },
+        {
+          "label": "Monomeric Economy Outdoor",
+          "cost_per_m2": 65
+        },
+        {
+          "label": "Polymeric Vinyl",
+          "cost_per_m2": 95
+        },
+        {
+          "label": "Cast Vinyl 7yr",
+          "cost_per_m2": 140
+        },
+        {
+          "label": "Cast Vinyl 10yr",
+          "cost_per_m2": 180
+        },
+        {
+          "label": "Printable Monomeric",
+          "cost_per_m2": 75
+        },
+        {
+          "label": "Printable Polymeric",
+          "cost_per_m2": 110
+        },
+        {
+          "label": "Printable Cast",
+          "cost_per_m2": 170
+        },
+        {
+          "label": "Reflective Engineering Grade",
+          "cost_per_m2": 220
+        },
+        {
+          "label": "Reflective High Intensity",
+          "cost_per_m2": 320
+        },
+        {
+          "label": "Reflective Diamond Grade",
+          "cost_per_m2": 450
+        },
+        {
+          "label": "Translucent Sign Vinyl",
+          "cost_per_m2": 130
+        },
+        {
+          "label": "One Way Vision",
+          "cost_per_m2": 140
+        },
+        {
+          "label": "Wall Vinyl",
+          "cost_per_m2": 120
+        },
+        {
+          "label": "Floor Vinyl",
+          "cost_per_m2": 180
+        },
+        {
+          "label": "Etched Glass",
+          "cost_per_m2": 180
+        },
+        {
+          "label": "Sandblast",
+          "cost_per_m2": 180
+        },
+        {
+          "label": "Chrome Vinyl",
+          "cost_per_m2": 350
+        },
+        {
+          "label": "Brushed Metal Vinyl",
+          "cost_per_m2": 280
+        },
+        {
+          "label": "Carbon Fibre Vinyl",
+          "cost_per_m2": 260
+        },
+        {
+          "label": "Photoluminescent Vinyl",
+          "cost_per_m2": 300
+        },
+        {
+          "label": "Magnetic Vehicle Vinyl",
+          "cost_per_m2": 450
+        }
+      ]
+    },
+
+    {
+      "id": "CHROMADEK",
+      "pricing": [
+        {
+          "label": "Chromadek 0.8mm",
+          "cost_per_sheet": 650
+        },
+        {
+          "label": "Chromadek 1.0mm",
+          "cost_per_sheet": 750
+        },
+        {
+          "label": "Chromadek 1.2mm",
+          "cost_per_sheet": 850
+        }
+      ]
+    }
+  ],
+
+  "defaults": {
+    "markup_percent": 100
+  },
+
+  "labour": {
+    "cost_per_m2": 200
+  }
+}

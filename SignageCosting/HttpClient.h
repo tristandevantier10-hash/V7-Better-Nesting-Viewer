@@ -7,6 +7,7 @@ class HttpClient
 public:
     // Existing GET request — retained.
     static std::string get(const std::string& url);
+    static std::string get(const std::string& url, std::string& errorMessage);
 
     // POST a JSON request body and return the response.
     static std::string postJson(

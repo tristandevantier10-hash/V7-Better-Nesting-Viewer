@@ -1,6 +1,7 @@
 #include "Panel.h"
 #include "Renderer.h"
 #include "Theme.h"
+#include "Metrics.h"
 #include "iostream"
 
 Panel::Panel()
@@ -81,7 +82,7 @@ void Panel::renderBackground(Renderer& renderer)
 
         renderer.fillRect(
             bounds,
-            SDL_Color{ 15, 15, 15, 255 });
+            DefaultTheme.sidebarBackground);
 
         break;
 
@@ -105,14 +106,14 @@ void Panel::renderBackground(Renderer& renderer)
         renderer.fillRoundedRect(
             { bounds.x, bounds.y + 2, bounds.w, bounds.h },
             { 28, 39, 52, 14 },
-            9);
+            Metrics::CardInnerRadius);
         renderer.fillRoundedRect(
             bounds,
             DefaultTheme.panelBackground,
-            9);
+            Metrics::CardInnerRadius);
 
         if (borderVisible)
-            renderer.drawRoundedRect(bounds, { 224, 229, 235, 255 }, 9);
+            renderer.drawRoundedRect(bounds, DefaultTheme.border, Metrics::CardInnerRadius);
 
         break;
 

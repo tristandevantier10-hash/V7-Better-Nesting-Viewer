@@ -690,6 +690,7 @@ void Application::startSplashStartup() {
     // Use atomic stores to guarantee thread safety
     startupComplete.store(false);
     startupFailed.store(false);
+    startupErrorMessage.clear();
     startupCompletedStage.store(-1);
 
     // 4. Clean up any existing worker thread before creating a new one
@@ -701,7 +702,7 @@ void Application::startSplashStartup() {
     startupWorker = std::thread([this]() {
         bool initSuccess = DatabaseManager::initialise([this](int stage) {
             startupCompletedStage.store(stage);
-            });
+            }, &startupErrorMessage);
 
         if (!initSuccess) {
             startupFailed.store(true);
@@ -946,12 +947,14 @@ void Application::update()
             if (startupFailed)
             {
                 std::cerr
-                    << "FAILED: DatabaseManager\\n";
+                    << "Startup failed: " << startupErrorMessage << '\n';
 
                 SDL_ShowSimpleMessageBox(
                     SDL_MESSAGEBOX_ERROR,
                     "Startup Failed",
-                    "The application could not load its required data. Check your internet connection and make sure Quotes/quotes.json is available and valid, then restart.",
+                    startupErrorMessage.empty()
+                        ? "The application could not load required data. Please restart and try again."
+                        : startupErrorMessage.c_str(),
                     window);
 
                 running = false;

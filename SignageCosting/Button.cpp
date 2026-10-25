@@ -70,7 +70,7 @@ void Button::render(Renderer& renderer)
         if (selected)
             textColour = DefaultTheme.accent;
         else if (hovered)
-            textColour = DefaultTheme.navigationHover;
+            textColour = DefaultTheme.darkText;
 
         renderer.drawText(
             text,
@@ -85,13 +85,13 @@ void Button::render(Renderer& renderer)
     {
         SDL_Color background =
             selected
-            ? SDL_Color{ 235,250,235,255 }
-        : SDL_Color{ 255,255,255,255 };
+            ? DefaultTheme.successSurface
+            : DefaultTheme.panelBackground;
 
         SDL_Color border =
             selected
             ? DefaultTheme.accent
-            : SDL_Color{ 220,220,220,255 };
+            : DefaultTheme.border;
 
         SDL_Color text =
             selected

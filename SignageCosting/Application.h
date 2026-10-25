@@ -5,6 +5,7 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <string>
 #include "AppState.h"
 #include "RunMode.h"
 #include "Job.h"
@@ -125,6 +126,8 @@ private:
     std::atomic<bool> startupComplete{ false };
 
     std::atomic<bool> startupFailed{ false };
+
+    std::string startupErrorMessage;
 
     void toggleMode();
 

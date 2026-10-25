@@ -17,7 +17,7 @@ class MaterialDatabase
 {
 public:
     // ---------------- CORE ----------------
-    static void load(const std::string& jsonData);
+    static bool load(const std::string& jsonData);
 
     static Material get(const std::string& baseId);
     static bool exists(const std::string& baseId);

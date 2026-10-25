@@ -1,0 +1,385 @@
+{
+  "materials": [
+    {
+      "id": "VINYL",
+      "name": "Adhesive Vinyl",
+      "category": "Roll",
+      "cost_model": "ROLL_AREA",
+
+      "variants": [
+        {
+          "label": "Monomeric Economy Indoor",
+          "type": "Monomeric",
+          "usage": "Indoor",
+          "duration_years": 1,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 },
+            { "roll_width_mm": 1370 }
+          ]
+        },
+
+        {
+          "label": "Monomeric Economy Outdoor",
+          "type": "Monomeric",
+          "usage": "Outdoor",
+          "duration_years": 3,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 },
+            { "roll_width_mm": 1370 }
+          ]
+        },
+
+        {
+          "label": "Polymeric Vinyl",
+          "type": "Polymeric",
+          "usage": "Outdoor",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 },
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Cast Vinyl 7yr",
+          "type": "Cast",
+          "usage": "Vehicle Wrap",
+          "duration_years": 7,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 },
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Cast Vinyl 10yr",
+          "type": "Cast",
+          "usage": "Vehicle Wrap",
+          "duration_years": 10,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 },
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Printable Monomeric",
+          "type": "Digital Print",
+          "usage": "Printable",
+          "duration_years": 3,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Printable Polymeric",
+          "type": "Digital Print",
+          "usage": "Printable",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Printable Cast",
+          "type": "Digital Print",
+          "usage": "Vehicle Wrap",
+          "duration_years": 7,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Reflective Engineering Grade",
+          "type": "Reflective",
+          "usage": "Road Sign",
+          "duration_years": 7,
+          "labour_factor": 0.7,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Reflective High Intensity",
+          "type": "Reflective",
+          "usage": "Road Sign",
+          "duration_years": 10,
+          "labour_factor": 0.7,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Reflective Diamond Grade",
+          "type": "Reflective",
+          "usage": "Road Sign",
+          "duration_years": 12,
+          "labour_factor": 0.7,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Translucent Sign Vinyl",
+          "type": "Translucent",
+          "usage": "Lightbox",
+          "duration_years": 7,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "One Way Vision",
+          "type": "Perforated",
+          "usage": "Window Graphics",
+          "duration_years": 3,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 },
+            { "roll_width_mm": 1520 }
+          ]
+        },
+
+        {
+          "label": "Wall Vinyl",
+          "type": "Wall Graphics",
+          "usage": "Interior Decor",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 }
+          ]
+        },
+
+        {
+          "label": "Floor Vinyl",
+          "type": "Floor Graphics",
+          "usage": "Floor Graphics",
+          "duration_years": 2,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1370 }
+          ]
+        },
+
+        {
+          "label": "Etched Glass",
+          "type": "Decorative",
+          "usage": "Window Frosting",
+          "duration_years": 10,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Sandblast",
+          "type": "Decorative",
+          "usage": "Window Frosting",
+          "duration_years": 10,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Chrome Vinyl",
+          "type": "Metallic",
+          "usage": "Decorative",
+          "duration_years": 3,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Brushed Metal Vinyl",
+          "type": "Metallic",
+          "usage": "Decorative",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Carbon Fibre Vinyl",
+          "type": "Textured",
+          "usage": "Vehicle Styling",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Photoluminescent Vinyl",
+          "type": "Glow In Dark",
+          "usage": "Safety Signage",
+          "duration_years": 7,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 1220 }
+          ]
+        },
+
+        {
+          "label": "Magnetic Vehicle Vinyl",
+          "type": "Magnetic",
+          "usage": "Vehicle Graphics",
+          "duration_years": 5,
+          "labour_factor": 0.5,
+          "formats": [
+            { "roll_width_mm": 610 },
+            { "roll_width_mm": 1220 }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "CHROMADEK",
+      "name": "Chromadek",
+      "category": "Sheet",
+      "substrates": true,
+      "cost_model": "SHEET_AREA",
+
+      "variants": [
+        {
+          "label": "Chromadek 0.8mm",
+          "type": "Chromadek",
+          "usage": "Sheet",
+          "thickness_mm": 0.8,
+          "labour_factor": 1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220
+            }
+          ]
+        },
+
+        {
+          "label": "Chromadek 1.0mm",
+          "type": "Chromadek",
+          "usage": "Sheet",
+          "thickness_mm": 1.0,
+          "labour_factor": 1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220
+            }
+          ]
+        },
+
+        {
+          "label": "Chromadek 1.2mm",
+          "type": "Chromadek",
+          "usage": "Sheet",
+          "thickness_mm": 1.2,
+          "labour_factor": 1.1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220           
+            },
+            {
+              "sheet_width_mm": 3000,
+              "sheet_height_mm": 1500           
+            }            
+          ]
+        }
+      ]
+    },
+    
+    {
+      "id": "ACM",
+      "name": "Acm",
+      "category": "Sheet",
+      "substrates": true,
+      "cost_model": "SHEET_AREA",
+
+      "variants": [
+        {
+          "label": "Acm 2mm",
+          "type": "Acm",
+          "usage": "Sheet",
+          "thickness_mm": 0.8,
+          "labour_factor": 1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220
+            }
+          ]
+        },
+
+        {
+          "label": "Acm 3mm",
+          "type": "Acm",
+          "usage": "Sheet",
+          "thickness_mm": 1.0,
+          "labour_factor": 1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220
+            }
+          ]
+        },
+
+        {
+          "label": "Acm 4mm",
+          "type": "Acm",
+          "usage": "Sheet",
+          "thickness_mm": 1.2,
+          "labour_factor": 1.1,
+          "formats": [
+            {
+              "sheet_width_mm": 2440,
+              "sheet_height_mm": 1220           
+            },
+            {
+              "sheet_width_mm": 3000,
+              "sheet_height_mm": 1500           
+            }            
+          ]
+        }
+      ]
+    }    
+  ]
+}

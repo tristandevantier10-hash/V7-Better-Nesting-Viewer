@@ -35,6 +35,12 @@ struct Theme
     SDL_Color accent;
     SDL_Color sidebarSelected;
     SDL_Color navigationHover;
+    SDL_Color successSurface;
+    SDL_Color warningSurface;
+    SDL_Color errorSurface;
+    SDL_Color infoText;
+    SDL_Color infoSurface;
+    SDL_Color mutedSurface;
 
     int borderThickness;
     int padding;

@@ -3,6 +3,7 @@
 #include "Theme.h"
 #include "Label.h"
 #include "FontManager.h"
+#include "Metrics.h"
 
 NavigationItem::NavigationItem()
 {
@@ -17,7 +18,7 @@ void NavigationItem::render(Renderer& renderer)
     // Selected background
     // ---------------------------------------------------------
 
-    if (selected && !heading && isEnabled())
+    if (!heading && isEnabled() && (selected || hovered))
     {
         SDL_Rect selectedBackground =
         {
@@ -29,8 +30,8 @@ void NavigationItem::render(Renderer& renderer)
 
         renderer.fillRoundedRect(
             selectedBackground,
-            { 44, 72, 43, 255 },
-            9);
+            selected ? DefaultTheme.sidebarSelected : DefaultTheme.navigationHover,
+            Metrics::ControlRadius);
     }
 
     // ---------------------------------------------------------
@@ -43,7 +44,7 @@ void NavigationItem::render(Renderer& renderer)
         {
             bounds.x + 2,
             bounds.y + 7,
-            4,
+            Metrics::NavigationIndicatorWidth,
             bounds.h - 14
         };
 
@@ -57,26 +58,24 @@ void NavigationItem::render(Renderer& renderer)
     // ---------------------------------------------------------
 
     SDL_Color textColour =
-        DefaultTheme.text;
+        DefaultTheme.lightText;
 
     if (!isEnabled())
     {
-        textColour = DefaultTheme.darkSecondaryText;
+        textColour = DefaultTheme.lightSecondaryText;
     }
     else if (heading)
     {
         textColour =
-            DefaultTheme.darkSecondaryText;
+            DefaultTheme.lightSecondaryText;
     }
     else if (selected)
     {
-        textColour =
-            DefaultTheme.lightText;
+        textColour = DefaultTheme.lightText;
     }
     else if (hovered)
     {
-        textColour =
-            DefaultTheme.navigationHover;
+        textColour = DefaultTheme.lightText;
     }
 
     // ---------------------------------------------------------
@@ -104,8 +103,8 @@ void NavigationItem::render(Renderer& renderer)
     // Keep the icon and label in a consistent left-aligned column.
     // ---------------------------------------------------------
 
-    constexpr int IconSize = 22;
-    constexpr int IconTextGap = 14;
+    constexpr int IconSize = Metrics::NavigationIconSize;
+    constexpr int IconTextGap = Metrics::NavigationIconGap;
 
     TTF_Font* font =
         renderer.getFontManager().getSmallFont();
@@ -127,7 +126,7 @@ void NavigationItem::render(Renderer& renderer)
         !iconPath.empty();
 
     int groupX =
-        bounds.x + 22;
+        bounds.x + Metrics::NavigationIndent;
 
     int iconY =
         bounds.y +

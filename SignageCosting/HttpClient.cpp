@@ -24,12 +24,20 @@ namespace
 
     std::string performRequest(
         const std::string& url,
-        const std::string* jsonBody)
+        const std::string* jsonBody,
+        std::string* errorMessage = nullptr)
     {
+        if (errorMessage)
+            errorMessage->clear();
+
         CURL* curl = curl_easy_init();
 
         if (!curl)
+        {
+            if (errorMessage)
+                *errorMessage = "Could not initialise the HTTP client.";
             return "";
+        }
 
         std::string response;
 
@@ -125,10 +133,25 @@ namespace
         curl_easy_cleanup(curl);
 
         if (result != CURLE_OK)
+        {
+            if (errorMessage)
+                *errorMessage = curl_easy_strerror(result);
             return "";
+        }
 
         if (httpCode < 200 || httpCode >= 300)
+        {
+            if (errorMessage)
+                *errorMessage = "The server returned HTTP " + std::to_string(httpCode) + ".";
             return "";
+        }
+
+        if (response.empty())
+        {
+            if (errorMessage)
+                *errorMessage = "The server returned an empty response.";
+            return "";
+        }
 
         return response;
     }
@@ -137,6 +160,11 @@ namespace
 std::string HttpClient::get(const std::string& url)
 {
     return performRequest(url, nullptr);
+}
+
+std::string HttpClient::get(const std::string& url, std::string& errorMessage)
+{
+    return performRequest(url, nullptr, &errorMessage);
 }
 
 std::string HttpClient::postJson(
