@@ -741,6 +741,7 @@ void Application::restoreMainWindowSize()
         return;
 
     // Restore the normal application window.
+    SDL_SetWindowMinimumSize(window, 1200, 800);
     SDL_SetWindowSize(
         window,
         1200,
@@ -762,7 +763,7 @@ bool Application::createWindow()
         SDL_WINDOWPOS_CENTERED,
         600,
         600,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
 
     if (!window)

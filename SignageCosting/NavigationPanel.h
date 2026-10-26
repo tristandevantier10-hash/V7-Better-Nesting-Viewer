@@ -20,10 +20,13 @@ public:
         const std::string& iconPath = "",
         bool enabled = true);
 
+    void selectItem(const std::shared_ptr<NavigationItem>& item);
+
     void addHeading(
         const std::string& text);
 
     void addBrand();
+    void addDashboardBrand();
 
 private:
 

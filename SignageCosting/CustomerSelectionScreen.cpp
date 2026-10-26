@@ -90,7 +90,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
     configurePageHeaderTitle(titlePanel);
-    addPageHeaderLogo(pageHeader);
+    addPageHeaderLogo(pageHeader, "Assets/Images/E&G Signs cc.png");
 
     pageHeader->addLayoutElement(
         titlePanel,

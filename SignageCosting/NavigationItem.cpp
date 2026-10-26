@@ -28,10 +28,9 @@ void NavigationItem::render(Renderer& renderer)
             bounds.h - 4
         };
 
-        renderer.fillRoundedRect(
+        renderer.fillRect(
             selectedBackground,
-            selected ? DefaultTheme.sidebarSelected : DefaultTheme.navigationHover,
-            Metrics::ControlRadius);
+            selected ? DefaultTheme.sidebarSelected : DefaultTheme.navigationHover);
     }
 
     // ---------------------------------------------------------
@@ -43,9 +42,9 @@ void NavigationItem::render(Renderer& renderer)
         SDL_Rect indicator =
         {
             bounds.x + 2,
-            bounds.y + 7,
+            bounds.y,
             Metrics::NavigationIndicatorWidth,
-            bounds.h - 14
+            bounds.h
         };
 
         renderer.fillRect(
@@ -86,6 +85,26 @@ void NavigationItem::render(Renderer& renderer)
     {
         constexpr int LeftPadding = 22;
         constexpr int TopPadding = 10;
+        constexpr int RightPadding = 8;
+        constexpr int LabelGap = 8;
+
+        int headingWidth = 0;
+        int headingHeight = 0;
+        TTF_Font* headingFont = renderer.getFontManager().getSmallFont();
+        if (headingFont)
+        {
+            TTF_SizeUTF8(headingFont, text.c_str(), &headingWidth, &headingHeight);
+        }
+        (void)headingHeight;
+
+        const int lineX = bounds.x + LeftPadding + headingWidth + LabelGap;
+        const int lineWidth = bounds.x + bounds.w - RightPadding - lineX;
+        if (lineWidth > 0)
+        {
+            renderer.fillRect(
+                { lineX, bounds.y + bounds.h / 2, lineWidth, 1 },
+                { 58, 64, 60, 255 });
+        }
 
         renderer.drawText(
             text,

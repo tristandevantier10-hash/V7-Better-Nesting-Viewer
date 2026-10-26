@@ -36,6 +36,7 @@ private:
     std::shared_ptr<NavigationPanel> sidebarPanel;
 
     std::shared_ptr<DashboardContent> dashboardContent;
+    std::shared_ptr<NavigationItem> overviewItem;
     std::shared_ptr<NavigationItem> labourRatesItem;
 
     std::function<void()> newJobCallback;

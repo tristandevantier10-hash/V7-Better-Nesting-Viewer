@@ -5,33 +5,26 @@
 #include "Metrics.h"
 #include "PageHeader.h"
 #include "NavigationItem.h"
+#include "UIElement.h"
 #include <utility>
 
 MainMenuScreen::MainMenuScreen()
 {
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
 
-    setLayout(std::make_unique<VerticalLayout>());
-
-    auto headerPanel = std::make_shared<PageHeaderPanel>();
+    auto headerPanel = std::make_shared<DashboardBannerPanel>();
     headerPanel->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(headerPanel);
-
-    addLayoutElement(
-        headerPanel,
-        SizePolicy::Fixed,
-        Metrics::HeaderHeight);
+    headerPanel->setDividerVisible(false);
+    headerPanel->setBottomAccentVisible(false);
 
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
     configurePageHeaderTitle(titlePanel, Metrics::SpaceXS);
-    addPageHeaderLogo(headerPanel);
+    titlePanel->setPadding(Metrics::SpaceL);
     headerPanel->addLayoutElement(titlePanel, SizePolicy::Fill);
-
-    auto workspaceLabel = std::make_shared<Label>();
-    workspaceLabel->setText("WORKSPACE");
-    workspaceLabel->setStyle(LabelStyle::Small);
-    workspaceLabel->setTextTheme(TextTheme::Success);
-    titlePanel->addLayoutElement(workspaceLabel, SizePolicy::Fixed, 16);
 
     auto dashboardLabel = std::make_shared<Label>();
     dashboardLabel->setText("Dashboard");
@@ -58,24 +51,18 @@ MainMenuScreen::MainMenuScreen()
         SizePolicy::Fixed,
         236);
 
-    //==================================================
-    // Header
-    //==================================================
-
-    contentPanel = std::make_shared<Panel>();
-    contentPanel->setLayout(std::make_unique<HorizontalLayout>());
-
-    addLayoutElement(
-        contentPanel,
-        SizePolicy::Fill);
-
     sidebarPanel = std::make_shared<NavigationPanel>();
     sidebarPanel->setLayout(std::make_unique<VerticalLayout>());
     sidebarPanel->setSidebarStyle(true);
     sidebarPanel->setBorderVisible(false);
     sidebarPanel->setPadding(Metrics::SidebarPadding);
     sidebarPanel->setSpacing(Metrics::SpaceS);
-    sidebarPanel->addBrand();
+    sidebarPanel->addDashboardBrand();
+
+    contentPanel = std::make_shared<Panel>();
+    contentPanel->setLayout(std::make_unique<VerticalLayout>());
+    contentPanel->setPadding(0);
+    contentPanel->setSpacing(0);
 
     auto rightPanel = std::make_shared<Panel>();
     rightPanel->setLayout(std::make_unique<VerticalLayout>());
@@ -90,34 +77,40 @@ MainMenuScreen::MainMenuScreen()
 
     rightPanel->addLayoutElement(dashboardContent, SizePolicy::Fill);
 
-    contentPanel->addLayoutElement(
-        sidebarPanel,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
+    contentPanel->addLayoutElement(headerPanel, SizePolicy::Fixed, 132);
+    contentPanel->addLayoutElement(rightPanel, SizePolicy::Fill);
 
-    contentPanel->addLayoutElement(
-        rightPanel,
-        SizePolicy::Fill);
+    addLayoutElement(sidebarPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
+    addLayoutElement(contentPanel, SizePolicy::Fill);
 
+    sidebarPanel->addHeading("GENERAL");
+    overviewItem = sidebarPanel->addItem(
+        "Overview",
+        []() {},
+        "Assets/Icons/overview.svg");
+
+    sidebarPanel->addHeading("QUOTES");
     sidebarPanel->addItem(
-        "New Job",
+        "New Quote",
         [this]()
         {
             if (newJobCallback)
                 newJobCallback();
-        });
+        },
+        "Assets/Icons/new_job.svg");
 
+    sidebarPanel->addItem("Quote History", [this]()
+    {
+        if (quotesCallback)
+            quotesCallback();
+    });
+
+    sidebarPanel->addHeading("MANAGE");
     sidebarPanel->addItem(
         "Materials",
         {},
         "",
         false);
-
-    sidebarPanel->addItem("Quotes", [this]()
-    {
-        if (quotesCallback)
-            quotesCallback();
-    });
 
     sidebarPanel->addItem(
         "Customers",
@@ -141,6 +134,10 @@ MainMenuScreen::MainMenuScreen()
                 settingsCallback();
         });
 
+    sidebarPanel->addLayoutElement(
+        std::make_shared<UIElement>(),
+        SizePolicy::Fill);
+
     sidebarPanel->addItem(
         "Exit",
         [this]()
@@ -158,6 +155,9 @@ void MainMenuScreen::update(const SDL_Event& e)
 
 void MainMenuScreen::render(Renderer& renderer)
 {
+    if (sidebarPanel && overviewItem)
+        sidebarPanel->selectItem(overviewItem);
+
     Screen::render(renderer);
 }
 

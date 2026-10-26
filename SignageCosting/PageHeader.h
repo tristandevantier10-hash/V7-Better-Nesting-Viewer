@@ -9,6 +9,8 @@
 #include "Theme.h"
 #include <algorithm>
 #include <memory>
+#include <string>
+#include <utility>
 
 inline constexpr int PageHeaderLogoWidth = 190;
 
@@ -113,6 +115,12 @@ protected:
 class PageHeaderLogo : public UIElement
 {
 public:
+    explicit PageHeaderLogo(
+        std::string imagePath = "Assets/Images/EstiMate.png")
+        : imagePath(std::move(imagePath))
+    {
+    }
+
     void render(Renderer& renderer) override
     {
         if (!isVisible())
@@ -123,8 +131,11 @@ public:
         logoBounds.y += 12;
         logoBounds.w = std::max(0, logoBounds.w - 24);
         logoBounds.h = std::max(0, logoBounds.h - 24);
-        renderer.drawImage("Assets/Images/EstiMate.png", logoBounds);
+        renderer.drawImage(imagePath, logoBounds);
     }
+
+private:
+    std::string imagePath;
 };
 
 class DashboardHeaderControls : public UIElement
@@ -155,6 +166,26 @@ public:
             SDL_Color{ 111, 122, 130, 255 });
         renderer.drawLine(avatarX + 46, centerY + 2, avatarX + 50, centerY - 2,
             SDL_Color{ 111, 122, 130, 255 });
+    }
+};
+
+class DashboardBannerPanel : public PageHeaderPanel
+{
+protected:
+    void renderBackground(Renderer& renderer) override
+    {
+        Panel::renderBackground(renderer);
+
+        const SDL_Rect bounds = getBounds();
+        constexpr int artworkHeight = 240;
+        renderer.drawImageRegion(
+            "Assets/Images/Header Background.png",
+            { 577, 0, 1155, artworkHeight },
+            bounds);
+
+        renderer.fillRect(
+            { bounds.x, bounds.y + bounds.h - 2, bounds.w, 2 },
+            DefaultTheme.accent);
     }
 };
 
@@ -192,10 +223,12 @@ inline void configurePageHeaderTitle(
     panel->setSpacing(spacing);
 }
 
-inline void addPageHeaderLogo(const std::shared_ptr<Panel>& panel)
+inline void addPageHeaderLogo(
+    const std::shared_ptr<Panel>& panel,
+    const std::string& imagePath = "Assets/Images/EstiMate.png")
 {
     panel->addLayoutElement(
-        std::make_shared<PageHeaderLogo>(),
+        std::make_shared<PageHeaderLogo>(imagePath),
         SizePolicy::Fixed,
         PageHeaderLogoWidth);
 }

@@ -337,6 +337,50 @@ void Renderer::drawImage(
     SDL_RenderCopy(sdlRenderer, texture, nullptr, &target);
 }
 
+void Renderer::drawImageRegion(
+    const std::string& path,
+    const SDL_Rect& source,
+    const SDL_Rect& destination)
+{
+    if (path.empty() || source.w <= 0 || source.h <= 0 ||
+        destination.w <= 0 || destination.h <= 0)
+        return;
+
+    SDL_Texture* texture = nullptr;
+    const auto found = imageTextures.find(path);
+    if (found != imageTextures.end())
+    {
+        texture = found->second;
+        if (!texture)
+            return;
+    }
+    else
+    {
+        SDL_Surface* surface = IMG_Load(path.c_str());
+        if (!surface)
+        {
+            imageTextures.emplace(path, nullptr);
+            return;
+        }
+
+        texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
+        SDL_FreeSurface(surface);
+        if (!texture)
+        {
+            imageTextures.emplace(path, nullptr);
+            return;
+        }
+
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        imageTextures.emplace(path, texture);
+    }
+
+    SDL_Rect target = destination;
+    target.x += offsetX;
+    target.y += offsetY;
+    SDL_RenderCopy(sdlRenderer, texture, &source, &target);
+}
+
 void Renderer::drawTexture(
     SDL_Texture* texture,
     const SDL_Rect& destination,

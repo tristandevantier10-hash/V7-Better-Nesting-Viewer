@@ -20,11 +20,48 @@ namespace
             const SDL_Rect imageRect =
             {
                 bounds.x + 12,
-                bounds.y + 10,
+                bounds.y + 8,
                 bounds.w - 24,
-                bounds.h - 20
+                bounds.h - 16
             };
-            renderer.drawImage("Assets/Images/EstiMate.png", imageRect, true);
+            renderer.drawImage("Assets/Images/EstiMate-White.png", imageRect, true);
+        }
+    };
+
+    class DashboardNavigationBrand : public UIElement
+    {
+    public:
+        void render(Renderer& renderer) override
+        {
+            if (!visible)
+                return;
+
+            // The sidebar keeps its black identity. The banner artwork is
+            // clipped to this brand band, while its matching right-hand crop
+            // is rendered independently by the dashboard header.
+            const SDL_Rect brandBand
+            {
+                bounds.x - Metrics::SidebarPadding,
+                bounds.y - Metrics::SidebarPadding,
+                bounds.w + Metrics::SidebarPadding * 2,
+                bounds.h + Metrics::SidebarPadding + Metrics::SpaceS
+            };
+            renderer.drawImageRegion(
+                "Assets/Images/Header Background.png",
+                { 0, 0, 577, 240 },
+                brandBand);
+
+            const SDL_Rect logoRect
+            {
+                brandBand.x + 20,
+                brandBand.y + 18,
+                brandBand.w - 40,
+                brandBand.h - 40
+            };
+            renderer.drawImage("Assets/Images/EstiMate-White.png", logoRect, true);
+            renderer.fillRect(
+                { brandBand.x, brandBand.y + brandBand.h - 2, brandBand.w, 2 },
+                DefaultTheme.accent);
         }
     };
 }
@@ -42,8 +79,19 @@ void NavigationPanel::addBrand()
         return;
 
     hasBrand = true;
-    auto brand = std::make_shared<NavigationBrand>();
-    addLayoutElement(brand, SizePolicy::Fixed, 82);
+    addLayoutElement(std::make_shared<NavigationBrand>(), SizePolicy::Fixed, 76);
+}
+
+void NavigationPanel::addDashboardBrand()
+{
+    if (hasBrand)
+        return;
+
+    hasBrand = true;
+    addLayoutElement(
+        std::make_shared<DashboardNavigationBrand>(),
+        SizePolicy::Fixed,
+        116);
 }
 
 std::shared_ptr<NavigationItem> NavigationPanel::addItem(
@@ -62,14 +110,7 @@ std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     item->setOnClick(
         [this, item, callback]()
         {
-            // Deselect every item
-            for (auto& i : items)
-            {
-                i->setSelected(false);
-            }
-
-            // Select this one
-            item->setSelected(true);
+            selectItem(item);
 
             // Run the user's callback
             if (callback)
@@ -110,11 +151,15 @@ std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     return item;
 }
 
+void NavigationPanel::selectItem(const std::shared_ptr<NavigationItem>& item)
+{
+    for (auto& navigationItem : items)
+        navigationItem->setSelected(navigationItem == item);
+}
+
 void NavigationPanel::addHeading(
     const std::string& text)
 {
-    addBrand();
-
     auto heading = std::make_shared<NavigationItem>();
 
     heading->setText(text);
