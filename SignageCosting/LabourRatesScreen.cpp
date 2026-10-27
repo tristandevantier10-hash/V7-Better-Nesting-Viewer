@@ -33,11 +33,26 @@ namespace
 
 LabourRatesScreen::LabourRatesScreen()
 {
-    setLayout(std::make_unique<VerticalLayout>());
-    auto header = std::make_shared<PageHeaderPanel>();
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
+
+    auto navigation = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::LabourRates,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        });
+
+    auto content = std::make_shared<Panel>();
+    content->setLayout(std::make_unique<VerticalLayout>());
+    content->setPadding(0);
+    content->setSpacing(0);
+
+    auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    addPageHeaderLogo(header);
     auto title = std::make_shared<Label>();
     title->setText("Labour Rates");
     title->setStyle(LabelStyle::Heading);
@@ -47,28 +62,17 @@ LabourRatesScreen::LabourRatesScreen()
     back->setText("Back");
     back->setOnClick([this]() { if (backCallback) backCallback(); });
     header->addLayoutElement(back, SizePolicy::Fixed, 100);
-    addLayoutElement(header, SizePolicy::Fixed, Metrics::HeaderHeight);
-
-    auto pageContent = std::make_shared<Panel>();
-    pageContent->setLayout(std::make_unique<HorizontalLayout>());
-    addLayoutElement(pageContent, SizePolicy::Fill);
-
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::LabourRates,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
-    pageContent->addLayoutElement(
-        navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    content->addLayoutElement(header, SizePolicy::Fixed, 132);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
     body->setBorderVisible(false);
     body->setPadding(Metrics::SpaceXL);
     body->setSpacing(Metrics::SpaceM);
-    pageContent->addLayoutElement(body, SizePolicy::Fill);
+    content->addLayoutElement(body, SizePolicy::Fill);
+
+    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    addLayoutElement(content, SizePolicy::Fill);
 
     auto intro = std::make_shared<Label>();
     intro->setText("Choose the processes your company offers, set their rates, or add a custom process.");

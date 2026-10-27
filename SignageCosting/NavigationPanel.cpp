@@ -46,9 +46,9 @@ namespace
                 bounds.w + Metrics::SidebarPadding * 2,
                 bounds.h + Metrics::SidebarPadding + Metrics::SpaceS
             };
-            renderer.drawImageRegion(
+            renderer.drawImageCoverRegion(
                 "Assets/Images/Header Background.png",
-                { 0, 0, 577, 240 },
+                0.0f, 0.0f, 1.0f / 3.0f, 1.0f,
                 brandBand);
 
             const SDL_Rect logoRect
@@ -155,6 +155,19 @@ void NavigationPanel::selectItem(const std::shared_ptr<NavigationItem>& item)
 {
     for (auto& navigationItem : items)
         navigationItem->setSelected(navigationItem == item);
+}
+
+void NavigationPanel::selectItemByText(const std::string& text)
+{
+    selectItem(findItemByText(text));
+}
+
+std::shared_ptr<NavigationItem> NavigationPanel::findItemByText(
+    const std::string& text) const
+{
+    const auto found = std::find_if(items.begin(), items.end(),
+        [&text](const auto& item) { return item->getText() == text; });
+    return found == items.end() ? nullptr : *found;
 }
 
 void NavigationPanel::addHeading(

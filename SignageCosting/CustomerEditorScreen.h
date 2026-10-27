@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include "Customer.h"
+#include "PrimaryNavigation.h"
 
 class CustomerEditorScreen : public Screen
 {
@@ -23,6 +24,8 @@ public:
     void setSaveCallback(std::function<void()> callback);
 
     void setCancelCallback(std::function<void()> callback);
+    void setNavigationCallback(
+        std::function<void(PrimaryNavigationRoute)> callback);
 
     Customer createCustomer() const;
 
@@ -45,5 +48,6 @@ private:
 
     std::function<void()> saveCallback;
     std::function<void()> cancelCallback;
+    std::function<void(PrimaryNavigationRoute)> navigationCallback;
 
 };

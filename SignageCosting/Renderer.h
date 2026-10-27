@@ -129,9 +129,12 @@ public:
         const SDL_Rect& destination,
         bool preserveAspect = true);
 
-    void drawImageRegion(
+    void drawImageCoverRegion(
         const std::string& path,
-        const SDL_Rect& source,
+        float sourceX,
+        float sourceY,
+        float sourceWidth,
+        float sourceHeight,
         const SDL_Rect& destination);
 
     void drawTexture(

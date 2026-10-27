@@ -8,64 +8,34 @@
 #include "Panel.h"
 #include "Label.h"
 #include "TextBox.h"
+#include <utility>
 
 CustomerEditorScreen::CustomerEditorScreen()
 {
     //==================================================
     // Root Layout
     //==================================================
-    setLayout(std::make_unique<VerticalLayout>());
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
 
     auto contentPanel = std::make_shared<Panel>();
-    contentPanel->setLayout(std::make_unique<HorizontalLayout>());
-
-    addLayoutElement(contentPanel, SizePolicy::Fill);
+    contentPanel->setLayout(std::make_unique<VerticalLayout>());
+    contentPanel->setPadding(0);
+    contentPanel->setSpacing(0);
 
     //==================================================
     // Sidebar
     //==================================================
-    auto sidebarPanel = std::make_shared<NavigationPanel>();
-    sidebarPanel->setLayout(std::make_unique<VerticalLayout>());
-    sidebarPanel->setSidebarStyle(true);
-    sidebarPanel->setPadding(Metrics::SidebarPadding);
-
-    contentPanel->addLayoutElement(
-        sidebarPanel,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
-
-    sidebarPanel->addHeading("CUSTOMER");
-    sidebarPanel->addItem("INVOICE", {}, "", false);
-
-    // Invisible Spacer matching Selection Screen theme
-    struct InvisibleSpacer : public Panel
-    {
-        void render(Renderer& renderer) override
+    auto navigation = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::CustomerDatabase,
+        [this](PrimaryNavigationRoute route)
         {
-            performLayout();
-            renderChildren(renderer);
-        }
-    };
-
-    auto spacer = std::make_shared<InvisibleSpacer>();
-    spacer->setBorderVisible(false);
-    sidebarPanel->addLayoutElement(spacer, SizePolicy::Fill);
-
-    sidebarPanel->addItem(
-        "SAVE",
-        [this]()
-        {
-            if (saveCallback)
-                saveCallback();
+            if (navigationCallback)
+                navigationCallback(route);
         });
-
-    sidebarPanel->addItem(
-        "CANCEL",
-        [this]()
-        {
-            if (cancelCallback)
-                cancelCallback();
-        });
+    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    addLayoutElement(contentPanel, SizePolicy::Fill);
 
     //==================================================
     // Right Side Container
@@ -77,27 +47,17 @@ CustomerEditorScreen::CustomerEditorScreen()
     rightContainer->setPadding(Metrics::SpaceXL);
     rightContainer->setSpacing(Metrics::SpaceL);
 
-    contentPanel->addLayoutElement(
-        rightContainer,
-        SizePolicy::Fill);
-
     //==================================================
     // Page Header (Integrated into Main Area)
     //==================================================
-    auto pageHeader = std::make_shared<PageHeaderPanel>();
+    auto pageHeader = std::make_shared<DashboardBannerPanel>();
     pageHeader->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(pageHeader);
-
-    rightContainer->addLayoutElement(
-        pageHeader,
-        SizePolicy::Fixed,
-        Metrics::HeaderHeight);
+    contentPanel->addLayoutElement(pageHeader, SizePolicy::Fixed, 132);
 
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
     configurePageHeaderTitle(titlePanel);
-    addPageHeaderLogo(pageHeader);
-
     pageHeader->addLayoutElement(
         titlePanel,
         SizePolicy::Fill);
@@ -121,6 +81,26 @@ CustomerEditorScreen::CustomerEditorScreen()
         subtitle,
         SizePolicy::Fixed,
         24);
+
+    cancelButton = std::make_shared<Button>();
+    cancelButton->setText("Cancel");
+    cancelButton->setOnClick([this]()
+    {
+        if (cancelCallback)
+            cancelCallback();
+    });
+    pageHeader->addLayoutElement(cancelButton, SizePolicy::Fixed, 100);
+
+    saveButton = std::make_shared<Button>();
+    saveButton->setText("Save");
+    saveButton->setOnClick([this]()
+    {
+        if (saveCallback)
+            saveCallback();
+    });
+    pageHeader->addLayoutElement(saveButton, SizePolicy::Fixed, 100);
+
+    contentPanel->addLayoutElement(rightContainer, SizePolicy::Fill);
 
     //==================================================
     // Editor Form Panel
@@ -184,6 +164,12 @@ void CustomerEditorScreen::setSaveCallback(std::function<void()> callback)
 void CustomerEditorScreen::setCancelCallback(std::function<void()> callback)
 {
     cancelCallback = callback;
+}
+
+void CustomerEditorScreen::setNavigationCallback(
+    std::function<void(PrimaryNavigationRoute)> callback)
+{
+    navigationCallback = std::move(callback);
 }
 
 Customer CustomerEditorScreen::createCustomer() const

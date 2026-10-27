@@ -62,12 +62,28 @@ namespace
 
 SettingsScreen::SettingsScreen()
 {
-    setLayout(std::make_unique<VerticalLayout>());
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
 
-    auto header = std::make_shared<PageHeaderPanel>();
+    auto navigation = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::Settings,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        });
+    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+
+    auto content = std::make_shared<Panel>();
+    content->setLayout(std::make_unique<VerticalLayout>());
+    content->setPadding(0);
+    content->setSpacing(0);
+    addLayoutElement(content, SizePolicy::Fill);
+
+    auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    addPageHeaderLogo(header);
 
     auto title = std::make_shared<Label>();
     title->setText("Settings");
@@ -83,30 +99,14 @@ SettingsScreen::SettingsScreen()
             backCallback();
     });
     header->addLayoutElement(backButton, SizePolicy::Fixed, 100);
-    addLayoutElement(header, SizePolicy::Fixed, Metrics::HeaderHeight);
-
-    auto pageContent = std::make_shared<Panel>();
-    pageContent->setLayout(std::make_unique<HorizontalLayout>());
-    addLayoutElement(pageContent, SizePolicy::Fill);
-
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::Settings,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
-    pageContent->addLayoutElement(
-        navigation,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
+    content->addLayoutElement(header, SizePolicy::Fixed, 132);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
     body->setBorderVisible(false);
     body->setPadding(Metrics::SpaceXL);
     body->setSpacing(Metrics::SpaceL);
-    pageContent->addLayoutElement(body, SizePolicy::Fill);
+    content->addLayoutElement(body, SizePolicy::Fill);
 
     auto introduction = std::make_shared<Label>();
     introduction->setText("Configure the default layout and typography for your workspace.");

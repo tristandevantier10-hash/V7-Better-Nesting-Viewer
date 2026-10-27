@@ -229,11 +229,27 @@ namespace
 
 QuoteHistoryScreen::QuoteHistoryScreen()
 {
-    setLayout(std::make_unique<VerticalLayout>());
-    auto header = std::make_shared<PageHeaderPanel>();
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
+
+    auto navigation = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::Quotes,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        });
+    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+
+    auto content = std::make_shared<Panel>();
+    content->setLayout(std::make_unique<VerticalLayout>());
+    content->setPadding(0);
+    content->setSpacing(0);
+
+    auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    addPageHeaderLogo(header);
     auto title = std::make_shared<Label>();
     title->setText("Quotes");
     title->setStyle(LabelStyle::Heading);
@@ -256,29 +272,14 @@ QuoteHistoryScreen::QuoteHistoryScreen()
             viewOverviewCallback(QuoteDatabase::getAll()[visibleQuoteIndices[row]]);
     });
     header->addLayoutElement(overviewButton, SizePolicy::Fixed, 150);
-    addLayoutElement(header, SizePolicy::Fixed, Metrics::HeaderHeight);
-
-    auto pageContent = std::make_shared<Panel>();
-    pageContent->setLayout(std::make_unique<HorizontalLayout>());
-    addLayoutElement(pageContent, SizePolicy::Fill);
-
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::Quotes,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
-    pageContent->addLayoutElement(
-        navigation,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
+    content->addLayoutElement(header, SizePolicy::Fixed, 132);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
     body->setPadding(Metrics::SpaceM);
     body->setSpacing(Metrics::SpaceS);
-    pageContent->addLayoutElement(body, SizePolicy::Fill);
+    content->addLayoutElement(body, SizePolicy::Fill);
+    addLayoutElement(content, SizePolicy::Fill);
 
     searchBox = std::make_shared<TextBox>();
     searchBox->setPlaceholder("Search by quote reference, customer, contact, status or date...");

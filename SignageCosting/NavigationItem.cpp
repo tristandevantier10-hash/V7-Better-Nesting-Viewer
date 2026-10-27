@@ -9,6 +9,11 @@ NavigationItem::NavigationItem()
 {
 }
 
+const std::string& NavigationItem::getText() const
+{
+    return text;
+}
+
 void NavigationItem::render(Renderer& renderer)
 {
     if (!visible)
@@ -85,7 +90,7 @@ void NavigationItem::render(Renderer& renderer)
     {
         constexpr int LeftPadding = 22;
         constexpr int TopPadding = 10;
-        constexpr int RightPadding = 8;
+        constexpr int RightPadding = LeftPadding;
         constexpr int LabelGap = 8;
 
         int headingWidth = 0;

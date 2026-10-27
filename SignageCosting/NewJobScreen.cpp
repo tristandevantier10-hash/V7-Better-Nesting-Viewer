@@ -24,37 +24,29 @@ NewJobScreen::NewJobScreen()
     // Root
     //==================================================
 
-    setLayout(std::make_unique<VerticalLayout>());
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
 
     auto contentPanel = std::make_shared<Panel>();
-    contentPanel->setLayout(
-        std::make_unique<HorizontalLayout>());
-
-    addLayoutElement(
-        contentPanel,
-        SizePolicy::Fill);
+    contentPanel->setLayout(std::make_unique<VerticalLayout>());
+    contentPanel->setPadding(0);
+    contentPanel->setSpacing(0);
 
     //==================================================
     // Sidebar
     //==================================================
 
-    auto sidebar = std::make_shared<NavigationPanel>();
-    sidebar->setLayout(std::make_unique<VerticalLayout>());
-    sidebar->setSidebarStyle(true);
-    sidebar->setBorderVisible(false);
-    sidebar->setPadding(Metrics::SidebarPadding);
-    sidebar->setSpacing(Metrics::SpaceS);
-    sidebar->addBrand();
-
-    auto sidebarSpacer = std::make_shared<UIElement>();
-    sidebar->addLayoutElement(sidebarSpacer, SizePolicy::Fill);
-    auto backItem = sidebar->addItem("Back", [this]()
-    {
-        if (navigationCallback)
-            navigationCallback(PrimaryNavigationRoute::NewJob);
-    }, "Assets/Icons/back.svg");
-    backItem->setSelected(false);
-    contentPanel->addLayoutElement(sidebar, SizePolicy::Fixed, Metrics::SidebarWidth);
+    auto sidebar = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::NewJob,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        },
+        true);
+    addLayoutElement(sidebar, SizePolicy::Fixed, Metrics::SidebarWidth);
+    addLayoutElement(contentPanel, SizePolicy::Fill);
 
     //==================================================
     // Right Side
@@ -73,16 +65,12 @@ NewJobScreen::NewJobScreen()
     rightContainer->setPadding(Metrics::SpaceXL);
     rightContainer->setSpacing(Metrics::SpaceL);
 
-    contentPanel->addLayoutElement(
-        rightContainer,
-        SizePolicy::Fill);
-
     //==================================================
     // Header
     //==================================================
 
     auto pageHeader =
-        std::make_shared<PageHeaderPanel>();
+        std::make_shared<DashboardBannerPanel>();
 
     pageHeader->setLayout(
         std::make_unique<HorizontalLayout>());
@@ -90,10 +78,7 @@ NewJobScreen::NewJobScreen()
     configurePageHeader(pageHeader);
     pageHeader->setDividerVisible(false);
 
-    rightContainer->addLayoutElement(
-        pageHeader,
-        SizePolicy::Fixed,
-        100);
+    contentPanel->addLayoutElement(pageHeader, SizePolicy::Fixed, 132);
 
     auto titlePanel =
         std::make_shared<PageHeaderContentPanel>();
@@ -222,6 +207,8 @@ NewJobScreen::NewJobScreen()
         customerCard,
         SizePolicy::Fixed,
         330);
+
+    contentPanel->addLayoutElement(rightContainer, SizePolicy::Fill);
 
     //==================================================
     // Main Workspace

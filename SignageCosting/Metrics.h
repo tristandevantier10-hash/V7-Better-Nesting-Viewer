@@ -8,6 +8,7 @@ namespace Metrics
 
     constexpr int HeaderHeight = 104;
     constexpr int SidebarWidth = 200;
+    constexpr int DashboardNavigationTopGap = 18;
 
     //==================================================
     // Standard Control Heights

@@ -116,8 +116,9 @@ class PageHeaderLogo : public UIElement
 {
 public:
     explicit PageHeaderLogo(
-        std::string imagePath = "Assets/Images/EstiMate.png")
-        : imagePath(std::move(imagePath))
+        std::string imagePath = "Assets/Images/EstiMate.png",
+        float scale = 1.0f)
+        : imagePath(std::move(imagePath)), scale(scale)
     {
     }
 
@@ -131,11 +132,18 @@ public:
         logoBounds.y += 12;
         logoBounds.w = std::max(0, logoBounds.w - 24);
         logoBounds.h = std::max(0, logoBounds.h - 24);
+        const int scaledWidth = static_cast<int>(logoBounds.w * scale);
+        const int scaledHeight = static_cast<int>(logoBounds.h * scale);
+        logoBounds.x += (logoBounds.w - scaledWidth) / 2;
+        logoBounds.y += (logoBounds.h - scaledHeight) / 2;
+        logoBounds.w = scaledWidth;
+        logoBounds.h = scaledHeight;
         renderer.drawImage(imagePath, logoBounds);
     }
 
 private:
     std::string imagePath;
+    float scale = 1.0f;
 };
 
 class DashboardHeaderControls : public UIElement
@@ -177,10 +185,9 @@ protected:
         Panel::renderBackground(renderer);
 
         const SDL_Rect bounds = getBounds();
-        constexpr int artworkHeight = 240;
-        renderer.drawImageRegion(
+        renderer.drawImageCoverRegion(
             "Assets/Images/Header Background.png",
-            { 577, 0, 1155, artworkHeight },
+            1.0f / 3.0f, 0.0f, 2.0f / 3.0f, 1.0f,
             bounds);
 
         renderer.fillRect(
@@ -225,10 +232,11 @@ inline void configurePageHeaderTitle(
 
 inline void addPageHeaderLogo(
     const std::shared_ptr<Panel>& panel,
-    const std::string& imagePath = "Assets/Images/EstiMate.png")
+    const std::string& imagePath = "Assets/Images/EstiMate.png",
+    float scale = 1.0f)
 {
     panel->addLayoutElement(
-        std::make_shared<PageHeaderLogo>(imagePath),
+        std::make_shared<PageHeaderLogo>(imagePath, scale),
         SizePolicy::Fixed,
         PageHeaderLogoWidth);
 }

@@ -8,6 +8,7 @@
 #include "CardPanel.h"
 #include "Button.h"
 #include "PageHeader.h"
+#include <utility>
 
 CustomerSelectionScreen::CustomerSelectionScreen()
 {
@@ -15,50 +16,39 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     // Root Layout
     //==================================================
 
-    setLayout(std::make_unique<VerticalLayout>());
+    setLayout(std::make_unique<HorizontalLayout>());
+    setPadding(0);
+    setSpacing(0);
 
     auto contentPanel = std::make_shared<Panel>();
-    contentPanel->setLayout(std::make_unique<HorizontalLayout>());
-
-    addLayoutElement(contentPanel, SizePolicy::Fill);
+    contentPanel->setLayout(std::make_unique<VerticalLayout>());
+    contentPanel->setPadding(0);
+    contentPanel->setSpacing(0);
 
     //==================================================
     // Sidebar
     //==================================================
 
-    auto sidebar = std::make_shared<NavigationPanel>();
-    sidebar->setLayout(std::make_unique<VerticalLayout>());
-    sidebar->setSidebarStyle(true);
-    sidebar->setPadding(Metrics::SidebarPadding);
-
-    contentPanel->addLayoutElement(
-        sidebar,
-        SizePolicy::Fixed,
-        Metrics::SidebarWidth);
-
-    sidebar->addHeading("CUSTOMERS");
-
-    struct InvisibleSpacer : public Panel
-    {
-        void render(Renderer& renderer) override
+    navigationPanel = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::CustomerDatabase,
+        [this](PrimaryNavigationRoute route)
         {
-            performLayout();
-            renderChildren(renderer);
-        }
-    };
-
-    auto spacer = std::make_shared<InvisibleSpacer>();
-    spacer->setBorderVisible(false);
-
-    sidebar->addLayoutElement(spacer, SizePolicy::Fill);
-
-    sidebar->addItem(
-        "BACK",
-        [this]()
-        {
-            if (backCallback)
-                backCallback();
+            if (navigationCallback)
+                navigationCallback(route);
         });
+    addLayoutElement(navigationPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
+
+    quoteNavigationPanel = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::Exit,
+        [this](PrimaryNavigationRoute route)
+        {
+            if (navigationCallback)
+                navigationCallback(route);
+        },
+        true);
+    quoteNavigationPanel->setVisible(false);
+    addLayoutElement(quoteNavigationPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
+    addLayoutElement(contentPanel, SizePolicy::Fill);
 
     //==================================================
     // Right Side
@@ -71,32 +61,25 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     rightContainer->setPadding(Metrics::SpaceXL);
     rightContainer->setSpacing(Metrics::SpaceL);
 
-    contentPanel->addLayoutElement(
-        rightContainer,
-        SizePolicy::Fill);
-
     //==================================================
     // Page Header
     //==================================================
 
-    auto pageHeader = std::make_shared<PageHeaderPanel>();
+    auto pageHeader = std::make_shared<DashboardBannerPanel>();
     pageHeader->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(pageHeader);
-    rightContainer->addLayoutElement(
-        pageHeader,
-        SizePolicy::Fixed,
-        Metrics::HeaderHeight);
+    contentPanel->addLayoutElement(pageHeader, SizePolicy::Fixed, 132);
 
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
     configurePageHeaderTitle(titlePanel);
-    addPageHeaderLogo(pageHeader, "Assets/Images/E&G Signs cc.png");
+    addPageHeaderLogo(pageHeader, "Assets/Images/E&G Signs cc.png", 0.66f);
 
     pageHeader->addLayoutElement(
         titlePanel,
         SizePolicy::Fill);
 
-    auto title = std::make_shared<Label>();
+    title = std::make_shared<Label>();
     title->setText("Customers");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
@@ -106,7 +89,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
         SizePolicy::Fixed,
         36);
 
-    auto subtitle = std::make_shared<Label>();
+    subtitle = std::make_shared<Label>();
     subtitle->setText("Manage your customer database");
     subtitle->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(subtitle);
@@ -146,6 +129,8 @@ CustomerSelectionScreen::CustomerSelectionScreen()
         newCustomerButtonContainer,
         SizePolicy::Fixed,
         180);
+
+    contentPanel->addLayoutElement(rightContainer, SizePolicy::Fill);
 
     //==================================================
     // Workspace
@@ -370,7 +355,23 @@ void CustomerSelectionScreen::setBackCallback(std::function<void()> callback)
     backCallback = callback;
 }
 
+void CustomerSelectionScreen::setNavigationCallback(
+    std::function<void(PrimaryNavigationRoute)> callback)
+{
+    navigationCallback = std::move(callback);
+}
+
 void CustomerSelectionScreen::setSelectionMode(bool enabled)
 {
     selectButton->setVisible(enabled);
+    title->setText(enabled ? "Select Customer" : "Customers");
+    subtitle->setText(enabled
+        ? "Choose a customer for this quote"
+        : "Manage your customer database");
+    if (navigationPanel)
+    {
+        navigationPanel->setVisible(!enabled);
+    }
+    if (quoteNavigationPanel)
+        quoteNavigationPanel->setVisible(enabled);
 }

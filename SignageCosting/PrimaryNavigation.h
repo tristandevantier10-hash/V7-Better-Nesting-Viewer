@@ -3,14 +3,14 @@
 #include "Metrics.h"
 #include "NavigationItem.h"
 #include "NavigationPanel.h"
+#include "UIElement.h"
 #include "VerticalLayout.h"
 #include <functional>
 #include <memory>
-#include <utility>
-#include <vector>
 
 enum class PrimaryNavigationRoute
 {
+    Overview,
     NewJob,
     MaterialDatabase,
     Quotes,
@@ -22,7 +22,8 @@ enum class PrimaryNavigationRoute
 
 inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     PrimaryNavigationRoute selectedRoute,
-    std::function<void(PrimaryNavigationRoute)> onNavigate)
+    std::function<void(PrimaryNavigationRoute)> onNavigate,
+    bool newQuoteMode = false)
 {
     auto panel = std::make_shared<NavigationPanel>();
     panel->setLayout(std::make_unique<VerticalLayout>());
@@ -30,13 +31,35 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     panel->setBorderVisible(false);
     panel->setPadding(Metrics::SidebarPadding);
     panel->setSpacing(Metrics::SpaceS);
-    panel->addBrand();
+    panel->addDashboardBrand();
+    panel->addLayoutElement(
+        std::make_shared<UIElement>(),
+        SizePolicy::Fixed,
+        Metrics::DashboardNavigationTopGap);
 
-    std::vector<std::pair<PrimaryNavigationRoute, std::shared_ptr<NavigationItem>>> items;
-    auto addItem = [&panel, &items, &onNavigate](
+    if (newQuoteMode)
+    {
+        panel->addLayoutElement(
+            std::make_shared<UIElement>(),
+            SizePolicy::Fill);
+        panel->addItem(
+            "Cancel",
+            [onNavigate]()
+            {
+                if (onNavigate)
+                    onNavigate(PrimaryNavigationRoute::Overview);
+            },
+            "Assets/Icons/back.svg",
+            true);
+        return panel;
+    }
+
+    std::shared_ptr<NavigationItem> selectedItem;
+    auto addItem = [&panel, &selectedItem, selectedRoute, &onNavigate](
         const char* label,
         PrimaryNavigationRoute route,
-        bool enabled = true)
+        const char* iconPath,
+        bool enabled)
     {
         auto item = panel->addItem(
             label,
@@ -45,23 +68,31 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
                 if (onNavigate)
                     onNavigate(route);
             },
-            "",
+            iconPath,
             enabled);
-        items.emplace_back(route, item);
+        if (route == selectedRoute)
+            selectedItem = item;
     };
 
-    addItem(
-        selectedRoute == PrimaryNavigationRoute::NewJob ? "Job Input" : "New Job",
-        PrimaryNavigationRoute::NewJob);
-    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, false);
-    addItem("Quotes", PrimaryNavigationRoute::Quotes);
-    addItem("Customers", PrimaryNavigationRoute::CustomerDatabase);
-    addItem("Labour Rates", PrimaryNavigationRoute::LabourRates);
-    addItem("Settings", PrimaryNavigationRoute::Settings);
-    addItem("Exit", PrimaryNavigationRoute::Exit);
+    panel->addHeading("GENERAL");
+    addItem("Overview", PrimaryNavigationRoute::Overview, "Assets/Icons/overview.svg", true);
 
-    for (const auto& item : items)
-        item.second->setSelected(item.first == selectedRoute);
+    panel->addHeading("QUOTES");
+    addItem("New Quote", PrimaryNavigationRoute::NewJob, "Assets/Icons/new_job.svg", true);
+    addItem("Quote History", PrimaryNavigationRoute::Quotes, "Assets/Icons/quotes.svg", true);
+
+    panel->addHeading("MANAGE");
+    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, "Assets/Icons/materials.svg", false);
+    addItem("Customers", PrimaryNavigationRoute::CustomerDatabase, "Assets/Icons/customers.svg", true);
+    addItem("Labour Rates", PrimaryNavigationRoute::LabourRates, "Assets/Icons/labour.svg", true);
+    addItem("Settings", PrimaryNavigationRoute::Settings, "Assets/Icons/settings.svg", true);
+
+    panel->addLayoutElement(
+        std::make_shared<UIElement>(),
+        SizePolicy::Fill);
+    addItem("Exit", PrimaryNavigationRoute::Exit, "Assets/Icons/exit.svg", true);
+
+    panel->selectItem(selectedItem);
 
     return panel;
 }

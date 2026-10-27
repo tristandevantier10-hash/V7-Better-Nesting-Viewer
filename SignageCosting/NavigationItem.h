@@ -12,6 +12,7 @@ public:
     NavigationItem();
 
     void setText(const std::string& text);
+    const std::string& getText() const;
     void setSelected(bool selected);
     void setHeading(bool heading);
     void setOnClick(std::function<void()> callback);

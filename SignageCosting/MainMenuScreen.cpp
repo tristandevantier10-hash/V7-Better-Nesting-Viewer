@@ -6,6 +6,7 @@
 #include "PageHeader.h"
 #include "NavigationItem.h"
 #include "UIElement.h"
+#include "PrimaryNavigation.h"
 #include <utility>
 
 MainMenuScreen::MainMenuScreen()
@@ -51,13 +52,37 @@ MainMenuScreen::MainMenuScreen()
         SizePolicy::Fixed,
         236);
 
-    sidebarPanel = std::make_shared<NavigationPanel>();
-    sidebarPanel->setLayout(std::make_unique<VerticalLayout>());
-    sidebarPanel->setSidebarStyle(true);
-    sidebarPanel->setBorderVisible(false);
-    sidebarPanel->setPadding(Metrics::SidebarPadding);
-    sidebarPanel->setSpacing(Metrics::SpaceS);
-    sidebarPanel->addDashboardBrand();
+    sidebarPanel = createPrimaryNavigationPanel(
+        PrimaryNavigationRoute::Overview,
+        [this](PrimaryNavigationRoute route)
+        {
+            switch (route)
+            {
+            case PrimaryNavigationRoute::NewJob:
+                if (newJobCallback) newJobCallback();
+                break;
+            case PrimaryNavigationRoute::Quotes:
+                if (quotesCallback) quotesCallback();
+                break;
+            case PrimaryNavigationRoute::CustomerDatabase:
+                if (customerDatabaseCallback) customerDatabaseCallback();
+                break;
+            case PrimaryNavigationRoute::LabourRates:
+                if (labourRatesCallback) labourRatesCallback();
+                break;
+            case PrimaryNavigationRoute::Settings:
+                if (settingsCallback) settingsCallback();
+                break;
+            case PrimaryNavigationRoute::Exit:
+                if (exitCallback) exitCallback();
+                break;
+            case PrimaryNavigationRoute::Overview:
+            case PrimaryNavigationRoute::MaterialDatabase:
+                break;
+            }
+        });
+    overviewItem = sidebarPanel->findItemByText("Overview");
+    labourRatesItem = sidebarPanel->findItemByText("Labour Rates");
 
     contentPanel = std::make_shared<Panel>();
     contentPanel->setLayout(std::make_unique<VerticalLayout>());
@@ -82,69 +107,6 @@ MainMenuScreen::MainMenuScreen()
 
     addLayoutElement(sidebarPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
     addLayoutElement(contentPanel, SizePolicy::Fill);
-
-    sidebarPanel->addHeading("GENERAL");
-    overviewItem = sidebarPanel->addItem(
-        "Overview",
-        []() {},
-        "Assets/Icons/overview.svg");
-
-    sidebarPanel->addHeading("QUOTES");
-    sidebarPanel->addItem(
-        "New Quote",
-        [this]()
-        {
-            if (newJobCallback)
-                newJobCallback();
-        },
-        "Assets/Icons/new_job.svg");
-
-    sidebarPanel->addItem("Quote History", [this]()
-    {
-        if (quotesCallback)
-            quotesCallback();
-    });
-
-    sidebarPanel->addHeading("MANAGE");
-    sidebarPanel->addItem(
-        "Materials",
-        {},
-        "",
-        false);
-
-    sidebarPanel->addItem(
-        "Customers",
-        [this]()
-        {
-            if (customerDatabaseCallback)
-                customerDatabaseCallback();
-        });
-
-    labourRatesItem = sidebarPanel->addItem("Labour Rates", [this]()
-    {
-        if (labourRatesCallback)
-            labourRatesCallback();
-    });
-
-    sidebarPanel->addItem(
-        "Settings",
-        [this]()
-        {
-            if (settingsCallback)
-                settingsCallback();
-        });
-
-    sidebarPanel->addLayoutElement(
-        std::make_shared<UIElement>(),
-        SizePolicy::Fill);
-
-    sidebarPanel->addItem(
-        "Exit",
-        [this]()
-        {
-            if (exitCallback)
-                exitCallback();
-        });
 
 }
 

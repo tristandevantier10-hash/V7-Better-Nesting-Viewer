@@ -21,6 +21,8 @@ public:
         bool enabled = true);
 
     void selectItem(const std::shared_ptr<NavigationItem>& item);
+    void selectItemByText(const std::string& text);
+    std::shared_ptr<NavigationItem> findItemByText(const std::string& text) const;
 
     void addHeading(
         const std::string& text);

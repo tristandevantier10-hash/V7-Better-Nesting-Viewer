@@ -373,6 +373,9 @@ bool Application::initialise()
     {
         switch (route)
         {
+        case PrimaryNavigationRoute::Overview:
+            ui.setScreen(&mainMenu);
+            break;
         case PrimaryNavigationRoute::NewJob:
             customerSelectionScreen.setSelectionMode(true);
             customerSelectionScreen.refreshCustomers();
@@ -408,6 +411,8 @@ bool Application::initialise()
     settingsScreen.setNavigationCallback(navigateFromPage);
     labourRatesScreen.setNavigationCallback(navigateFromPage);
     newJobScreen.setNavigationCallback(navigateFromPage);
+    customerSelectionScreen.setNavigationCallback(navigateFromPage);
+    customerEditorScreen.setNavigationCallback(navigateFromPage);
 
     mainMenu.setExitCallback(
         [this]()

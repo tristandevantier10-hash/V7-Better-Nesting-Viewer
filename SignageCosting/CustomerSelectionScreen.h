@@ -10,6 +10,7 @@
 #include <functional>
 #include "Customer.h"    // for AccountType
 #include "SegmentedControl.h"
+#include "PrimaryNavigation.h"
 
 class CustomerSelectionScreen : public Screen
 {
@@ -29,6 +30,8 @@ public:
         std::function<void(int)> callback);
 
     void setBackCallback(std::function<void()> callback);
+    void setNavigationCallback(
+        std::function<void(PrimaryNavigationRoute)> callback);
     void setSelectionMode(bool enabled);
 
     void refreshCustomers();
@@ -36,6 +39,9 @@ public:
 private:
 
     std::shared_ptr<Label> title;
+    std::shared_ptr<Label> subtitle;
+    std::shared_ptr<NavigationPanel> navigationPanel;
+    std::shared_ptr<NavigationPanel> quoteNavigationPanel;
 
     std::shared_ptr<TextBox> searchBox;
 
@@ -62,5 +68,6 @@ private:
     std::function<void(int)> deleteCustomerCallback;
 
     std::function<void()> backCallback;
+    std::function<void(PrimaryNavigationRoute)> navigationCallback;
 
 };

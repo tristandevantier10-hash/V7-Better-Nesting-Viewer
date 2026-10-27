@@ -337,12 +337,15 @@ void Renderer::drawImage(
     SDL_RenderCopy(sdlRenderer, texture, nullptr, &target);
 }
 
-void Renderer::drawImageRegion(
+void Renderer::drawImageCoverRegion(
     const std::string& path,
-    const SDL_Rect& source,
+    float sourceX,
+    float sourceY,
+    float sourceWidth,
+    float sourceHeight,
     const SDL_Rect& destination)
 {
-    if (path.empty() || source.w <= 0 || source.h <= 0 ||
+    if (path.empty() || sourceWidth <= 0.0f || sourceHeight <= 0.0f ||
         destination.w <= 0 || destination.h <= 0)
         return;
 
@@ -373,6 +376,49 @@ void Renderer::drawImageRegion(
 
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         imageTextures.emplace(path, texture);
+    }
+
+    int imageWidth = 0;
+    int imageHeight = 0;
+    if (SDL_QueryTexture(texture, nullptr, nullptr, &imageWidth, &imageHeight) != 0 ||
+        imageWidth <= 0 || imageHeight <= 0)
+        return;
+
+    SDL_Rect source
+    {
+        static_cast<int>(std::round(sourceX * imageWidth)),
+        static_cast<int>(std::round(sourceY * imageHeight)),
+        static_cast<int>(std::round(sourceWidth * imageWidth)),
+        static_cast<int>(std::round(sourceHeight * imageHeight))
+    };
+    source.x = std::clamp(source.x, 0, imageWidth - 1);
+    source.y = std::clamp(source.y, 0, imageHeight - 1);
+    source.w = std::clamp(source.w, 1, imageWidth - source.x);
+    source.h = std::clamp(source.h, 1, imageHeight - source.y);
+
+    // Cover the destination while preserving the artwork's proportions.
+    // The excess is cropped from the centre rather than stretched.
+    const double sourceAspect =
+        static_cast<double>(source.w) / source.h;
+    const double destinationAspect =
+        static_cast<double>(destination.w) / destination.h;
+    if (sourceAspect > destinationAspect)
+    {
+        const int fittedWidth = std::clamp(
+            static_cast<int>(std::round(source.h * destinationAspect)),
+            1,
+            source.w);
+        source.x += (source.w - fittedWidth) / 2;
+        source.w = fittedWidth;
+    }
+    else if (sourceAspect < destinationAspect)
+    {
+        const int fittedHeight = std::clamp(
+            static_cast<int>(std::round(source.w / destinationAspect)),
+            1,
+            source.h);
+        source.y += (source.h - fittedHeight) / 2;
+        source.h = fittedHeight;
     }
 
     SDL_Rect target = destination;
