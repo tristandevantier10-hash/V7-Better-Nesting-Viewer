@@ -15,6 +15,7 @@ TextBox::TextBox()
 void TextBox::setText(const std::string& value)
 {
     text = value;
+    allTextSelected = false;
 }
 
 void TextBox::setPlaceholder(const std::string& value)
@@ -61,43 +62,55 @@ void TextBox::update(const SDL_Event& e)
 
         SDL_Rect r = getBounds();
 
-        focused =
+        const bool clickedInside =
             mx >= r.x &&
             mx < r.x + r.w &&
             my >= r.y &&
             my < r.y + r.h;
+        setFocused(clickedInside);
+        if (clickedInside)
+            allTextSelected = false;
     }
 
-    if (focused &&
+    if (hasFocus() &&
         e.type == SDL_TEXTINPUT)
     {
+        if (allTextSelected)
+            text.clear();
+        allTextSelected = false;
         text += e.text.text;
 
         if (textChangedCallback)
             textChangedCallback(text);
     }
 
-    if (focused &&
+    if (hasFocus() &&
         e.type == SDL_KEYDOWN)
     {
-        if (e.key.keysym.sym == SDLK_BACKSPACE &&
-            !text.empty())
+        const bool controlPressed = (e.key.keysym.mod & KMOD_CTRL) != 0;
+        if (controlPressed && e.key.keysym.sym == SDLK_a)
         {
-            // Remove the last UTF-8 character.
-            size_t pos = text.find_last_of(
-                "\xC0");
-
-            (void)pos;
-
-            size_t i = text.size() - 1;
-
-            while (i > 0 &&
-                (static_cast<unsigned char>(text[i]) & 0xC0) == 0x80)
+            allTextSelected = !text.empty();
+        }
+        else if ((e.key.keysym.sym == SDLK_BACKSPACE ||
+                  e.key.keysym.sym == SDLK_DELETE) && !text.empty())
+        {
+            if (allTextSelected)
             {
-                --i;
+                text.clear();
             }
-
-            text.erase(i);
+            else if (e.key.keysym.sym == SDLK_BACKSPACE)
+            {
+                // Remove the last UTF-8 code point.
+                size_t i = text.size() - 1;
+                while (i > 0 &&
+                    (static_cast<unsigned char>(text[i]) & 0xC0) == 0x80)
+                {
+                    --i;
+                }
+                text.erase(i);
+            }
+            allTextSelected = false;
 
             if (textChangedCallback)
                 textChangedCallback(text);
@@ -116,7 +129,7 @@ void TextBox::render(Renderer& renderer)
         Metrics::ControlRadius);
 
     SDL_Color borderColour =
-        focused
+        hasFocus()
         ? DefaultTheme.accent
         : DefaultTheme.border;
 
@@ -124,7 +137,7 @@ void TextBox::render(Renderer& renderer)
         getBounds(),
         borderColour,
         Metrics::ControlRadius,
-        focused ? 2 : 1);
+        hasFocus() ? 2 : 1);
 
     std::string displayText = text;
 
@@ -143,12 +156,20 @@ void TextBox::render(Renderer& renderer)
             (contentWidth - TextRenderer::getTextWidth(alignedText)) / 2);
     }
 
+    const int textY = getY() + (getHeight() - Metrics::ControlTextHeight) / 2;
+    if (hasFocus() && allTextSelected && !text.empty())
+    {
+        renderer.fillRect(
+            { textX, textY, std::max(1, TextRenderer::getTextWidth(displayText)), Metrics::ControlTextHeight },
+            { 55, 115, 205, 255 });
+    }
+
     if (text.empty())
     {
         renderer.drawText(
             placeholder,
             textX,
-            getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
+            textY,
             LabelStyle::Normal,
             SDL_Color{ 150,150,150,255 });
     }
@@ -157,12 +178,14 @@ void TextBox::render(Renderer& renderer)
         renderer.drawText(
             displayText,
             textX,
-            getY() + (getHeight() - Metrics::ControlTextHeight) / 2,
+            textY,
             LabelStyle::Normal,
-            DefaultTheme.darkText);
+            hasFocus() && allTextSelected
+                ? SDL_Color{ 255,255,255,255 }
+                : DefaultTheme.darkText);
     }
 
-    if (focused && showCaret)
+    if (hasFocus() && showCaret && !allTextSelected)
     {
         int caretX = contentLeft +
             (textCentered

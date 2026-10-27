@@ -103,13 +103,14 @@ void ResultsScreen::buildSidebar()
 
     sidebar->addHeading("RESULTS");
 
-    sidebar->addItem(
+    const auto overviewItem = sidebar->addItem(
         "OVERVIEW",
         [this]()
         {
             showOverview();
         },
         "Assets/Icons/overview.svg");
+    sidebar->selectItem(overviewItem);
 
     sidebar->addItem(
         "NESTING SHEETS",
@@ -1128,7 +1129,7 @@ void ResultsScreen::update(
     const SDL_Event& e)
 {
     // Finish processing the current event first.
-    Panel::update(e);
+    Screen::update(e);
 
     // Now it is safe to rebuild the quote UI.
     if (pendingQuoteRefresh)

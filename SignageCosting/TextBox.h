@@ -35,11 +35,11 @@ private:
 
     std::string placeholder;
 
-    bool focused = false;
-
     bool passwordMode = false;
 
     bool textCentered = false;
+
+    bool allTextSelected = false;
 
     Uint32 lastBlink = 0;
 

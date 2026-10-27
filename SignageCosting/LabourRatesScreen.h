@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 #include "ProductionPricingDatabase.h"
-#include "PrimaryNavigation.h"
+#include "NavigationPanel.h"
 
 class DataGrid;
 class TextBox;
@@ -14,10 +14,9 @@ class Button;
 class LabourRatesScreen : public Screen
 {
 public:
-    LabourRatesScreen();
+    explicit LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavigation);
     void refresh();
     void setBackCallback(std::function<void()> callback);
-    void setNavigationCallback(std::function<void(PrimaryNavigationRoute)> callback);
 
 private:
     void loadSelected(int row);
@@ -31,5 +30,4 @@ private:
     std::shared_ptr<Button> enabledButton;
     std::string editingId;
     std::function<void()> backCallback;
-    std::function<void(PrimaryNavigationRoute)> navigationCallback;
 };

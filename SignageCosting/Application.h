@@ -20,12 +20,12 @@
 #include "NewJobScreen.h"
 #include "CustomerSelectionScreen.h"
 #include "CustomerEditorScreen.h"
-#include "ApplicationShell.h"
 #include "LoginScreen.h"
 #include "AuthenticationService.h"
 #include "QuoteHistoryScreen.h"
 #include "SettingsScreen.h"
 #include "LabourRatesScreen.h"
+#include "MaterialsScreen.h"
 
 class Application
 {
@@ -183,17 +183,17 @@ private:
 
     ResultsScreen resultsScreen;
 
-    CustomerSelectionScreen customerSelectionScreen;
+    CustomerSelectionScreen customerSelectionScreen{ mainMenu.getNavigationPanel() };
 
-    CustomerEditorScreen customerEditorScreen;
+    CustomerEditorScreen customerEditorScreen{ mainMenu.getNavigationPanel() };
 
-    QuoteHistoryScreen quoteHistoryScreen;
+    QuoteHistoryScreen quoteHistoryScreen{ mainMenu.getNavigationPanel() };
 
-    SettingsScreen settingsScreen;
+    SettingsScreen settingsScreen{ mainMenu.getNavigationPanel() };
 
-    LabourRatesScreen labourRatesScreen;
+    LabourRatesScreen labourRatesScreen{ mainMenu.getNavigationPanel() };
 
-    ApplicationShell shell;
+    MaterialsScreen materialsScreen{ mainMenu.getNavigationPanel() };
 
     //=================================================
     // Business Objects

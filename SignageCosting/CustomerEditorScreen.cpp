@@ -10,7 +10,7 @@
 #include "TextBox.h"
 #include <utility>
 
-CustomerEditorScreen::CustomerEditorScreen()
+CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
     //==================================================
     // Root Layout
@@ -27,13 +27,7 @@ CustomerEditorScreen::CustomerEditorScreen()
     //==================================================
     // Sidebar
     //==================================================
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::CustomerDatabase,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
+    auto navigation = std::move(sharedNavigation);
     addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
     addLayoutElement(contentPanel, SizePolicy::Fill);
 
@@ -164,12 +158,6 @@ void CustomerEditorScreen::setSaveCallback(std::function<void()> callback)
 void CustomerEditorScreen::setCancelCallback(std::function<void()> callback)
 {
     cancelCallback = callback;
-}
-
-void CustomerEditorScreen::setNavigationCallback(
-    std::function<void(PrimaryNavigationRoute)> callback)
-{
-    navigationCallback = std::move(callback);
 }
 
 Customer CustomerEditorScreen::createCustomer() const

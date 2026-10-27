@@ -87,6 +87,7 @@ public:
             {
                 switch (label->getStyle())
                 {
+                case LabelStyle::PageTitle: size = 42; break;
                 case LabelStyle::Heading: size = 30; break;
                 case LabelStyle::Small: size = 18; break;
                 case LabelStyle::Normal: size = 22; break;
@@ -210,6 +211,7 @@ inline void configurePageHeader(
 
 inline void configurePageHeaderTitleLabel(const std::shared_ptr<Label>& label)
 {
+    label->setStyle(LabelStyle::PageTitle);
     label->setTextTheme(TextTheme::Dark);
     label->setAlignment(LabelAlignment::Left);
 }

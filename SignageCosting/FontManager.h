@@ -18,6 +18,7 @@ public:
     TTF_Font* getSmallFont() const;
     TTF_Font* getNormalFont() const;
     TTF_Font* getHeadingFont() const;
+    TTF_Font* getPageTitleFont() const;
 
 private:
 
@@ -26,4 +27,5 @@ private:
     TTF_Font* normalFont = nullptr;
 
     TTF_Font* headingFont = nullptr;
+    TTF_Font* pageTitleFont = nullptr;
 };

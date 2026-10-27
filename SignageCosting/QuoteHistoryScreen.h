@@ -9,19 +9,17 @@
 #include <functional>
 #include <vector>
 #include "QuoteRecord.h"
-#include "PrimaryNavigation.h"
+#include "NavigationPanel.h"
 
 class QuotePdfPreviewPanel;
 
 class QuoteHistoryScreen : public Screen
 {
 public:
-    QuoteHistoryScreen();
+    explicit QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNavigation);
     void update(const SDL_Event& e) override;
     void refreshQuotes();
     void setBackCallback(std::function<void()> callback);
-    void setNavigationCallback(
-        std::function<void(PrimaryNavigationRoute)> callback);
     void setQuoteSelectedCallback(std::function<std::string(const QuoteRecord&)> callback);
     void setViewOverviewCallback(std::function<void(const QuoteRecord&)> callback);
 
@@ -38,7 +36,6 @@ private:
     std::shared_ptr<Label> statusLabel;
     std::shared_ptr<ComboBox> statusCombo;
     std::function<void()> backCallback;
-    std::function<void(PrimaryNavigationRoute)> navigationCallback;
     std::function<std::string(const QuoteRecord&)> quoteSelectedCallback;
     std::function<void(const QuoteRecord&)> viewOverviewCallback;
     std::vector<int> visibleQuoteIndices;

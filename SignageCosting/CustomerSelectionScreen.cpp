@@ -10,7 +10,7 @@
 #include "PageHeader.h"
 #include <utility>
 
-CustomerSelectionScreen::CustomerSelectionScreen()
+CustomerSelectionScreen::CustomerSelectionScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
     //==================================================
     // Root Layout
@@ -29,13 +29,7 @@ CustomerSelectionScreen::CustomerSelectionScreen()
     // Sidebar
     //==================================================
 
-    navigationPanel = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::CustomerDatabase,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
+    navigationPanel = std::move(sharedNavigation);
     addLayoutElement(navigationPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     quoteNavigationPanel = createPrimaryNavigationPanel(

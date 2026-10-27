@@ -2,18 +2,16 @@
 
 #include "Screen.h"
 #include "ComboBox.h"
-#include "PrimaryNavigation.h"
+#include "NavigationPanel.h"
 #include <functional>
 #include <memory>
 
 class SettingsScreen : public Screen
 {
 public:
-    SettingsScreen();
+    explicit SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation);
 
     void setBackCallback(std::function<void()> callback);
-    void setNavigationCallback(
-        std::function<void(PrimaryNavigationRoute)> callback);
 
 private:
     std::shared_ptr<ComboBox> layoutDensity;
@@ -21,7 +19,6 @@ private:
     std::shared_ptr<ComboBox> fontFamily;
     std::shared_ptr<ComboBox> textSize;
     std::function<void()> backCallback;
-    std::function<void(PrimaryNavigationRoute)> navigationCallback;
 
     void resetToDefaults();
 };

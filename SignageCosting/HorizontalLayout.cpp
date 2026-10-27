@@ -75,6 +75,7 @@ void HorizontalLayout::performLayout(
                 {
                 case LabelStyle::Small: childHeight = 18; break;
                 case LabelStyle::Heading: childHeight = 30; break;
+                case LabelStyle::PageTitle: childHeight = 42; break;
                 case LabelStyle::Normal: childHeight = 22; break;
                 }
             }

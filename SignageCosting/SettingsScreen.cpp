@@ -60,19 +60,13 @@ namespace
     }
 }
 
-SettingsScreen::SettingsScreen()
+SettingsScreen::SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
     setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::Settings,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
+    auto navigation = std::move(sharedNavigation);
     addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
@@ -167,12 +161,6 @@ SettingsScreen::SettingsScreen()
 void SettingsScreen::setBackCallback(std::function<void()> callback)
 {
     backCallback = callback;
-}
-
-void SettingsScreen::setNavigationCallback(
-    std::function<void(PrimaryNavigationRoute)> callback)
-{
-    navigationCallback = callback;
 }
 
 void SettingsScreen::resetToDefaults()

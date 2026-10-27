@@ -5,7 +5,12 @@ UIManager::UIManager()
 
 void UIManager::setScreen(Screen* screen)
 {
+    if (screen == currentScreen)
+        return;
+
     currentScreen = screen;
+    if (currentScreen)
+        currentScreen->onActivated();
 }
 
 void UIManager::update(const SDL_Event& e)

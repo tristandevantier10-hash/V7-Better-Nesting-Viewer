@@ -117,6 +117,7 @@
     <ClCompile Include="LabourRatesScreen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuScreen.cpp" />
+    <ClCompile Include="MaterialsScreen.cpp" />
     <ClCompile Include="MaterialDatabase.cpp" />
     <ClCompile Include="NavigationItem.cpp" />
     <ClCompile Include="NavigationPanel.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="LoginScreen.h" />
     <ClInclude Include="LabourRatesScreen.h" />
     <ClInclude Include="MainMenuScreen.h" />
+    <ClInclude Include="MaterialsScreen.h" />
     <ClInclude Include="Metrics.h" />
     <ClInclude Include="NavigationItem.h" />
     <ClInclude Include="NavigationPanel.h" />

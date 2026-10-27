@@ -14,14 +14,18 @@ class MainMenuScreen : public Screen
 public:
 
     MainMenuScreen();
+    std::shared_ptr<NavigationPanel> getNavigationPanel() const { return sidebarPanel; }
+    void onActivated() override;
 
     void setNewJobCallback(std::function<void()> callback);
     void setQuotesCallback(std::function<void()> callback);
     void setCustomerDatabaseCallback(std::function<void()> callback);
+    void setMaterialsCallback(std::function<void()> callback);
     void setSettingsCallback(std::function<void()> callback);
     void setLabourRatesCallback(std::function<void()> callback);
     void setLabourRatesAvailable(bool available);
     void setExitCallback(std::function<void()> callback);
+    void setOverviewCallback(std::function<void()> callback);
 
     void update(const SDL_Event& e) override;
 
@@ -42,7 +46,9 @@ private:
     std::function<void()> newJobCallback;
     std::function<void()> quotesCallback;
     std::function<void()> customerDatabaseCallback;
+    std::function<void()> materialsCallback;
     std::function<void()> settingsCallback;
     std::function<void()> labourRatesCallback;
     std::function<void()> exitCallback;
+    std::function<void()> overviewCallback;
 };

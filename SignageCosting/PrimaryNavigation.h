@@ -42,7 +42,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
         panel->addLayoutElement(
             std::make_shared<UIElement>(),
             SizePolicy::Fill);
-        panel->addItem(
+        const auto cancelItem = panel->addItem(
             "Cancel",
             [onNavigate]()
             {
@@ -51,6 +51,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
             },
             "Assets/Icons/back.svg",
             true);
+        panel->selectItem(cancelItem);
         return panel;
     }
 
@@ -82,7 +83,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     addItem("Quote History", PrimaryNavigationRoute::Quotes, "Assets/Icons/quotes.svg", true);
 
     panel->addHeading("MANAGE");
-    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, "Assets/Icons/materials.svg", false);
+    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, "Assets/Icons/materials.svg", true);
     addItem("Customers", PrimaryNavigationRoute::CustomerDatabase, "Assets/Icons/customers.svg", true);
     addItem("Labour Rates", PrimaryNavigationRoute::LabourRates, "Assets/Icons/labour.svg", true);
     addItem("Settings", PrimaryNavigationRoute::Settings, "Assets/Icons/settings.svg", true);

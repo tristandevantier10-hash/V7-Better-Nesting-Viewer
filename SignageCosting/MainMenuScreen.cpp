@@ -77,7 +77,10 @@ MainMenuScreen::MainMenuScreen()
                 if (exitCallback) exitCallback();
                 break;
             case PrimaryNavigationRoute::Overview:
+                if (overviewCallback) overviewCallback();
+                break;
             case PrimaryNavigationRoute::MaterialDatabase:
+                if (materialsCallback) materialsCallback();
                 break;
             }
         });
@@ -117,10 +120,15 @@ void MainMenuScreen::update(const SDL_Event& e)
 
 void MainMenuScreen::render(Renderer& renderer)
 {
+    Screen::render(renderer);
+}
+
+void MainMenuScreen::onActivated()
+{
+    if (sidebarPanel)
+        sidebarPanel->setVisible(true);
     if (sidebarPanel && overviewItem)
         sidebarPanel->selectItem(overviewItem);
-
-    Screen::render(renderer);
 }
 
 void MainMenuScreen::setNewJobCallback(std::function<void()> callback)
@@ -139,9 +147,19 @@ void MainMenuScreen::setCustomerDatabaseCallback(
     customerDatabaseCallback = callback;
 }
 
+void MainMenuScreen::setMaterialsCallback(std::function<void()> callback)
+{
+    materialsCallback = std::move(callback);
+}
+
 void MainMenuScreen::setExitCallback(std::function<void()> callback)
 {
     exitCallback = callback;
+}
+
+void MainMenuScreen::setOverviewCallback(std::function<void()> callback)
+{
+    overviewCallback = std::move(callback);
 }
 
 void MainMenuScreen::setSettingsCallback(std::function<void()> callback)

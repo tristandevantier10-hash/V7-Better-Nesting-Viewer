@@ -168,6 +168,10 @@ void Renderer::drawText(
         font = fontManager.getHeadingFont();
         break;
 
+    case LabelStyle::PageTitle:
+        font = fontManager.getPageTitleFont();
+        break;
+
     default:
         font = fontManager.getNormalFont();
         break;

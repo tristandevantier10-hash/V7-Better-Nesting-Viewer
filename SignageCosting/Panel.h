@@ -8,6 +8,7 @@
 #include "PanelStyle.h"
 
 class Renderer;
+class TextBox;
 
 class Panel : public UIElement
 {
@@ -42,6 +43,8 @@ public:
     void setLayout(std::unique_ptr<Layout> newLayout);
 
     void performLayout();
+
+    void collectTextBoxes(std::vector<TextBox*>& textBoxes);
 
     void clearChildren();
 

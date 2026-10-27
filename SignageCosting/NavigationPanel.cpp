@@ -36,9 +36,6 @@ namespace
             if (!visible)
                 return;
 
-            // The sidebar keeps its black identity. The banner artwork is
-            // clipped to this brand band, while its matching right-hand crop
-            // is rendered independently by the dashboard header.
             const SDL_Rect brandBand
             {
                 bounds.x - Metrics::SidebarPadding,
@@ -46,10 +43,7 @@ namespace
                 bounds.w + Metrics::SidebarPadding * 2,
                 bounds.h + Metrics::SidebarPadding + Metrics::SpaceS
             };
-            renderer.drawImageCoverRegion(
-                "Assets/Images/Header Background.png",
-                0.0f, 0.0f, 1.0f / 3.0f, 1.0f,
-                brandBand);
+            renderer.fillRect(brandBand, DefaultTheme.sidebarBackground);
 
             const SDL_Rect logoRect
             {
@@ -142,11 +136,6 @@ std::shared_ptr<NavigationItem> NavigationPanel::addItem(
     addLayoutElement(item, SizePolicy::Fixed, Metrics::NavigationItemHeight);
 
     items.push_back(item);
-
-    if (items.size() == 1)
-    {
-        item->setSelected(true);
-    }
 
     return item;
 }

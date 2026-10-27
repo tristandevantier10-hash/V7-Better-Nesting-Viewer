@@ -211,6 +211,10 @@ bool Application::initialise()
         return false;
     }
 
+    // The brand PNG is scaled down to fit the sidebar; linear filtering keeps
+    // its letter edges and the patterned monogram from looking jagged.
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
     if (!createRenderer())
     {
         std::cerr << "FAILED: createRenderer()\n";
@@ -348,6 +352,12 @@ bool Application::initialise()
             ui.setScreen(&customerSelectionScreen);
         });
 
+    mainMenu.setMaterialsCallback([this]()
+    {
+        materialsScreen.refreshMaterials();
+        ui.setScreen(&materialsScreen);
+    });
+
     mainMenu.setSettingsCallback(
         [this]()
         {
@@ -362,6 +372,7 @@ bool Application::initialise()
         ui.setScreen(&labourRatesScreen);
     });
     labourRatesScreen.setBackCallback([this]() { ui.setScreen(&mainMenu); });
+    materialsScreen.setBackCallback([this]() { ui.setScreen(&mainMenu); });
 
     settingsScreen.setBackCallback(
         [this]()
@@ -369,56 +380,24 @@ bool Application::initialise()
             ui.setScreen(&mainMenu);
         });
 
-    auto navigateFromPage = [this](PrimaryNavigationRoute route)
+    auto cancelQuoteNavigation = [this](PrimaryNavigationRoute route)
     {
-        switch (route)
-        {
-        case PrimaryNavigationRoute::Overview:
+        if (route == PrimaryNavigationRoute::Overview)
             ui.setScreen(&mainMenu);
-            break;
-        case PrimaryNavigationRoute::NewJob:
-            customerSelectionScreen.setSelectionMode(true);
-            customerSelectionScreen.refreshCustomers();
-            ui.setScreen(&customerSelectionScreen);
-            break;
-        case PrimaryNavigationRoute::Quotes:
-            quoteHistoryScreen.refreshQuotes();
-            ui.setScreen(&quoteHistoryScreen);
-            break;
-        case PrimaryNavigationRoute::CustomerDatabase:
-            customerSelectionScreen.setSelectionMode(false);
-            customerSelectionScreen.refreshCustomers();
-            ui.setScreen(&customerSelectionScreen);
-            break;
-        case PrimaryNavigationRoute::Settings:
-            ui.setScreen(&settingsScreen);
-            break;
-        case PrimaryNavigationRoute::LabourRates:
-            if (authenticationService.isAdmin() || mode == RunMode::Test)
-            {
-                labourRatesScreen.refresh();
-                ui.setScreen(&labourRatesScreen);
-            }
-            break;
-        case PrimaryNavigationRoute::Exit:
-            state = AppState::Exit;
-            break;
-        case PrimaryNavigationRoute::MaterialDatabase:
-            break;
-        }
     };
-    quoteHistoryScreen.setNavigationCallback(navigateFromPage);
-    settingsScreen.setNavigationCallback(navigateFromPage);
-    labourRatesScreen.setNavigationCallback(navigateFromPage);
-    newJobScreen.setNavigationCallback(navigateFromPage);
-    customerSelectionScreen.setNavigationCallback(navigateFromPage);
-    customerEditorScreen.setNavigationCallback(navigateFromPage);
+    newJobScreen.setNavigationCallback(cancelQuoteNavigation);
+    customerSelectionScreen.setNavigationCallback(cancelQuoteNavigation);
 
     mainMenu.setExitCallback(
         [this]()
         {
             state = AppState::Exit;
         });
+
+    mainMenu.setOverviewCallback([this]()
+    {
+        ui.setScreen(&mainMenu);
+    });
 
     quoteHistoryScreen.setBackCallback([this]()
     {

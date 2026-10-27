@@ -16,7 +16,7 @@ class CustomerSelectionScreen : public Screen
 {
 public:
 
-    CustomerSelectionScreen();
+    explicit CustomerSelectionScreen(std::shared_ptr<NavigationPanel> sharedNavigation);
 
     void setNewCustomerCallback(std::function<void()> callback);
 

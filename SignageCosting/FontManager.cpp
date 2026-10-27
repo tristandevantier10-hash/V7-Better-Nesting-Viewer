@@ -38,12 +38,21 @@ bool FontManager::initialise()
             "Fonts/BasisGrotesqueArabicPro-Bold.ttf",
             24);
 
+    pageTitleFont =
+        TTF_OpenFont(
+            "Fonts/BasisGrotesqueArabicPro-Bold.ttf",
+            32);
+
     if (!headingFont)
         std::cerr << "Could not load heading font: " << TTF_GetError() << std::endl;
 
+    if (!pageTitleFont)
+        std::cerr << "Could not load page title font: " << TTF_GetError() << std::endl;
+
     if (!smallFont ||
         !normalFont ||
-        !headingFont)
+        !headingFont ||
+        !pageTitleFont)
     {
         shutdown();
         return false;
@@ -72,6 +81,12 @@ void FontManager::shutdown()
         headingFont = nullptr;
     }
 
+    if (pageTitleFont)
+    {
+        TTF_CloseFont(pageTitleFont);
+        pageTitleFont = nullptr;
+    }
+
     TTF_Quit();
 }
 
@@ -88,4 +103,9 @@ TTF_Font* FontManager::getNormalFont() const
 TTF_Font* FontManager::getHeadingFont() const
 {
     return headingFont;
+}
+
+TTF_Font* FontManager::getPageTitleFont() const
+{
+    return pageTitleFont;
 }

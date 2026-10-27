@@ -227,19 +227,13 @@ namespace
     }
 }
 
-QuoteHistoryScreen::QuoteHistoryScreen()
+QuoteHistoryScreen::QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
     setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::Quotes,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
+    auto navigation = std::move(sharedNavigation);
     addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
@@ -363,12 +357,6 @@ void QuoteHistoryScreen::refreshQuotes()
 void QuoteHistoryScreen::setBackCallback(std::function<void()> callback)
 {
     backCallback = callback;
-}
-
-void QuoteHistoryScreen::setNavigationCallback(
-    std::function<void(PrimaryNavigationRoute)> callback)
-{
-    navigationCallback = callback;
 }
 
 void QuoteHistoryScreen::setQuoteSelectedCallback(

@@ -7,7 +7,6 @@
 #include "Metrics.h"
 #include "PageHeader.h"
 #include "Panel.h"
-#include "PrimaryNavigation.h"
 #include "TextBox.h"
 #include "VerticalLayout.h"
 #include <algorithm>
@@ -31,19 +30,13 @@ namespace
     }
 }
 
-LabourRatesScreen::LabourRatesScreen()
+LabourRatesScreen::LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
     setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
-    auto navigation = createPrimaryNavigationPanel(
-        PrimaryNavigationRoute::LabourRates,
-        [this](PrimaryNavigationRoute route)
-        {
-            if (navigationCallback)
-                navigationCallback(route);
-        });
+    auto navigation = std::move(sharedNavigation);
 
     auto content = std::make_shared<Panel>();
     content->setLayout(std::make_unique<VerticalLayout>());
@@ -197,10 +190,4 @@ void LabourRatesScreen::toggleEnabled()
 void LabourRatesScreen::setBackCallback(std::function<void()> callback)
 {
     backCallback = callback;
-}
-
-void LabourRatesScreen::setNavigationCallback(
-    std::function<void(PrimaryNavigationRoute)> callback)
-{
-    navigationCallback = std::move(callback);
 }

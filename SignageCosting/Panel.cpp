@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Theme.h"
 #include "Metrics.h"
+#include "TextBox.h"
 #include "iostream"
 
 Panel::Panel()
@@ -236,6 +237,24 @@ void Panel::performLayout()
         {
             panel->performLayout();
         }
+    }
+}
+
+void Panel::collectTextBoxes(std::vector<TextBox*>& textBoxes)
+{
+    for (const auto& child : children)
+    {
+        if (!child->isVisible())
+            continue;
+
+        if (auto textBox = dynamic_cast<TextBox*>(child.get()))
+        {
+            textBoxes.push_back(textBox);
+            continue;
+        }
+
+        if (auto panel = std::dynamic_pointer_cast<Panel>(child))
+            panel->collectTextBoxes(textBoxes);
     }
 }
 

@@ -34,6 +34,10 @@ void Label::render(Renderer& renderer)
             font = renderer.getFontManager().getHeadingFont();
             break;
 
+        case LabelStyle::PageTitle:
+            font = renderer.getFontManager().getPageTitleFont();
+            break;
+
         case LabelStyle::Normal:
         default:
             font = renderer.getFontManager().getNormalFont();

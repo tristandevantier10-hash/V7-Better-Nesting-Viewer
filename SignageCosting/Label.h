@@ -11,7 +11,8 @@ enum class LabelStyle
 {
     Small,
     Normal,
-    Heading
+    Heading,
+    PageTitle
 };
 
 enum class LabelAlignment

@@ -18,6 +18,8 @@ public:
 
     virtual void render(Renderer& renderer);
 
+    virtual void onActivated() {}
+
     void tick(float deltaTime) override;
 
 };
