@@ -34,6 +34,16 @@ independently of the rectangle placement strategy and the screen renderer.
   part, then tests candidate translations without revalidation, polygon copying
   or repeated triangulation. Convex disks remain single SAT cells even opposite
   profiles with holes, and cell bounds reject separated material before SAT.
+- Convex profiles cache enclosing and inscribed disks for conservative early
+  clearance decisions. Finely faceted circles against convex polygons use
+  centre-to-polygon distances; ambiguous contacts still use exact polygon tests.
+  Clearance edge pairs also reject separated edge boxes before distance checks.
+  Allowed rotated profiles are prepared once per job and shared across all
+  copies/trials. Identical rotations of any profile are searched once, including
+  imported DXFs. Equivalence compares the outer ring and all holes, ignoring ring
+  start/winding, redundant collinear vertices and hole ordering. Distinct facet
+  orientations, asymmetric cutouts and meaningful boundary differences remain
+  separate; the source's allowed rotations and representative transforms are kept.
 - At zero clearance, boundary contact is allowed. Positive overlap is prohibited.
   Positive clearance checks minimum distance across outer and inner boundaries.
 - The coordinate/contact tolerance is `1e-7` mm. Coordinates must be finite and
@@ -64,7 +74,41 @@ ring. Cutout corner/centre candidates are reserved before the bounded contact
 search, including placement of a frame around an existing part. Rectangle jobs retain
 the 2,000-piece limit.
 
-The standalone screen defaults to Rectangles. Custom shapes reveals per-row outline
+An additional structured search compares horizontal and vertical bands against
+the existing contour trials. Circle bands enumerate square and staggered rows
+at different column counts. Axis-aligned right triangles are paired only when
+both complementary rotations are allowed, with their diagonal boundaries offset
+by the actual cutting gap; an odd remaining instance is retained. Dimensions,
+source origins, quantities and margins drive this search, with no job-specific
+sizes. Structured candidates must fit one sheet and pass complete geometry and
+identity validation before competing under the same layout score. Shapes that
+do not suit bands retain the contour and general grouping searches.
+
+`NestingPairSearch.h` also proposes geometry-based pairs for every positive-
+quantity source profile, regardless of its preset name or DXF origin. It tests
+allowed rotations, outer/hole boundary contacts, diagonal edge-normal offsets,
+and cutout centres/corners. The extra work is shared across source pairs and
+orientations under a bounded probe budget (up to 256 candidates per variant
+combination, capped at 48 for circle contacts already covered by specialised
+strategies). Useful pairs reduce the combined bounding envelope. Three greedy
+matching orders compare absolute savings, relative savings and mixed-source
+matches, so pairing identical concave shapes cannot monopolise all inserts.
+
+Pairs are packed as conservative rectangular groups; unpaired instances retain
+their real contour geometry. A group may rotate only when every member's
+resulting rotation is allowed. Group placements are expanded back to source IDs,
+copy indices and composed transforms, then independently validated before they
+compete against the original and specialised searches. Duplicate matching orders
+are skipped, and candidates that cannot beat the current sheet count are pruned
+using reserved material area and the actual number of sheets needed. This applies
+on multiple sheets as well. Rectangle-only jobs keep their existing fast path. Pair grouping
+is a heuristic: it does not exhaust all contacts or clusters of three or more,
+and bounding groups reserve unused space within their envelopes.
+
+The standalone screen starts with no items and an Add first item placeholder;
+Calculate warns without starting a job when the list is empty. The last item can
+be removed, restoring the empty state. Only Add item or a successful DXF import
+creates rows. The geometry mode defaults to Rectangles. Custom shapes reveals per-row outline
 editing and quarter-turn/fixed rotation controls. The editor provides rectangle,
 triangle, L-shape and circle presets, plus a snapped drawing grid, undo, clear and cancel.
 Coordinates are normalized and scaled to that row's entered width/height. Rectangle
@@ -74,6 +118,15 @@ regardless of drawing order. Utilisation and area-based ordering subtract holes.
 Layout ranking still compares sheet count and bounding envelopes: nested boxes
 are not added twice when measuring compactness. Imported cutouts survive editor
 acceptance and resizing; choosing a preset or drawing a replacement clears them.
+
+Sheet setup exposes cutting gap and sheet margin in millimetres, both initially
+zero. Cutting gap is the minimum distance between parts, including inner cutout
+walls; margin reserves a border around the sheet. Changing either invalidates
+the current layout, and each calculation snapshots both values. Negative or
+nonfinite spacing and margins that leave no usable sheet area are rejected.
+Utilisation still uses the physical sheet area. Positive spacing selects the
+contour method and its existing 200-piece limit; zero defaults preserve the
+rectangle method and its 2,000-piece limit for compatible jobs.
 
 General curves, SVG imports, editable-job persistence and custom-shape quote entry
 are not connected yet. Custom geometry must never be passed to the rectangle method
@@ -97,7 +150,7 @@ no contour collision, winding, containment, shared edges, clearances, arbitrary
 rotations, invalid rings, identity preservation for equal-sized sources, and the
 84-piece multi-sheet regression validated through the common geometry model.
 
-To run all six nesting suites from an x64 Visual Studio Developer PowerShell:
+To run all seven nesting suites from an x64 Visual Studio Developer PowerShell:
 
 ```powershell
 ./SignageCosting/tests/RunNestingTests.ps1
@@ -114,12 +167,23 @@ pixels in both drawing orders.
 The DXF suite also nests the checked-in circular sample alone and mixed with the
 rectangular frame on the default 2440 x 1220 mm sheet. Each calculation has a
 generous 10-second budget to catch repeated-decomposition performance regressions.
+The service suite covers the reported 30 x 200 mm circles plus 10 x 600 x 400 mm
+triangles with a 6 mm gap and 20 mm margin on a 2440 x 1220 mm sheet. It verifies
+all 40 identities, real clearances, margins and the one-sheet result, with a
+20-second calculation budget that allows slower Debug test machines.
+Scaled/reversed source order, odd triangle quantities and off-origin definitions
+with restricted rotations also exercise the structured search.
+The grouping suite checks interlocking concave profiles, mixed-source matches,
+arbitrary pentagon/quadrilateral DXFs, imported frames/cutouts, actual gaps,
+fixed and arbitrary allowed rotations, off-origin geometry, and unpaired
+remainders. Repeated L-shapes plus inserts that previously needed two sheets
+now fit one, including a version imported through the DXF parser.
 
 ## Circles and DXF import
 
 Circle preset links width and height as a diameter. Circles use a conservative 64-sided envelope (area overestimate below 0.081%) for contour placement, collision checks and displayed utilisation. Convex outlines use direct SAT; concave outlines retain triangulation.
 
-Import DXF opens the Windows file chooser; dropping a DXF onto the Nesting page uses the same importer. ASCII DXF supports closed straight LWPOLYLINE, closed 2D POLYLINE, closed chains of LINE entities on the same layer, and CIRCLE. Containment groups boundary rings independently of entity order, winding or layer: odd-depth rings are cutouts, even-depth islands are separate parts. Each outer profile plus its holes becomes one editable quantity row. Drawing units, origin normalization and CAD Y reflection apply to all its rings together. Unspecified units prompt for millimetres or inches. An untouched initial row is replaced, otherwise imports append. The complete file is checked before existing rows change.
+Import DXF opens the Windows file chooser; dropping a DXF onto the Nesting page uses the same importer. ASCII DXF supports closed straight LWPOLYLINE, closed 2D POLYLINE, closed chains of LINE entities on the same layer, and CIRCLE. Containment groups boundary rings independently of entity order, winding or layer: odd-depth rings are cutouts, even-depth islands are separate parts. Each outer profile plus its holes becomes one editable quantity row. Drawing units, origin normalization and CAD Y reflection apply to all its rings together. Unspecified units prompt for millimetres or inches. Imports append to existing rows; explicitly added rows are always retained. The complete file is checked before existing rows change.
 
 Circular outer rings retain the conservative circumscribed 64-sided envelope.
 Circular cutouts use an inscribed 64-sided ring so available space is never

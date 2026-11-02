@@ -2,6 +2,7 @@
 #include "../NestingGeometryBridge.h"
 #include <iostream>
 #include <stdexcept>
+#include <chrono>
 
 using namespace NestingGeometry;
 void check(bool condition,const char* message) { if (!condition) throw std::runtime_error(message); }
@@ -98,6 +99,32 @@ int main()
         NestingService::Options withGaps{100,100,2,3};
         auto gaps=NestingService::calculate(spaced,withGaps);
         verify(spaced,gaps,withGaps);
+        // Exact screenshot regression: positive gap with many circles and triangles.
+        std::vector<Part> productionMixed{{801,circle(200),30,quarterTurns,"Circle"},
+            {802,{{{0,0},{600,0},{0,400}}},10,quarterTurns,"Triangle"}};
+        const NestingService::Options productionSpacing{2440,1220,6,20};
+        const auto started=std::chrono::steady_clock::now();
+        auto productionNest=NestingService::calculate(productionMixed,productionSpacing);
+        const double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-started).count();
+        verify(productionMixed,productionNest,productionSpacing);
+        check(productionNest.layout.sheets.size()==1,"Structured rows and complementary pairs fit all 40 pieces on one sheet.");
+        check(elapsed<20,"Mixed circles/triangles with clearance exceeded the 20-second regression budget.");
+        std::cout<<"40-piece spaced circle/triangle job completed in "<<elapsed<<" seconds.\n";
+        auto scaledMixed=productionMixed;
+        for (auto& part:scaledMixed) mapVertices(part.outline,[](Point p) { return Point{p.x*0.5,p.y*0.5}; });
+        std::reverse(scaledMixed.begin(),scaledMixed.end());
+        const NestingService::Options scaledSpacing{1220,610,3,10};
+        auto scaledNest=NestingService::calculate(scaledMixed,scaledSpacing);
+        verify(scaledMixed,scaledNest,scaledSpacing);
+        check(scaledNest.layout.sheets.size()==1,"Grouping scales with dimensions and works in reversed source order.");
+        std::vector<Part> oddPairs{{811,{{{0,0},{60,0},{0,40}}},5,quarterTurns,"Odd triangles"}};
+        auto oddNest=NestingService::calculate(oddPairs,{200,100,2,3});
+        verify(oddPairs,oddNest,{200,100,2,3});
+        check(oddNest.layout.sheets.size()==1,"Complementary pairs preserve the unpaired final instance.");
+        std::vector<Part> offsetTriangles{{821,transformed(Polygon{{{0,0},{60,0},{0,40}}},{-17,23,0}),4,{90,270},"Offset triangles"}};
+        auto offsetNest=NestingService::calculate(offsetTriangles,{100,100,2,3});
+        verify(offsetTriangles,offsetNest,{100,100,2,3});
+        check(offsetNest.layout.sheets.size()==1,"Paired transforms retain off-origin definitions and restricted allowed rotations.");
         auto translated=NestingService::calculate({{601,transformed(rectangle(20,40),{-8,9,0}),1,{0,90}}},{40,20});
         verify({{601,transformed(rectangle(20,40),{-8,9,0}),1,{0,90}}},translated,{40,20});
 

@@ -79,13 +79,13 @@ namespace
         }
     };
 
-    double readDimension(const std::shared_ptr<TextBox>& field)
+    double readDimension(const std::shared_ptr<TextBox>& field, bool allowZero = false)
     {
         const auto& text = field->getText();
         size_t consumed = 0;
         const double value = std::stod(text, &consumed);
         if (text.find_first_not_of(" \t", consumed) != std::string::npos ||
-            !std::isfinite(value) || value <= 0.0 || value > 1000000.0)
+            !std::isfinite(value) || value < 0.0 || (!allowZero && value == 0.0) || value > 1000000.0)
             throw std::invalid_argument("dimension");
         return value;
     }
@@ -159,6 +159,8 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     };
     field("2440", sheetWidth);
     field("1220", sheetHeight);
+    field("0", cuttingGap);
+    field("0", sheetMargin);
     sizes = std::make_shared<SizeListPanel>();
     sizes->setLayout(std::make_unique<VerticalLayout>());
     sizes->setPadding(0);
@@ -166,8 +168,7 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     sizes->setBorderVisible(false);
     sizes->setScrollable(true);
     workspace->add(sizes);
-    addSize();
-    addButton = std::make_shared<NestingPageButton>("+  Add size");
+    addButton = std::make_shared<NestingPageButton>("+  Add first item");
     addButton->setOnClick([this]() { addSize(); });
     workspace->add(addButton);
     importButton=std::make_shared<NestingPageButton>("Import DXF");
@@ -177,7 +178,7 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     calculateButton->setOnClick([this]() { calculate(); });
     workspace->add(calculateButton);
     summary = std::make_shared<Label>();
-    summary->setText("Add sizes and calculate a combined layout.");
+    summary->setText("Add your first item or import a DXF profile.");
     details = std::make_shared<Label>();
     preview = std::make_shared<NestingPreviewPanel>();
     preview->status = summary->getText();
@@ -200,15 +201,22 @@ void NestingScreen::arrangeWorkspace()
         item->setPosition(rect.x, rect.y);
         item->setSize(rect.w, rect.h);
     };
-    position(sheetWidth, { setupBounds.x + 16, setupBounds.y + 94, setupBounds.w - 32, 34 });
-    position(sheetHeight, { setupBounds.x + 16, setupBounds.y + 162, setupBounds.w - 32, 34 });
+    const int fieldWidth=(setupBounds.w-42)/2;
+    const int secondX=setupBounds.x+26+fieldWidth;
+    position(sheetWidth, { setupBounds.x + 16, setupBounds.y + 94, fieldWidth, 34 });
+    position(sheetHeight, { secondX, setupBounds.y + 94, fieldWidth, 34 });
+    position(cuttingGap, { setupBounds.x + 16, setupBounds.y + 162, fieldWidth, 34 });
+    position(sheetMargin, { secondX, setupBounds.y + 162, fieldWidth, 34 });
     const int rowTop = setupBounds.y + 304;
     const int available = std::max(40, setupBounds.h - 304 - 164);
-    const int rowsHeight = std::min(static_cast<int>(rows.size()) * (sizeRowHeight()+Metrics::SpaceS) - Metrics::SpaceS, available);
+    const int rowsHeight = std::min(rows.empty() ? 64 :
+        static_cast<int>(rows.size()) * (sizeRowHeight()+Metrics::SpaceS) - Metrics::SpaceS, available);
     std::static_pointer_cast<SizeListPanel>(sizes)->rowHeight=sizeRowHeight();
+    sizes->setVisible(!rows.empty());
     tableBounds = { setupBounds.x + 16, setupBounds.y + 274, setupBounds.w - 32, rowsHeight + 38 };
     position(sizes, { tableBounds.x + 1, rowTop, tableBounds.w - 2, rowsHeight });
     const int half=(setupBounds.w-38)/2;
+    std::static_pointer_cast<NestingPageButton>(addButton)->setCaption(rows.empty() ? "+  Add first item" : "+  Add item");
     position(addButton, { setupBounds.x + 16, rowTop + rowsHeight + 20, half, 38 });
     position(importButton, { setupBounds.x + 22 + half, rowTop + rowsHeight + 20, setupBounds.w-38-half, 38 });
     position(calculateButton, { setupBounds.x + 16, setupBounds.y + setupBounds.h - 66, setupBounds.w - 32, 48 });
@@ -228,7 +236,10 @@ void NestingScreen::paintWorkspace(Renderer& renderer)
     text(renderer, "Sheet setup", x, y + 16, LabelStyle::Heading);
     text(renderer, "All dimensions in mm", x, y + 49, LabelStyle::Small, muted);
     text(renderer, "Sheet width", x, y + 74);
-    text(renderer, "Sheet height", x, y + 142);
+    const int secondX=setupBounds.x+26+(setupBounds.w-42)/2;
+    text(renderer, "Sheet height", secondX, y + 74);
+    text(renderer, "Cutting gap", x, y + 142);
+    text(renderer, "Sheet margin", secondX, y + 142);
     renderer.drawLine(x, y + 226, setupBounds.x + setupBounds.w - 16, y + 226, border);
     text(renderer, customMode() ? "Pieces & outlines" : "Piece sizes", x, y + 242, LabelStyle::Normal);
     size_t total = 0;
@@ -256,7 +267,14 @@ void NestingScreen::paintWorkspace(Renderer& renderer)
             LabelStyle::Small, muted);
     renderer.drawLine(tableBounds.x, tableBounds.y + 29, tableBounds.x + tableBounds.w,
         tableBounds.y + 29, border);
-    text(renderer, customMode() ? "Edit each outline · No cutting gap" : "Rotation allowed · No cutting gap", x,
+    if (rows.empty())
+    {
+        renderer.pushClip(tableBounds);
+        text(renderer,"Add first item",tableBounds.x+12,tableBounds.y+43,LabelStyle::Normal);
+        text(renderer,"or import a DXF profile.",tableBounds.x+12,tableBounds.y+65,LabelStyle::Small,muted);
+        renderer.popClip();
+    }
+    text(renderer, customMode() ? "Spacing applies inside cutouts too" : "Rotation allowed · Spacing in mm", x,
         setupBounds.y + setupBounds.h - 99, LabelStyle::Small, muted);
     for (int index = 0; index < 4; ++index)
     {
@@ -310,7 +328,7 @@ void NestingScreen::addSize()
     remove->setOnClick([this, weakRow]()
     {
         auto selected = weakRow.lock();
-        if (!selected || rows.size() <= 1) return;
+        if (!selected) return;
         selected->panel->setVisible(false);
         rows.erase(std::remove(rows.begin(), rows.end(), selected), rows.end());
         rebuildRows = true;
@@ -324,7 +342,6 @@ void NestingScreen::addSize()
     {
         if (auto selected=weakRow.lock())
         {
-            selected->pristine=false;
             if (customMode() && selected->shapeName=="Circle") selected->height->setText(value);
         }
         invalidate();
@@ -333,13 +350,10 @@ void NestingScreen::addSize()
     {
         if (auto selected=weakRow.lock())
         {
-            selected->pristine=false;
             if (customMode() && selected->shapeName=="Circle") selected->width->setText(value);
         }
         invalidate();
     });
-    row->quantity->setTextChangedCallback([this,weakRow](const std::string&)
-    { if (auto selected=weakRow.lock()) selected->pristine=false; invalidate(); });
     row->panel->addLayoutElement(row->shapeButton,SizePolicy::Fixed,30);
     sizes->addLayoutElement(row->panel, SizePolicy::Fixed, sizeRowHeight());
     rows.push_back(row);
@@ -384,9 +398,7 @@ void NestingScreen::importDxfFile(const std::filesystem::path& path)
         if (SDL_ShowMessageBox(&dialog,&selected)!=0 || selected==0) return;
         if (selected==2) result=DxfImport::load(path,25.4);
     }
-    const bool replaceDefault=rows.size()==1 && rows.front()->pristine;
-    const size_t retained=replaceDefault ? 0 : rows.size();
-    if (result.valid() && retained+result.outlines.size()>50)
+    if (result.valid() && rows.size()+result.outlines.size()>50)
         result.error="The import would exceed 50 size rows. Remove some rows or import a smaller file.";
     if (!result.valid())
     {
@@ -395,7 +407,6 @@ void NestingScreen::importDxfFile(const std::filesystem::path& path)
         return;
     }
     // Parse and validate the whole file before changing any existing row.
-    if (replaceDefault) { rows.clear(); sizes->clearChildren(); }
     geometrySelector->setSelectedIndex(1);
     refreshGeometryMode();
     for (const auto& source:result.outlines)
@@ -411,7 +422,6 @@ void NestingScreen::importDxfFile(const std::filesystem::path& path)
         row->width->setText(w.str()); row->height->setText(h.str()); row->quantity->setText("1");
         row->shapeName=source.circle ? "Circle" : source.name;
         row->shapeButton->setCaption(row->shapeName+" · Edit outline");
-        row->pristine=false;
     }
     rebuildRows=true;
     invalidate();
@@ -431,7 +441,6 @@ void NestingScreen::editOutline(const std::shared_ptr<SizeRow>& row)
             {
                 selected->outline=polygon;
                 selected->shapeName=name;
-                selected->pristine=false;
                 if (name=="Circle") selected->height->setText(selected->width->getText());
                 selected->shapeButton->setCaption(name+" · Edit outline");
                 invalidate();
@@ -482,12 +491,18 @@ void NestingScreen::invalidate()
     if (!preview) return;
     preview->setSheets({});
     metricValues = { "—", "—", "—", "—" };
-    summary->setText("Inputs changed. Calculate to update the layout.");
+    summary->setText(rows.empty() ? "Add your first item or import a DXF profile." : "Inputs changed. Calculate to update the layout.");
     details->setText("");
 }
 
 void NestingScreen::calculate()
 {
+    if (rows.empty())
+    {
+        invalidate();
+        summary->setText("Add at least one item before calculating.");
+        return;
+    }
     if (calculation.valid())
     {
         summary->setText("Nesting is running. Please wait before calculating again.");
@@ -498,6 +513,25 @@ void NestingScreen::calculate()
     try
     {
         const double sw = readDimension(sheetWidth), sh = readDimension(sheetHeight);
+        double gap=0,margin=0;
+        try
+        {
+            gap=readDimension(cuttingGap,true);
+            margin=readDimension(sheetMargin,true);
+        }
+        catch (const std::exception&)
+        {
+            summary->setText("Enter a valid cutting gap and sheet margin.");
+            details->setText("Use numbers from 0 to 1,000,000 mm. Zero adds no spacing.");
+            return;
+        }
+        if (2*margin>=sw || 2*margin>=sh)
+        {
+            summary->setText("The sheet margin leaves no usable sheet area.");
+            details->setText("Reduce the margin or increase the sheet dimensions.");
+            return;
+        }
+        const double usableWidth=sw-2*margin,usableHeight=sh-2*margin;
         std::vector<NestingGeometry::Part> items;
         double usedArea = 0.0;
         int requested = 0;
@@ -511,10 +545,10 @@ void NestingScreen::calculate()
                 summary->setText("Use whole quantities, up to 2,000 pieces total.");
                 return;
             }
-            if (!customMode() && !((pw <= sw && ph <= sh) || (ph <= sw && pw <= sh)))
+            if (!customMode() && !((pw <= usableWidth && ph <= usableHeight) || (ph <= usableWidth && pw <= usableHeight)))
             {
-                summary->setText("Size " + std::to_string(index + 1) + " does not fit the sheet.");
-                details->setText("Check its dimensions; both orientations were considered.");
+                summary->setText("Size " + std::to_string(index + 1) + " does not fit the usable sheet.");
+                details->setText("Check its dimensions and sheet margin; both orientations were considered.");
                 return;
             }
             auto outline=customMode() ? row->outline : NestingGeometry::rectangle(1,1);
@@ -532,9 +566,9 @@ void NestingScreen::calculate()
         calculationArea = usedArea;
         calculationSheetArea = sw * sh;
         calculationSizeCount = rows.size();
-        calculation = std::async(std::launch::async, [items, sw, sh]()
+        calculation = std::async(std::launch::async, [items, sw, sh, gap, margin]()
         {
-            return NestingService::calculate(items,{sw,sh});
+            return NestingService::calculate(items,{sw,sh,gap,margin});
         });
         summary->setText("Calculating the combined layout...");
     }

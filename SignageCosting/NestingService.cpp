@@ -1,6 +1,8 @@
 #include "NestingService.h"
 #include "NestingLayoutSearch.h"
+#include "NestingPairSearch.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -24,7 +26,7 @@ namespace NestingService
             return a.right+gap < b.left-tolerance || b.right+gap < a.left-tolerance ||
                 a.bottom+gap < b.top-tolerance || b.bottom+gap < a.top-tolerance;
         }
-        struct Occupied { Polygon polygon; Bounds box; CollisionShape collision; };
+        struct Occupied { Polygon polygon; Bounds box; CollisionShape collision; bool round; };
         bool circleEnvelope(const Polygon& polygon,const Bounds& box)
         {
             if (!polygon.holes.empty() || polygon.vertices.size()!=64) return false;
@@ -42,8 +44,35 @@ namespace NestingService
             std::vector<std::vector<Occupied>> occupied;
             bool complete = true;
         };
+        using Variant=NestingPairSearch::Variant;
+        using Variants=NestingPairSearch::Variants;
+        Variants prepareVariants(const std::vector<Part>& parts)
+        {
+            Variants result;
+            for (const auto& part:parts)
+            {
+                auto& variants=result[part.id];
+                for (double angle:part.allowedRotations)
+                {
+                    const auto rotated=transformed(part.outline,{0,0,angle});
+                    const auto rb=bounds(rotated);
+                    auto local=transformed(rotated,{-rb.left,-rb.top,0});
+                    const bool round=circleEnvelope(rotated,rb);
+                    bool duplicate=false;
+                    for (const auto& tested:variants)
+                    {
+                        if (equivalent(local,tested.local)) { duplicate=true; break; }
+                    }
+                    if (duplicate) continue;
+                    CollisionShape collision(local);
+                    variants.push_back({std::move(local),rb,std::move(collision),angle,round});
+                }
+            }
+            return result;
+        }
         bool place(const Part& part, std::uint32_t instance, SheetLayout& sheet,
-            std::vector<Occupied>& occupied, const Options& options, bool bottomFirst, bool gridOnly)
+            std::vector<Occupied>& occupied, const Options& options, bool bottomFirst, bool gridOnly,
+            const std::vector<Variant>& variants)
         {
             bool found = false;
             Transform bestTransform;
@@ -53,14 +82,14 @@ namespace NestingService
             double previousRight=options.margin, previousBottom=options.margin;
             for (const auto& p:occupied)
             { previousRight=std::max(previousRight,p.box.right); previousBottom=std::max(previousBottom,p.box.bottom); }
-            for (double angle:part.allowedRotations)
+            for (const auto& variant:variants)
             {
-                const auto rotated = transformed(part.outline,{0,0,angle});
-                const auto rb = bounds(rotated);
-                const auto local = transformed(rotated,{-rb.left,-rb.top,0});
-                const CollisionShape localCollision(local);
+                const auto& rb=variant.rotatedBounds;
+                const auto& local=variant.local;
+                const auto& localCollision=variant.collision;
+                const auto angle=variant.angle;
                 const double width=rb.right-rb.left, height=rb.bottom-rb.top;
-                const bool round=circleEnvelope(rotated,rb);
+                const bool round=variant.round;
                 if (width > sheet.width-2*options.margin+tolerance || height > sheet.height-2*options.margin+tolerance) continue;
                 std::set<std::pair<double,double>> anchors;
                 auto add = [&](double x,double y)
@@ -108,7 +137,7 @@ namespace NestingService
                 for (double y:ys) for (double x:xs) add(x,y);
                 for (const auto& previous:occupied)
                 {
-                    if (round && circleEnvelope(previous.polygon,previous.box))
+                    if (round && previous.round)
                     {
                         // Circle contacts need a small angular search, rather
                         // than thousands of near-duplicate polygon vertex pairs.
@@ -174,10 +203,12 @@ namespace NestingService
             if (!found) return false;
             sheet.placements.push_back({part.id,instance,bestTransform});
             auto collision=CollisionShape(bestPolygon);
-            occupied.push_back({std::move(bestPolygon),bestBounds,std::move(collision)});
+            const bool round=circleEnvelope(bestPolygon,bestBounds);
+            occupied.push_back({std::move(bestPolygon),bestBounds,std::move(collision),round});
             return true;
         }
-        Trial contourTrial(const std::vector<Part>& parts, const Options& options, int order, bool bottomFirst, bool gridOnly=false)
+        Trial contourTrial(const std::vector<Part>& parts, const Options& options, const Variants& variants,
+            int order, bool bottomFirst, bool gridOnly=false)
         {
             std::vector<size_t> indices;
             for (size_t i=0;i<parts.size();++i) if (parts[i].quantity>0) indices.push_back(i);
@@ -196,16 +227,250 @@ namespace NestingService
                 {
                     bool placed=false;
                     for (size_t sheet=0;sheet<result.sheets.size();++sheet)
-                        if (place(parts[index],static_cast<std::uint32_t>(copy),result.sheets[sheet],result.occupied[sheet],options,bottomFirst,gridOnly))
+                        if (place(parts[index],static_cast<std::uint32_t>(copy),result.sheets[sheet],result.occupied[sheet],options,bottomFirst,gridOnly,variants.at(parts[index].id)))
                         { placed=true; break; }
                     if (!placed)
                     {
                         result.sheets.push_back({options.sheetWidth,options.sheetHeight,{}});
                         result.occupied.emplace_back();
-                        if (!place(parts[index],static_cast<std::uint32_t>(copy),result.sheets.back(),result.occupied.back(),options,bottomFirst,gridOnly))
+                        if (!place(parts[index],static_cast<std::uint32_t>(copy),result.sheets.back(),result.occupied.back(),options,bottomFirst,gridOnly,variants.at(parts[index].id)))
                         { result.complete=false; return result; }
                     }
                 }
+            return result;
+        }
+        struct Band
+        {
+            double width=0,height=0;
+            std::vector<Placement> placements;
+        };
+        std::vector<Band> bandsFor(const Part& part,const std::vector<Variant>& variants,const Options& options)
+        {
+            std::vector<Band> bands;
+            const double usableWidth=options.sheetWidth-2*options.margin;
+            const double usableHeight=options.sheetHeight-2*options.margin;
+            auto finish=[&](Band band)
+            {
+                if (band.width<=usableWidth+tolerance && band.height<=usableHeight+tolerance)
+                    bands.push_back(std::move(band));
+            };
+            auto append=[&](Band& band,const Variant& variant,int instance,double x,double y)
+            {
+                const auto& box=variant.rotatedBounds;
+                band.placements.push_back({part.id,static_cast<std::uint32_t>(instance),
+                    {x-box.left,y-box.top,variant.angle}});
+                band.width=std::max(band.width,x+box.right-box.left);
+                band.height=std::max(band.height,y+box.bottom-box.top);
+            };
+            for (const auto& a:variants)
+            {
+                const double width=a.rotatedBounds.right-a.rotatedBounds.left;
+                const double height=a.rotatedBounds.bottom-a.rotatedBounds.top;
+                if (a.round)
+                {
+                    // Compare square rows and conservative hexagonal rows at
+                    // every column count, rather than greedily growing a cluster.
+                    for (bool stagger:{false,true}) for (bool transpose:{false,true})
+                        for (int columns=1;columns<=part.quantity;++columns)
+                        {
+                            const double pitch=(stagger ? width/std::cos(3.14159265358979323846/64) : width)+options.clearance;
+                            const double rowPitch=stagger ? pitch*std::sqrt(3.0)/2 : pitch;
+                            Band band;
+                            for (int i=0;i<part.quantity;++i)
+                            {
+                                const int row=i/columns,column=i%columns;
+                                double x=column*pitch+(stagger && row%2 ? pitch/2 : 0),y=row*rowPitch;
+                                if (transpose) std::swap(x,y);
+                                append(band,a,i,x,y);
+                            }
+                            finish(std::move(band));
+                        }
+                    continue;
+                }
+                if (!part.outline.holes.empty() || a.local.vertices.size()!=3) continue;
+                // A right triangle occupies three corners of its bounding box.
+                // Its allowed half-turn partner fills the complementary half.
+                bool rightTriangle=true;
+                for (const auto& p:a.local.vertices)
+                    if ((std::abs(p.x)>tolerance && std::abs(p.x-width)>tolerance) ||
+                        (std::abs(p.y)>tolerance && std::abs(p.y-height)>tolerance)) rightTriangle=false;
+                if (!rightTriangle) continue;
+                for (const auto& b:variants)
+                {
+                    if (std::abs(std::abs(std::remainder(a.angle-b.angle,360.0))-180)>tolerance ||
+                        std::abs(b.rotatedBounds.right-b.rotatedBounds.left-width)>tolerance ||
+                        std::abs(b.rotatedBounds.bottom-b.rotatedBounds.top-height)>tolerance) continue;
+                    Point normal;
+                    for (size_t edge=0;edge<3;++edge)
+                    {
+                        const auto p=a.local.vertices[edge],q=a.local.vertices[(edge+1)%3],third=a.local.vertices[(edge+2)%3];
+                        if (std::abs(p.x-q.x)<width-tolerance || std::abs(p.y-q.y)<height-tolerance) continue;
+                        const double length=std::hypot(q.x-p.x,q.y-p.y);
+                        normal={-(q.y-p.y)/length,(q.x-p.x)/length};
+                        if (normal.x*(third.x-p.x)+normal.y*(third.y-p.y)>0) { normal.x=-normal.x; normal.y=-normal.y; }
+                    }
+                    const double separation=options.clearance>0 ? options.clearance+10*tolerance : 0;
+                    const Point shift{normal.x*separation,normal.y*separation};
+                    if (collide(a.collision,{},b.collision,shift,options.clearance)) continue;
+                    const double ax=std::max(0.0,-shift.x),ay=std::max(0.0,-shift.y);
+                    const double tileWidth=width+std::abs(shift.x),tileHeight=height+std::abs(shift.y);
+                    const int count=(part.quantity+1)/2;
+                    for (int columns=1;columns<=count;++columns)
+                    {
+                        Band band;
+                        for (int tile=0;tile<count;++tile)
+                        {
+                            const double x=(tile%columns)*(tileWidth+options.clearance),y=(tile/columns)*(tileHeight+options.clearance);
+                            append(band,a,tile*2,x+ax,y+ay);
+                            if (tile*2+1<part.quantity) append(band,b,tile*2+1,x+ax+shift.x,y+ay+shift.y);
+                        }
+                        finish(std::move(band));
+                    }
+                }
+            }
+            return bands;
+        }
+        Trial structuredTrial(const std::vector<Part>& parts,const Options& options,const Variants& variants,bool vertical)
+        {
+            Trial result;
+            result.complete=false;
+            SheetLayout sheet{options.sheetWidth,options.sheetHeight,{}};
+            double offset=options.margin;
+            for (const auto& part:parts)
+            {
+                if (part.quantity==0) continue;
+                auto bands=bandsFor(part,variants.at(part.id),options);
+                if (bands.empty()) return result;
+                const auto best=std::min_element(bands.begin(),bands.end(),[&](const Band& a,const Band& b)
+                {
+                    return vertical ? std::make_pair(a.width,a.height)<std::make_pair(b.width,b.height)
+                        : std::make_pair(a.height,a.width)<std::make_pair(b.height,b.width);
+                });
+                if (offset+(vertical ? best->width : best->height)>
+                    (vertical ? options.sheetWidth : options.sheetHeight)-options.margin+tolerance) return result;
+                for (auto placement:best->placements)
+                {
+                    placement.transform.x+=vertical ? offset : options.margin;
+                    placement.transform.y+=vertical ? options.margin : offset;
+                    sheet.placements.push_back(placement);
+                }
+                offset+=(vertical ? best->width : best->height)+options.clearance;
+            }
+            // Independent validation guards both grouping and all real gaps.
+            if (!validateLayout(parts,{sheet},options.clearance,options.margin).empty()) return result;
+            std::map<PartId,const Part*> definitions;
+            for (const auto& part:parts) definitions[part.id]=&part;
+            result.sheets.push_back(std::move(sheet));
+            result.occupied.emplace_back();
+            for (const auto& placement:result.sheets.front().placements)
+            {
+                auto polygon=transformed(definitions.at(placement.partId)->outline,placement.transform);
+                const auto box=bounds(polygon);
+                const bool round=circleEnvelope(polygon,box);
+                CollisionShape collision(polygon);
+                result.occupied.front().push_back({std::move(polygon),box,std::move(collision),round});
+            }
+            result.complete=true;
+            return result;
+        }
+        struct GroupMember { size_t source; std::uint32_t instance; Transform local; };
+        struct Group { Part packingPart; std::vector<GroupMember> members; };
+        using GroupPattern=std::vector<std::pair<size_t,size_t>>;
+        Trial groupedTrial(const std::vector<Part>& parts,const Options& options,const Variants& variants,
+            std::vector<NestingPairSearch::Pair> pairs,int pairingOrder,bool bottomFirst,size_t maxSheets,
+            std::set<GroupPattern>& visited)
+        {
+            Trial result;
+            result.complete=false;
+            if (pairs.empty()) return result;
+            std::stable_sort(pairs.begin(),pairs.end(),[&](const auto& a,const auto& b)
+            {
+                if (pairingOrder==2 && (a.first==a.second)!=(b.first==b.second)) return a.first!=a.second;
+                auto benefit=[&](const auto& pair)
+                { return pairingOrder!=0 ? pair.saving/(pair.width*pair.height+pair.saving) : pair.saving; };
+                return benefit(a)>benefit(b);
+            });
+            std::vector<int> remaining;
+            for (const auto& part:parts) remaining.push_back(part.quantity);
+            std::vector<Group> groups;
+            for (const auto& pair:pairs)
+                while (remaining[pair.first]>0 && remaining[pair.second]>(pair.first==pair.second ? 1 : 0))
+                {
+                    Group group;
+                    group.packingPart={static_cast<PartId>(groups.size()+1),rectangle(pair.width,pair.height),1,{},"Geometry pair"};
+                    for (double rotation:{0.0,90.0,180.0,270.0})
+                        if (allows(parts[pair.first],pair.a.rotationDegrees+rotation) &&
+                            allows(parts[pair.second],pair.b.rotationDegrees+rotation))
+                            group.packingPart.allowedRotations.push_back(rotation);
+                    const auto first=static_cast<std::uint32_t>(parts[pair.first].quantity-remaining[pair.first]--);
+                    const auto second=static_cast<std::uint32_t>(parts[pair.second].quantity-remaining[pair.second]--);
+                    group.members={{pair.first,first,pair.a},{pair.second,second,pair.b}};
+                    groups.push_back(std::move(group));
+                }
+            for (size_t source=0;source<parts.size();++source)
+                while (remaining[source]>0)
+                {
+                    const auto instance=static_cast<std::uint32_t>(parts[source].quantity-remaining[source]--);
+                    auto packingPart=parts[source];
+                    packingPart.id=static_cast<PartId>(groups.size()+1);
+                    packingPart.quantity=1;
+                    groups.push_back({std::move(packingPart),{{source,instance,{}}}});
+                }
+            GroupPattern pattern;
+            double reservedArea=0;
+            for (const auto& group:groups)
+            {
+                pattern.emplace_back(group.members.front().source,group.members.size()>1 ? group.members.back().source : parts.size());
+                reservedArea+=area(group.packingPart.outline);
+            }
+            if (!visited.insert(std::move(pattern)).second || reservedArea>
+                maxSheets*(options.sheetWidth-2*options.margin)*(options.sheetHeight-2*options.margin)+tolerance) return result;
+            std::vector<Part> packingParts;
+            for (const auto& group:groups) if (group.members.size()>1) packingParts.push_back(group.packingPart);
+            auto packingVariants=prepareVariants(packingParts);
+            for (const auto& group:groups)
+                if (group.members.size()==1)
+                    packingVariants.emplace(group.packingPart.id,variants.at(parts[group.members.front().source].id));
+            std::vector<size_t> order;
+            for (size_t index=0;index<groups.size();++index) order.push_back(index);
+            std::stable_sort(order.begin(),order.end(),[&](size_t a,size_t b)
+            { return area(groups[a].packingPart.outline)>area(groups[b].packingPart.outline); });
+            for (size_t index:order)
+            {
+                const auto& group=groups[index].packingPart;
+                bool placed=false;
+                for (size_t sheet=0;sheet<result.sheets.size();++sheet)
+                    if (place(group,0,result.sheets[sheet],result.occupied[sheet],options,bottomFirst,true,packingVariants.at(group.id)))
+                    { placed=true; break; }
+                if (!placed)
+                {
+                    // A grouped candidate needing more sheets than the best
+                    // complete result cannot win the shared layout score.
+                    if (result.sheets.size()>=maxSheets) return result;
+                    result.sheets.push_back({options.sheetWidth,options.sheetHeight,{}});
+                    result.occupied.emplace_back();
+                    if (!place(group,0,result.sheets.back(),result.occupied.back(),options,bottomFirst,true,packingVariants.at(group.id))) return result;
+                }
+            }
+            for (auto& sheet:result.sheets)
+            {
+                std::vector<Placement> expanded;
+                for (const auto& placement:sheet.placements)
+                {
+                    const auto& group=groups.at(static_cast<size_t>(placement.partId-1));
+                    const double angle=placement.transform.rotationDegrees*3.14159265358979323846/180;
+                    const double cosine=std::cos(angle),sine=std::sin(angle);
+                    for (const auto& member:group.members)
+                        expanded.push_back({parts[member.source].id,member.instance,
+                            {placement.transform.x+member.local.x*cosine-member.local.y*sine,
+                             placement.transform.y+member.local.x*sine+member.local.y*cosine,
+                             placement.transform.rotationDegrees+member.local.rotationDegrees}});
+                }
+                sheet.placements=std::move(expanded);
+            }
+            // Synthetic bounding boxes are only a packing aid. Restore actual
+            // identities and geometry, then independently validate the result.
+            result.complete=validateLayout(parts,result.sheets,options.clearance,options.margin).empty();
             return result;
         }
         auto trialScore(const Trial& trial)
@@ -282,17 +547,34 @@ namespace NestingService
         }
         Trial best;
         bool haveBest=false;
+        const auto variants=prepareVariants(parts);
         for (int order=0;order<3;++order) for (bool bottomFirst:{false,true})
         {
-            auto candidate=contourTrial(parts,options,order,bottomFirst);
+            auto candidate=contourTrial(parts,options,variants,order,bottomFirst);
             if (candidate.complete && (!haveBest || trialScore(candidate)<trialScore(best)))
             { best=std::move(candidate); haveBest=true; }
         }
         // Compare a regular edge-aligned layout as well: locally tighter
         // staggered circles can otherwise prevent a later row from fitting.
-        auto grid=contourTrial(parts,options,0,true,true);
+        auto grid=contourTrial(parts,options,variants,0,true,true);
         if (grid.complete && (!haveBest || trialScore(grid)<trialScore(best)))
         { best=std::move(grid); haveBest=true; }
+        for (bool vertical:{false,true})
+        {
+            auto structured=structuredTrial(parts,options,variants,vertical);
+            if (structured.complete && (!haveBest || trialScore(structured)<trialScore(best)))
+            { best=std::move(structured); haveBest=true; }
+        }
+        const auto pairs=NestingPairSearch::find(parts,variants,options.sheetWidth-2*options.margin,
+            options.sheetHeight-2*options.margin,options.clearance);
+        std::array<std::set<GroupPattern>,2> visited;
+        for (int pairingOrder=0;pairingOrder<3;++pairingOrder) for (bool bottomFirst:{false,true})
+        {
+            auto grouped=groupedTrial(parts,options,variants,pairs,pairingOrder,bottomFirst,
+                haveBest ? best.sheets.size() : 200,visited[bottomFirst ? 1 : 0]);
+            if (grouped.complete && (!haveBest || trialScore(grouped)<trialScore(best)))
+            { best=std::move(grouped); haveBest=true; }
+        }
         if (!haveBest) { fail("A shape does not fit the sheet at its allowed rotations."); return result; }
         result.layout.validationErrors=validateLayout(parts,best.sheets,options.clearance,options.margin);
         if (!result.layout.validationErrors.empty()) return result;

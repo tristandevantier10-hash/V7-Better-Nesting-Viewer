@@ -142,6 +142,7 @@
     <ClInclude Include="NestingPreviewPanel.h" />
     <ClInclude Include="NestingStyle.h" />
     <ClInclude Include="NestingLayoutSearch.h" />
+    <ClInclude Include="NestingPairSearch.h" />
     <ClCompile Include="NestingEngine.cpp" />
     <ClCompile Include="NestingManager.cpp" />
     <ClCompile Include="NestingRender.cpp" />

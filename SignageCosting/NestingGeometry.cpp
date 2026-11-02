@@ -242,6 +242,53 @@ namespace NestingGeometry
         return {};
     }
 
+    bool equivalent(const Polygon& a,const Polygon& b)
+    {
+        requireValid(a); requireValid(b);
+        if (a.holes.size()!=b.holes.size()) return false;
+        auto simpleRing=[](const Polygon& polygon)
+        {
+            auto points=ring(polygon);
+            bool changed=true;
+            while (changed && points.size()>3)
+            {
+                changed=false;
+                for (size_t i=0;i<points.size();++i)
+                    if (onSegment(points[i],points[(i+points.size()-1)%points.size()],points[(i+1)%points.size()]))
+                    { points.erase(points.begin()+i); changed=true; break; }
+            }
+            return points;
+        };
+        auto sameRing=[&](const Polygon& first,const Polygon& second)
+        {
+            const auto ar=simpleRing(first),br=simpleRing(second);
+            if (ar.size()!=br.size()) return false;
+            const size_t count=ar.size();
+            for (size_t start=0;start<count;++start)
+            {
+                if (!same(ar.front(),br[start])) continue;
+                bool forward=true,backward=true;
+                for (size_t i=1;i<count && (forward || backward);++i)
+                {
+                    forward=forward && same(ar[i],br[(start+i)%count]);
+                    backward=backward && same(ar[i],br[(start+count-i)%count]);
+                }
+                if (forward || backward) return true;
+            }
+            return false;
+        };
+        if (!sameRing(a,b)) return false;
+        std::vector<bool> matched(b.holes.size(),false);
+        for (const auto& hole:a.holes)
+        {
+            bool found=false;
+            for (size_t i=0;i<b.holes.size();++i)
+                if (!matched[i] && sameRing(hole,b.holes[i])) { matched[i]=true; found=true; break; }
+            if (!found) return false;
+        }
+        return true;
+    }
+
     RingRelation ringRelation(const Polygon& a,const Polygon& b)
     {
         requireValid(a); requireValid(b);
@@ -352,7 +399,20 @@ namespace NestingGeometry
         box=pointBounds(boundaries.front());
         // Keep convex disks as one SAT cell, even when the OTHER part has holes.
         // Triangulating both sides needlessly multiplies narrow-phase work.
-        if (polygon.holes.empty() && convex(boundaries.front())) cells.push_back({boundaries.front(),box});
+        if (polygon.holes.empty() && convex(boundaries.front()))
+        {
+            const auto& points=boundaries.front();
+            cells.push_back({points,box});
+            // The vertex average is inside a convex polygon. These enclosing
+            // and inscribed disks provide conservative constant-time tests.
+            for (const auto& p:points) { centre.x+=p.x/points.size(); centre.y+=p.y/points.size(); }
+            innerRadius=std::numeric_limits<double>::max();
+            for (size_t i=0;i<points.size();++i)
+            {
+                outerRadius=std::max(outerRadius,length(centre,points[i]));
+                innerRadius=std::min(innerRadius,pointDistance(centre,points[i],points[(i+1)%points.size()]));
+            }
+        }
         else
             for (const auto& triangle:triangulate(polygon))
             {
@@ -377,6 +437,31 @@ namespace NestingGeometry
         const auto& ab=a.box; const auto& bb=b.box;
         if (ab.right+clearance<bb.left+delta.x-tolerance || bb.right+delta.x+clearance<ab.left-tolerance ||
             ab.bottom+clearance<bb.top+delta.y-tolerance || bb.bottom+delta.y+clearance<ab.top-tolerance) return false;
+        if (a.outerRadius>0 && b.outerRadius>0)
+        {
+            const double distance=std::hypot(b.centre.x+delta.x-a.centre.x,b.centre.y+delta.y-a.centre.y);
+            if (distance>a.outerRadius+b.outerRadius+clearance+tolerance) return false;
+            if (distance<a.innerRadius+b.innerRadius+clearance-tolerance) return true;
+            // For a finely faceted disk against a convex polygon, distance to
+            // the other polygon bounds the answer using the disk's two radii.
+            // Only the narrow band between them needs exact polygon SAT/edges.
+            auto diskAgainstPolygon=[&](const CollisionShape& disk,Point centre,const CollisionShape& polygon)
+            {
+                if (disk.innerRadius<disk.outerRadius*0.99) return -1;
+                const auto& points=polygon.boundaries.front();
+                if (inside(centre,points)) return 1;
+                double distance=std::numeric_limits<double>::max();
+                for (size_t i=0;i<points.size();++i)
+                    distance=std::min(distance,pointDistance(centre,points[i],points[(i+1)%points.size()]));
+                if (distance>disk.outerRadius+clearance+tolerance) return 0;
+                if (distance<disk.innerRadius+clearance-tolerance) return 1;
+                return -1;
+            };
+            const int fromA=diskAgainstPolygon(a,{a.centre.x-delta.x,a.centre.y-delta.y},b);
+            if (fromA>=0) return fromA!=0;
+            const int fromB=diskAgainstPolygon(b,{b.centre.x+delta.x,b.centre.y+delta.y},a);
+            if (fromB>=0) return fromB!=0;
+        }
         for (const auto& ac:a.cells) for (const auto& bc:b.cells)
         {
             if (ac.box.right<=bc.box.left+delta.x+tolerance || bc.box.right+delta.x<=ac.box.left+tolerance ||
@@ -392,6 +477,12 @@ namespace NestingGeometry
                 const Point r{br[j].x+delta.x,br[j].y+delta.y};
                 const auto next=br[(j+1)%br.size()];
                 const Point s{next.x+delta.x,next.y+delta.y};
+                // Most edges of polygonal circles are far from each other.
+                // Only nearby edge boxes can violate the requested clearance.
+                if (std::max(p.x,q.x)+clearance<std::min(r.x,s.x)-tolerance ||
+                    std::max(r.x,s.x)+clearance<std::min(p.x,q.x)-tolerance ||
+                    std::max(p.y,q.y)+clearance<std::min(r.y,s.y)-tolerance ||
+                    std::max(r.y,s.y)+clearance<std::min(p.y,q.y)-tolerance) continue;
                 if (segmentsMeet(p,q,r,s) || std::min({pointDistance(p,r,s),pointDistance(q,r,s),
                     pointDistance(r,p,q),pointDistance(s,p,q)}) < clearance-tolerance) return true;
             }

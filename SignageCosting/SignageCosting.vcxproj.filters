@@ -7,6 +7,7 @@
     <ClInclude Include="NestingPreviewPanel.h"><Filter>UI</Filter></ClInclude>
     <ClInclude Include="NestingStyle.h"><Filter>UI</Filter></ClInclude>
     <ClInclude Include="NestingLayoutSearch.h"><Filter>Engine\Header Files</Filter></ClInclude>
+    <ClInclude Include="NestingPairSearch.h"><Filter>Engine\Header Files</Filter></ClInclude>
     <ClCompile Include="NestingGeometry.cpp"><Filter>Engine</Filter></ClCompile>
     <ClCompile Include="NestingService.cpp"><Filter>Engine</Filter></ClCompile>
     <ClCompile Include="DxfImport.cpp"><Filter>Engine</Filter></ClCompile>

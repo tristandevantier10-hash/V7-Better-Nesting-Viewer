@@ -39,6 +39,9 @@ namespace NestingGeometry
     enum class Method { Rectangles, Contours };
 
     std::vector<std::string> validateOutline(const Polygon& polygon);
+    // Same boundaries in the same coordinates, including holes. Ignores ring
+    // start/winding, redundant collinear vertices and hole ordering.
+    bool equivalent(const Polygon& a,const Polygon& b);
     enum class RingRelation { Separate, Contains, Inside, Intersecting };
     // Simple rings only. Crossing, coincident or touching boundaries intersect.
     RingRelation ringRelation(const Polygon& a, const Polygon& b);
@@ -70,6 +73,8 @@ namespace NestingGeometry
         Bounds box;
         std::vector<std::vector<Point>> boundaries;
         std::vector<Cell> cells;
+        Point centre;
+        double innerRadius=0, outerRadius=0;
         friend bool collide(const CollisionShape&, Point, const CollisionShape&, Point, double);
     };
     bool collide(const CollisionShape& a, Point offsetA, const CollisionShape& b,

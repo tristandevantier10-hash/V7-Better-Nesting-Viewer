@@ -42,7 +42,6 @@ private:
         NestingGeometry::Polygon outline = NestingGeometry::rectangle(1,1);
         std::string shapeName = "Rectangle";
         std::shared_ptr<NestingPageButton> shapeButton;
-        bool pristine=true;
     };
     void editOutline(const std::shared_ptr<SizeRow>& row);
     bool customMode() const;
@@ -51,7 +50,7 @@ private:
     void chooseDxf();
     void importDxfFile(const std::filesystem::path& path);
     std::shared_ptr<NavigationPanel> navigation;
-    std::shared_ptr<TextBox> sheetWidth, sheetHeight;
+    std::shared_ptr<TextBox> sheetWidth, sheetHeight, cuttingGap, sheetMargin;
     std::shared_ptr<Panel> sizes;
     std::vector<std::shared_ptr<SizeRow>> rows;
     std::shared_ptr<Label> summary, details;

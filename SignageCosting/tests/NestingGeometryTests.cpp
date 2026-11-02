@@ -31,6 +31,48 @@ int main()
         check(validateOutline(closed).empty(),"Explicitly closed rings must be accepted.");
         Polygon collinear{{{0,0},{5,0},{10,0},{10,10},{0,10}}};
         check(collide(collinear,square),"Redundant collinear vertices.");
+        check(equivalent(square,collinear) && equivalent(square,closed) && equivalent(square,clockwise),
+            "Equivalent boundaries ignore collinear samples, closure and winding.");
+        auto normalisedRotation=[](const Polygon& polygon,double angle)
+        {
+            auto rotated=transformed(polygon,{0,0,angle});
+            const auto box=bounds(rotated);
+            return transformed(rotated,{-box.left,-box.top,0});
+        };
+        check(equivalent(square,normalisedRotation(square,90)),"Square quarter-turns are duplicate geometry.");
+        const auto longRectangle=rectangle(20,10);
+        check(equivalent(longRectangle,normalisedRotation(longRectangle,180)),"Rectangle half-turns are duplicate geometry.");
+        check(!equivalent(longRectangle,normalisedRotation(longRectangle,90)),"Retain the distinct rectangle quarter-turn.");
+        Polygon centered=rectangle(10,10);
+        centered.holes={transformed(rectangle(4,4),{3,3,0})};
+        check(equivalent(centered,normalisedRotation(centered,90)),"Symmetric DXF frames can share quarter-turn geometry.");
+        auto asymmetric=centered;
+        asymmetric.holes={transformed(rectangle(2,3),{1,2,0})};
+        check(!equivalent(asymmetric,normalisedRotation(asymmetric,90)) &&
+            !equivalent(asymmetric,normalisedRotation(asymmetric,180)),"Matching outer bounds must not hide a moved or rotated cutout.");
+        auto slot=centered;
+        slot.holes={transformed(rectangle(6,2),{2,4,0})};
+        check(!equivalent(slot,normalisedRotation(slot,90)) && equivalent(slot,normalisedRotation(slot,180)),
+            "Hole shape determines which rotations remain distinct.");
+        Polygon twin=rectangle(10,10);
+        twin.holes={transformed(rectangle(2,2),{1,4,0}),transformed(rectangle(2,2),{7,4,0})};
+        auto reordered=twin;
+        std::reverse(reordered.holes.begin(),reordered.holes.end());
+        for (auto& hole:reordered.holes)
+        {
+            std::rotate(hole.vertices.begin(),hole.vertices.begin()+1,hole.vertices.end());
+            std::reverse(hole.vertices.begin(),hole.vertices.end());
+        }
+        check(equivalent(twin,reordered) && equivalent(twin,normalisedRotation(twin,180)),
+            "Hole order, ring starts and winding must not defeat symmetry detection.");
+        check(!equivalent(twin,normalisedRotation(twin,90)),"Retain distinct multi-hole arrangements.");
+        reordered.holes[0].vertices[0].x+=0.0001;
+        check(!equivalent(twin,reordered),"Retain small but meaningful boundary differences.");
+        Polygon hexagon;
+        for (int i=0;i<6;++i) hexagon.vertices.push_back({10+10*std::cos(i*3.141592653589793/3),10+10*std::sin(i*3.141592653589793/3)});
+        check(equivalent(normalisedRotation(hexagon,0),normalisedRotation(hexagon,60)),"Non-quarter-turn symmetries are eligible too.");
+        check(!equivalent(normalisedRotation(circle(10),0),normalisedRotation(circle(10),1)),"Retain genuinely distinct faceted circle orientations.");
+        rejects([&] { equivalent(square,Polygon{}); });
         check(!validateOutline({{{0,0},{5,5},{0,5},{5,0}}}).empty(),"Reject self-crossing outline.");
         check(!validateOutline({{{0,0},{1,0},{2,0}}}).empty(),"Reject zero-area outline.");
         check(!validateOutline({{{0,0},{0,0},{1,1},{0,1}}}).empty(),"Reject zero-length edge.");
@@ -53,6 +95,17 @@ int main()
         check(!collide(square,next,1),"Exact requested clearance is permitted.");
         check(collide(square,next,1.01),"Insufficient clearance must collide.");
         check(collide(square,transformed(square,{10,0,0}),0.1),"Positive gap prohibits contact.");
+        const auto disk=circle(200);
+        check(!collide(disk,transformed(disk,{206,0,0}),6),"Exact gap between faceted circles is allowed.");
+        check(collide(disk,transformed(disk,{205.99,0,0}),6),"Circle gap below threshold collides.");
+        check(!collide(disk,transformed(disk,{206.01,0,0}),6),"Separated circle disks are rejected quickly.");
+        const Polygon largeTriangle{{{0,0},{600,0},{0,400}}};
+        const auto aboveTriangle=transformed(disk,{200,-206,0});
+        check(!collide(aboveTriangle,largeTriangle,6) && !collide(largeTriangle,aboveTriangle,6),"Exact circle-to-triangle gap in either order.");
+        check(collide(transformed(disk,{200,-205.99,0}),largeTriangle,6),"Circle-to-triangle gap below threshold.");
+        const auto nearCorner=transformed(disk,{-175,-175,0});
+        check(!collide(nearCorner,largeTriangle,6),"Enclosing disk cannot falsely collide near a polygon corner.");
+        check(collide(largeTriangle,nearCorner,6.1),"Near-corner clearance uses actual polygon edges.");
         for (int x=-8;x<=8;++x) for (int y=-8;y<=8;++y)
         {
             const double left=x*0.5, top=y*0.5;

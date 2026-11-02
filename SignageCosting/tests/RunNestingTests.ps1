@@ -44,6 +44,7 @@ try {
     Test-Suite 'NestingCoreTests' ($service + @('NestingManager.cpp'))
     Test-Suite 'NestingServiceTests' $service
     Test-Suite 'DxfImportTests' ($service + @('DxfImport.cpp'))
+    Test-Suite 'NestingGroupingTests' ($service + @('DxfImport.cpp'))
     Test-Suite 'NestingOutlineEditorTests' $ui -UI
     Test-Suite 'NestingPreviewTests' ($ui + @('NestingRender.cpp')) -UI
 } finally {
