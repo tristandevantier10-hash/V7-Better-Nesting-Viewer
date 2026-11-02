@@ -265,7 +265,7 @@ void SheetPreviewPanel::renderFitWidth(Renderer& renderer)
             std::to_string((int)sheet.width) +
             " x " +
             std::to_string((int)sheet.height) +
-            " mm)";
+            " mm) - " + std::to_string(sheet.placed.size()) + " pieces";
 
         int textWidth =
             renderer.getTextWidth(title);
@@ -402,7 +402,7 @@ void SheetPreviewPanel::renderFitAll(Renderer& renderer)
             std::to_string((int)sheet.width) +
             " x " +
             std::to_string((int)sheet.height) +
-            " mm)";
+            " mm) - " + std::to_string(sheet.placed.size()) + " pieces";
 
         int textWidth =
             renderer.getTextWidth(title);

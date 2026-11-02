@@ -18,6 +18,7 @@ public:
     void onActivated() override;
 
     void setNewJobCallback(std::function<void()> callback);
+    void setNestingCallback(std::function<void()> callback) { nestingCallback = callback; }
     void setQuotesCallback(std::function<void()> callback);
     void setCustomerDatabaseCallback(std::function<void()> callback);
     void setMaterialsCallback(std::function<void()> callback);
@@ -44,6 +45,7 @@ private:
     std::shared_ptr<NavigationItem> labourRatesItem;
 
     std::function<void()> newJobCallback;
+    std::function<void()> nestingCallback;
     std::function<void()> quotesCallback;
     std::function<void()> customerDatabaseCallback;
     std::function<void()> materialsCallback;

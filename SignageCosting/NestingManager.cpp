@@ -1,6 +1,9 @@
 #include "NestingManager.h"
 #include "MaterialDatabase.h"
 #include "NestingCore.h"
+#include "NestingLayoutSearch.h"
+#include "NestingService.h"
+#include "NestingGeometryBridge.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -40,61 +43,6 @@ namespace
         for (const auto& sheet : result.sheets)
             count += sheet.placed.size();
         return count;
-    }
-
-    double occupiedEnvelopeArea(const NestingPackResult& result)
-    {
-        double total = 0.0;
-        for (const auto& sheet : result.sheets)
-        {
-            double right = 0.0;
-            double bottom = 0.0;
-            for (const auto& part : sheet.placed)
-            {
-                right = std::max(right, part.x + part.width);
-                bottom = std::max(bottom, part.y + part.height);
-            }
-            total += right * bottom;
-        }
-        return total;
-    }
-
-    bool betterSheetLayout(
-        const NestingPackResult& candidate,
-        const NestingPackResult& current,
-        size_t candidateCapacity,
-        size_t currentCapacity,
-        double sheetArea,
-        double partArea)
-    {
-        const bool candidateComplete = candidate.isValid();
-        const bool currentComplete = current.isValid();
-        if (candidateComplete != currentComplete)
-            return candidateComplete;
-
-        if (!candidateComplete)
-        {
-            if (placedCount(candidate) != placedCount(current))
-                return placedCount(candidate) > placedCount(current);
-            if (candidate.sheets.size() != current.sheets.size())
-                return candidate.sheets.size() < current.sheets.size();
-            if (candidateCapacity != currentCapacity)
-                return candidateCapacity > currentCapacity;
-            return candidate.validationErrors.size() < current.validationErrors.size();
-        }
-
-        if (candidate.sheets.size() != current.sheets.size())
-            return candidate.sheets.size() < current.sheets.size();
-
-        if (candidateCapacity != currentCapacity)
-            return candidateCapacity > currentCapacity;
-
-        const double candidateWaste = sheetArea * candidate.sheets.size() - partArea;
-        const double currentWaste = sheetArea * current.sheets.size() - partArea;
-        if (std::abs(candidateWaste - currentWaste) > 1e-7)
-            return candidateWaste < currentWaste;
-
-        return occupiedEnvelopeArea(candidate) + 1e-7 < occupiedEnvelopeArea(current);
     }
 
     bool betterRollLayout(
@@ -194,7 +142,8 @@ std::vector<NestGroup> NestingManager::buildGroups(const Job& job)
             {
                 item.width,
                 item.height,
-                item.quantity
+                item.quantity,
+                item.partId
             });
 
         group->jobItemIndices.push_back(static_cast<int>(i));
@@ -295,59 +244,12 @@ NestingJobResult NestingManager::calculate(
         }
 
         NestingPackResult bestPack;
-        bool haveBest = false;
-        size_t bestFitScore = 0;
-        const double sheetAreaMM2 = group.sheetWidth * group.sheetHeight;
-        double partArea = 0.0;
-        for (const auto& item : group.rects)
-            partArea += item.width * item.height * item.quantity;
-
-        for (auto order : kItemOrders)
+        try
         {
-            for (auto strategy : kStrategies)
-            {
-                auto packed = core.pack(group.rects, group.sheetWidth,
-                    group.sheetHeight, strategy, order);
-                const size_t packedCapacity = core.maxAdditionalFit(packed, group.rects);
-                if (!haveBest || betterSheetLayout(packed, bestPack,
-                    packedCapacity, bestFitScore, sheetAreaMM2, partArea))
-                {
-                    bestPack = std::move(packed);
-                    bestFitScore = packedCapacity;
-                    haveBest = true;
-                }
-            }
+            bestPack = NestingService::calculate(NestingGeometry::rectangleParts(group.rects),
+                {static_cast<double>(group.sheetWidth),static_cast<double>(group.sheetHeight)}).layout;
         }
-
-        // Try moving a short tail of placements on each sheet, then reinsert
-        // those parts plus any unplaced parts into the preserved free space.
-        for (int pass = 0; pass < 2; ++pass)
-        {
-            const NestingPackResult repairSeed = bestPack;
-            for (size_t sheetIndex = 0; sheetIndex < repairSeed.sheets.size(); ++sheetIndex)
-            {
-                const size_t maxTail = std::min<size_t>(
-                    3, repairSeed.sheets[sheetIndex].placed.size());
-                for (size_t tailCount = 1; tailCount <= maxTail; ++tailCount)
-                {
-                    for (auto strategy : kStrategies)
-                    {
-                        auto repaired = core.repairTail(repairSeed,
-                            group.sheetWidth, group.sheetHeight,
-                            sheetIndex, tailCount, strategy);
-                        const size_t repairedCapacity =
-                            core.maxAdditionalFit(repaired, group.rects);
-                        if (betterSheetLayout(repaired, bestPack,
-                            repairedCapacity, bestFitScore,
-                            sheetAreaMM2, partArea))
-                        {
-                            bestPack = std::move(repaired);
-                            bestFitScore = repairedCapacity;
-                        }
-                    }
-                }
-            }
-        }
+        catch (const std::exception& error) { bestPack.validationErrors.push_back(error.what()); }
 
         group.layouts = bestPack.sheets;
         group.unplaced = bestPack.unplaced;

@@ -11,6 +11,7 @@ struct UnplacedRect
     double height = 0.0;
     int quantity = 0;
     std::string reason;
+    NestingGeometry::PartId partId = 0;
 };
 
 struct NestingPackResult
@@ -64,6 +65,8 @@ public:
     size_t maxAdditionalFit(
         const NestingPackResult& layout,
         const std::vector<Rect>& itemTypes);
+
+    void rebuildFreeSpace(Sheet& sheet);
 
     static std::vector<std::string> validateLayout(
         const std::vector<Sheet>& sheets,

@@ -550,6 +550,9 @@ NewJobScreen::NewJobScreen()
             JobItem item =
                 createItem();
 
+            if (activeJob && editingIndex >= 0 && editingIndex < static_cast<int>(activeJob->items.size()))
+                item.partId = activeJob->items[editingIndex].partId;
+
             std::string description =
                 std::to_string(
                     currentJob.items.size()) +
@@ -622,6 +625,7 @@ NewJobScreen::NewJobScreen()
             width->setText("");
             height->setText("");
             quantity->setText("");
+            calculationMessage->setVisible(false);
 
             width->setFocused(true);
         });
@@ -687,6 +691,13 @@ NewJobScreen::NewJobScreen()
     calculateRow->addLayoutElement(
         calculateButton,
         SizePolicy::Fill);
+
+    calculationMessage = std::make_shared<Label>();
+    calculationMessage->setStyle(LabelStyle::Small);
+    calculationMessage->setTextTheme(TextTheme::Warning);
+    calculationMessage->setText("Add at least one job item before calculating.");
+    calculationMessage->setVisible(false);
+    workspace->addLayoutElement(calculationMessage, SizePolicy::Fixed, 22);
 
     workspace->addLayoutElement(
         calculateRow,
@@ -801,9 +812,11 @@ void NewJobScreen::calculate()
 
     if (activeJob->items.empty())
     {
-        activeJob->addItem(createItem());
+        calculationMessage->setVisible(true);
+        return;
     }
 
+    calculationMessage->setVisible(false);
     if (onCalculate)
         onCalculate();
 }
@@ -1005,6 +1018,7 @@ void NewJobScreen::loadFormats()
 
 void NewJobScreen::clearEditor()
 {
+    calculationMessage->setVisible(false);
     editingIndex = -1;
 
     itemGrid->clear();
@@ -1088,6 +1102,7 @@ void NewJobScreen::loadItem(int index)
 
 void NewJobScreen::setJob(Job* job)
 {
+    calculationMessage->setVisible(false);
     activeJob = job;
     refreshProcessChoices();
 

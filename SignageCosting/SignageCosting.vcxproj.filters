@@ -1,6 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="NestingScreen.cpp"><Filter>Screens</Filter></ClCompile>
+    <ClInclude Include="NestingScreen.h"><Filter>Screens</Filter></ClInclude>
+    <ClInclude Include="NestingWorkspace.h"><Filter>Screens</Filter></ClInclude>
+    <ClInclude Include="NestingPreviewPanel.h"><Filter>UI</Filter></ClInclude>
+    <ClInclude Include="NestingStyle.h"><Filter>UI</Filter></ClInclude>
+    <ClInclude Include="NestingLayoutSearch.h"><Filter>Engine\Header Files</Filter></ClInclude>
+    <ClCompile Include="NestingGeometry.cpp"><Filter>Engine</Filter></ClCompile>
+    <ClCompile Include="NestingService.cpp"><Filter>Engine</Filter></ClCompile>
+    <ClCompile Include="DxfImport.cpp"><Filter>Engine</Filter></ClCompile>
+    <ClInclude Include="DxfImport.h"><Filter>Engine\Header Files</Filter></ClInclude>
+    <ClInclude Include="NestingService.h"><Filter>Engine\Header Files</Filter></ClInclude>
+    <ClInclude Include="NestingOutlineEditor.h"><Filter>Screens</Filter></ClInclude>
+    <ClInclude Include="NestingGeometry.h"><Filter>Engine\Header Files</Filter></ClInclude>
+    <ClInclude Include="NestingGeometryBridge.h"><Filter>Engine\Header Files</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>

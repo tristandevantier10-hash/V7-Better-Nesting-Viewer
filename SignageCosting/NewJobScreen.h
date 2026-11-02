@@ -67,6 +67,7 @@ private:
     std::shared_ptr<Button> addItemButton;
     std::shared_ptr<Button> removeItemButton;
     std::shared_ptr<Button> calculateButton;
+    std::shared_ptr<Label> calculationMessage;
 
     std::shared_ptr<DataGrid> itemGrid;
     std::shared_ptr<Panel> processChoicesPanel;

@@ -358,6 +358,8 @@ bool Application::initialise()
         ui.setScreen(&materialsScreen);
     });
 
+    mainMenu.setNestingCallback([this]() { ui.setScreen(&nestingScreen); });
+
     mainMenu.setSettingsCallback(
         [this]()
         {
@@ -1900,9 +1902,13 @@ bool Application::isRunning() const
 
 void Application::calculateQuote()
 {
+    if (currentJob.items.empty())
+        return;
+
     if (!jobProcessingService.submit(currentJob))
     {
         std::cerr << "Job processing service is not running.\n";
+        return;
     }
 
     state = AppState::Calculating;

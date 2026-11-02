@@ -13,6 +13,7 @@ ResultsViewModelBuilder::build(
     vm.sheetsUsed =
         static_cast<int>(result.nestingSheets.size());
     vm.nestingValid = result.nestingValid;
+    vm.nestingItems = result.nestingItems;
     vm.nestingErrors = result.nestingErrors;
 
     return vm;

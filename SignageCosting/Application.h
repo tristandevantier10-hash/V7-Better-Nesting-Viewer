@@ -26,6 +26,7 @@
 #include "SettingsScreen.h"
 #include "LabourRatesScreen.h"
 #include "MaterialsScreen.h"
+#include "NestingScreen.h"
 
 class Application
 {
@@ -194,6 +195,7 @@ private:
     LabourRatesScreen labourRatesScreen{ mainMenu.getNavigationPanel() };
 
     MaterialsScreen materialsScreen{ mainMenu.getNavigationPanel() };
+    NestingScreen nestingScreen{ mainMenu.getNavigationPanel() };
 
     //=================================================
     // Business Objects

@@ -11,6 +11,7 @@
 enum class PrimaryNavigationRoute
 {
     Overview,
+    Nesting,
     NewJob,
     MaterialDatabase,
     Quotes,
@@ -77,6 +78,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
 
     panel->addHeading("GENERAL");
     addItem("Overview", PrimaryNavigationRoute::Overview, "Assets/Icons/overview.svg", true);
+    addItem("Nesting", PrimaryNavigationRoute::Nesting, "Assets/Icons/nesting.svg", true);
 
     panel->addHeading("QUOTES");
     addItem("New Quote", PrimaryNavigationRoute::NewJob, "Assets/Icons/new_job.svg", true);

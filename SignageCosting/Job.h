@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "ProductionOptions.h"
 #include "Customer.h"
+#include "NestingGeometry.h"
 
 //DEFINITION//
 // ----------------- //
@@ -21,6 +22,7 @@
 
 struct JobItem
 {
+    NestingGeometry::PartId partId = NestingGeometry::newPartId();
     Material material;
 
     double width;

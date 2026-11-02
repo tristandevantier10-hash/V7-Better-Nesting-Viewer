@@ -285,7 +285,7 @@ NestingPackResult NestingCore::pack(
                 "Item dimensions must be finite and greater than zero, and quantity cannot be negative.");
             if (item.quantity > 0)
                 result.unplaced.push_back({ item.width, item.height, item.quantity,
-                    "Invalid item dimensions or quantity." });
+                    "Invalid item dimensions or quantity.", item.partId });
             continue;
         }
         if (item.quantity > 0)
@@ -352,7 +352,7 @@ NestingPackResult NestingCore::pack(
             if (!canFit)
             {
                 result.unplaced.push_back({ item.width, item.height, item.quantity - q,
-                    "Item does not fit inside the container in either orientation." });
+                    "Item does not fit inside the container in either orientation.", item.partId });
                 break;
             }
 
@@ -380,6 +380,8 @@ NestingPackResult NestingCore::pack(
                     p.width = rotated ? item.height : item.width;
                     p.height = rotated ? item.width : item.height;
                     p.rotated = rotated;
+                    p.partId = item.partId;
+                    p.instanceIndex = static_cast<std::uint32_t>(q);
 
                     sheet.placed.push_back(p);
 
@@ -411,7 +413,7 @@ NestingPackResult NestingCore::pack(
                 {
                     sheets.pop_back();
                     result.unplaced.push_back({ item.width, item.height, item.quantity - q,
-                        "No valid placement was found in a new container." });
+                        "No valid placement was found in a new container.", item.partId });
                     break;
                 }
 
@@ -421,6 +423,8 @@ NestingPackResult NestingCore::pack(
                 p.width = rotated ? item.height : item.width;
                 p.height = rotated ? item.width : item.height;
                 p.rotated = rotated;
+                p.partId = item.partId;
+                p.instanceIndex = static_cast<std::uint32_t>(q);
 
                 sheet.placed.push_back(p);
 
@@ -459,13 +463,13 @@ NestingPackResult NestingCore::repairTail(
         pending.push_back({
             placed.rotated ? placed.height : placed.width,
             placed.rotated ? placed.width : placed.height,
-            1
+            1, placed.partId
         });
     }
     target.placed.erase(target.placed.begin() + firstRemoved, target.placed.end());
 
     for (const auto& unplaced : seed.unplaced)
-        pending.push_back({ unplaced.width, unplaced.height, unplaced.quantity });
+        pending.push_back({ unplaced.width, unplaced.height, unplaced.quantity, unplaced.partId });
 
     for (const auto& item : pending)
     {
@@ -516,6 +520,8 @@ NestingPackResult NestingCore::repairTail(
                 part.width = rotated ? item.height : item.width;
                 part.height = rotated ? item.width : item.height;
                 part.rotated = rotated;
+                part.partId = item.partId;
+                part.instanceIndex = static_cast<std::uint32_t>(q);
                 sheet.placed.push_back(part);
                 updateFreeRects(sheet, x, y, part.width, part.height);
                 placed = true;
@@ -539,6 +545,8 @@ NestingPackResult NestingCore::repairTail(
                     part.width = rotated ? item.height : item.width;
                     part.height = rotated ? item.width : item.height;
                     part.rotated = rotated;
+                    part.partId = item.partId;
+                    part.instanceIndex = static_cast<std::uint32_t>(q);
                     sheet.placed.push_back(part);
                     updateFreeRects(sheet, x, y, part.width, part.height);
                 }
@@ -546,7 +554,7 @@ NestingPackResult NestingCore::repairTail(
                 {
                     repaired.sheets.pop_back();
                     repaired.unplaced.push_back({ item.width, item.height,
-                        item.quantity - q, "No valid placement was found during local repair." });
+                        item.quantity - q, "No valid placement was found during local repair.", item.partId });
                     break;
                 }
             }
@@ -556,6 +564,14 @@ NestingPackResult NestingCore::repairTail(
     repaired.validationErrors = validateLayout(
         repaired.sheets, containerWidth, containerHeight);
     return repaired;
+}
+
+void NestingCore::rebuildFreeSpace(Sheet& sheet)
+{
+    sheet.freeRects.clear();
+    sheet.freeRects.push_back({0, 0, sheet.width, sheet.height, false});
+    for (const auto& placed : sheet.placed)
+        updateFreeRects(sheet, placed.x, placed.y, placed.width, placed.height);
 }
 
 size_t NestingCore::maxAdditionalFit(
@@ -597,6 +613,8 @@ size_t NestingCore::maxAdditionalFit(
                 part.width = rotated ? item.height : item.width;
                 part.height = rotated ? item.width : item.height;
                 part.rotated = rotated;
+                part.partId = item.partId;
+                part.instanceIndex = static_cast<std::uint32_t>(fitCount);
                 sheet.placed.push_back(part);
                 updateFreeRects(sheet, x, y, part.width, part.height);
                 placed = true;

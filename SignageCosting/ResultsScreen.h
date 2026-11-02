@@ -7,7 +7,6 @@
 #include "DataGrid.h"
 #include "InvoiceViewModel.h"
 #include "ResultsViewModel.h"
-#include "SheetPreviewPanel.h"
 #include <functional>
 #include <memory>
 #include <vector>
@@ -15,6 +14,7 @@
 #include <string>
 
 class Renderer;
+class NestingPreviewPanel;
 
 class ResultsScreen : public Screen
 {
@@ -125,7 +125,8 @@ private:
     std::shared_ptr<DataGrid> costBreakdownGrid;
     std::shared_ptr<DataGrid> jobItemsGrid;
 
-    std::shared_ptr<SheetPreviewPanel> previewPanel;
+    std::shared_ptr<NestingPreviewPanel> previewPanel;
+    std::shared_ptr<NestingPreviewPanel> fullPreviewPanel;
 
     // --------------------------------------------------
     // Bottom buttons

@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include "NestingGeometry.h"
+#include <memory>
 
 // Nesting Rectangles defintions //
 
@@ -8,6 +10,7 @@ struct Rect {
     double width = 0;
     double height = 0;
     int quantity = 0;
+    NestingGeometry::PartId partId = 0;
 };
 
 struct PlacedRect
@@ -19,6 +22,10 @@ struct PlacedRect
     double height = 0;
 
     bool rotated = false;
+    NestingGeometry::PartId partId = 0;
+    std::uint32_t instanceIndex = 0;
+    std::shared_ptr<const NestingGeometry::Polygon> contour;
+    NestingGeometry::Transform contourTransform;
 };
 
 struct Sheet {

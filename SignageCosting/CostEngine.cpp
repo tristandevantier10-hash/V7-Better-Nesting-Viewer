@@ -16,6 +16,9 @@ CostResult CostEngine::calculate(Job job)
     CostResult result;
 
     result.customer = job.customer;
+    // Preserve input order and dimensions for matching preview colours/legends.
+    for (const auto& item : job.items)
+        result.nestingItems.push_back({ item.width, item.height, item.quantity, item.partId });
 
     NestingManager nestingManager;
 

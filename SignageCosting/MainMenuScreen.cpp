@@ -58,6 +58,9 @@ MainMenuScreen::MainMenuScreen()
         {
             switch (route)
             {
+            case PrimaryNavigationRoute::Nesting:
+                if (nestingCallback) nestingCallback();
+                break;
             case PrimaryNavigationRoute::NewJob:
                 if (newJobCallback) newJobCallback();
                 break;

@@ -90,6 +90,7 @@ struct CostResult
 
     std::vector<ItemCostResult> items;
     std::vector<Sheet> nestingSheets;
+    std::vector<Rect> nestingItems;
     bool nestingValid = true;
     std::vector<std::string> nestingErrors;
 

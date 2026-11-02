@@ -1,4 +1,5 @@
 #include "ResultsScreen.h"
+#include "NestingPreviewPanel.h"
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
 #include "NavigationPanel.h"
@@ -792,41 +793,16 @@ void ResultsScreen::buildContentArea()
     // Nesting Preview
     // --------------------------------------------------
 
-    nestingCard =
-        createCard();
-
-    auto nestingLayout =
-        std::make_shared<Panel>();
-
-    nestingLayout->setLayout(
-        std::make_unique<VerticalLayout>());
-
-    nestingLayout->setBorderVisible(false);
-
-    nestingCard->addLayoutElement(
-        nestingLayout,
-        SizePolicy::Fill);
-
-    auto nestingTitle =
-        std::make_shared<Label>();
-
-    nestingTitle->setText(
-        "Nesting Sheets Preview");
-
-    nestingTitle->setStyle(
-        LabelStyle::Small);
-            
-    nestingLayout->addLayoutElement(
-        nestingTitle,
-        SizePolicy::Fixed,
-        30);
-
-    previewPanel =
-        std::make_shared<SheetPreviewPanel>();
-
-    nestingLayout->addLayoutElement(
-        previewPanel,
-        SizePolicy::Fill);
+    nestingCard = std::make_shared<Panel>();
+    nestingCard->setLayout(std::make_unique<VerticalLayout>());
+    nestingCard->setPadding(0);
+    nestingCard->setSpacing(0);
+    nestingCard->setBorderVisible(false);
+    previewPanel = std::make_shared<NestingPreviewPanel>();
+    previewPanel->setItems(viewModel.nestingItems);
+    previewPanel->setSheets(nestingSheets);
+    previewPanel->status = "No nesting layout available.";
+    nestingCard->addLayoutElement(previewPanel, SizePolicy::Fill);
 
     rightColumn->addLayoutElement(
         nestingCard,
@@ -921,6 +897,8 @@ void ResultsScreen::setViewModel(
     const ResultsViewModel& vm)
 {
     viewModel = vm;
+    if (previewPanel) previewPanel->setItems(vm.nestingItems);
+    if (fullPreviewPanel) fullPreviewPanel->setItems(vm.nestingItems);
 
     refreshView();
 }
@@ -1118,7 +1096,17 @@ void ResultsScreen::setSheets(
     nestingSheets = sheets;
 
     if (previewPanel)
+    {
+        previewPanel->setItems(viewModel.nestingItems);
         previewPanel->setSheets(sheets);
+        previewPanel->resetView();
+    }
+    if (fullPreviewPanel)
+    {
+        fullPreviewPanel->setItems(viewModel.nestingItems);
+        fullPreviewPanel->setSheets(sheets);
+        fullPreviewPanel->resetView();
+    }
 }
 
 // ======================================================
@@ -1310,54 +1298,16 @@ void ResultsScreen::showNestingSheets()
     // Nesting Card
     // --------------------------------------------------
 
-    auto nestingCard = createCard();
-
-    mainContainer->addLayoutElement(
-        nestingCard,
-        SizePolicy::Fill);
-
-    auto nestingLayout = std::make_shared<Panel>();
-
-    nestingLayout->setLayout(
-        std::make_unique<VerticalLayout>());
-
-    nestingLayout->setBorderVisible(false);
-    nestingLayout->setSpacing(10);
-
-    nestingCard->addLayoutElement(
-        nestingLayout,
-        SizePolicy::Fill);
-
-    // --------------------------------------------------
-    // Card Title
-    // --------------------------------------------------
-
-    auto nestingTitle = std::make_shared<Label>();
-
-    nestingTitle->setText(
-        "Nesting Preview");
-
-    nestingTitle->setStyle(
-        LabelStyle::Normal);
-
-    nestingLayout->addLayoutElement(
-        nestingTitle,
-        SizePolicy::Fixed,
-        30);
-
-    // --------------------------------------------------
-    // Preview
-    // --------------------------------------------------
-
-    auto fullPreview =
-        std::make_shared<SheetPreviewPanel>();
-
-    fullPreview->setSheets(
-        nestingSheets);
-
-    nestingLayout->addLayoutElement(
-        fullPreview,
-        SizePolicy::Fill);
+    auto nestingCard = std::make_shared<Panel>();
+    nestingCard->setLayout(std::make_unique<VerticalLayout>());
+    nestingCard->setPadding(0);
+    nestingCard->setBorderVisible(false);
+    mainContainer->addLayoutElement(nestingCard, SizePolicy::Fill);
+    fullPreviewPanel = std::make_shared<NestingPreviewPanel>();
+    fullPreviewPanel->setItems(viewModel.nestingItems);
+    fullPreviewPanel->setSheets(nestingSheets);
+    fullPreviewPanel->status = "No nesting layout available.";
+    nestingCard->addLayoutElement(fullPreviewPanel, SizePolicy::Fill);
 }
 
 void ResultsScreen::showCostBreakdown()

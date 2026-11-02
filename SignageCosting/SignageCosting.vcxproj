@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{d9154bde-c01d-4641-8fe3-fdcc9609cf05}</ProjectGuid>
     <RootNamespace>SignageCosting</RootNamespace>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <VcpkgEnabled>true</VcpkgEnabled>
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -48,6 +49,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <!-- Avoid the VS 2022 SARIF output reader's OutOfMemoryException. -->
+    <UseStructuredOutput>false</UseStructuredOutput>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -123,6 +128,20 @@
     <ClCompile Include="NavigationPanel.cpp" />
     <ClCompile Include="NestingCalculator.cpp" />
     <ClCompile Include="NestingCore.cpp" />
+    <ClCompile Include="NestingGeometry.cpp" />
+    <ClCompile Include="NestingService.cpp" />
+    <ClCompile Include="DxfImport.cpp" />
+    <ClInclude Include="DxfImport.h" />
+    <ClInclude Include="NestingService.h" />
+    <ClInclude Include="NestingOutlineEditor.h" />
+    <ClInclude Include="NestingGeometry.h" />
+    <ClInclude Include="NestingGeometryBridge.h" />
+    <ClCompile Include="NestingScreen.cpp" />
+    <ClInclude Include="NestingScreen.h" />
+    <ClInclude Include="NestingWorkspace.h" />
+    <ClInclude Include="NestingPreviewPanel.h" />
+    <ClInclude Include="NestingStyle.h" />
+    <ClInclude Include="NestingLayoutSearch.h" />
     <ClCompile Include="NestingEngine.cpp" />
     <ClCompile Include="NestingManager.cpp" />
     <ClCompile Include="NestingRender.cpp" />
