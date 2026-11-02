@@ -24,10 +24,10 @@ namespace NestingService
             return a.right+gap < b.left-tolerance || b.right+gap < a.left-tolerance ||
                 a.bottom+gap < b.top-tolerance || b.bottom+gap < a.top-tolerance;
         }
-        struct Occupied { Polygon polygon; Bounds box; };
+        struct Occupied { Polygon polygon; Bounds box; CollisionShape collision; };
         bool circleEnvelope(const Polygon& polygon,const Bounds& box)
         {
-            if (polygon.vertices.size()!=64) return false;
+            if (!polygon.holes.empty() || polygon.vertices.size()!=64) return false;
             const double diameter=box.right-box.left;
             if (std::abs(diameter-(box.bottom-box.top))>tolerance) return false;
             const double cx=(box.left+box.right)/2,cy=(box.top+box.bottom)/2;
@@ -58,6 +58,7 @@ namespace NestingService
                 const auto rotated = transformed(part.outline,{0,0,angle});
                 const auto rb = bounds(rotated);
                 const auto local = transformed(rotated,{-rb.left,-rb.top,0});
+                const CollisionShape localCollision(local);
                 const double width=rb.right-rb.left, height=rb.bottom-rb.top;
                 const bool round=circleEnvelope(rotated,rb);
                 if (width > sheet.width-2*options.margin+tolerance || height > sheet.height-2*options.margin+tolerance) continue;
@@ -74,6 +75,26 @@ namespace NestingService
                 add(options.margin,options.margin);
                 add(sheet.width-options.margin-width,options.margin);
                 add(options.margin,sheet.height-options.margin-height);
+                // Reserve cutout candidates before the bounded contact/grid
+                // search fills up. Centre anchors also handle round cutouts.
+                for (const auto& previous:occupied)
+                {
+                    for (const auto& hole:previous.polygon.holes)
+                    {
+                        const auto hb=bounds(hole);
+                        for (double x:{hb.left+options.clearance,hb.right-width-options.clearance,(hb.left+hb.right-width)/2})
+                            for (double y:{hb.top+options.clearance,hb.bottom-height-options.clearance,(hb.top+hb.bottom-height)/2}) add(x,y);
+                    }
+                    // Also try placing a frame around a part already laid out.
+                    for (const auto& hole:local.holes)
+                    {
+                        const auto hb=bounds(hole);
+                        for (double x:{previous.box.left-hb.left-options.clearance,previous.box.right-hb.right+options.clearance,
+                            (previous.box.left+previous.box.right-hb.left-hb.right)/2})
+                            for (double y:{previous.box.top-hb.top-options.clearance,previous.box.bottom-hb.bottom+options.clearance,
+                                (previous.box.top+previous.box.bottom-hb.top-hb.bottom)/2}) add(x,y);
+                    }
+                }
                 std::set<double> xs{options.margin}, ys{options.margin};
                 for (const auto& previous:occupied)
                 {
@@ -106,14 +127,16 @@ namespace NestingService
                     }
                     // Vertex contacts can place a part inside a concave notch,
                     // even when its bounding box overlaps another bounding box.
-                    if (!gridOnly) for (const auto& p:previous.polygon.vertices)
-                        for (const auto& q:local.vertices)
+                    if (!gridOnly) for (const auto* previousRing:boundaryRings(previous.polygon))
+                      for (const auto* localRing:boundaryRings(local))
+                       for (const auto& p:previousRing->vertices)
+                        for (const auto& q:localRing->vertices)
                         {
                             add(p.x-q.x,p.y-q.y);
                             if (options.clearance>0)
                             {
-                                add(p.x-q.x+options.clearance,p.y-q.y);
-                                add(p.x-q.x,p.y-q.y+options.clearance);
+                                for (double dx:{-options.clearance,0.0,options.clearance})
+                                    for (double dy:{-options.clearance,0.0,options.clearance}) add(p.x-q.x+dx,p.y-q.y+dy);
                             }
                         }
                 }
@@ -133,24 +156,25 @@ namespace NestingService
                 for (const auto& candidate:candidates)
                 {
                     if (found && !(candidate.score<bestScore)) break;
-                    auto outline=transformed(local,{candidate.x,candidate.y,0});
                     const Bounds box{candidate.x,candidate.y,candidate.x+width,candidate.y+height};
                     bool collision=false;
                     for (const auto& previous:occupied)
-                        if (!boxesSeparated(box,previous.box,options.clearance) && collide(outline,previous.polygon,options.clearance))
+                        if (!boxesSeparated(box,previous.box,options.clearance) &&
+                            collide(localCollision,{candidate.x,candidate.y},previous.collision,{},options.clearance))
                         { collision=true; break; }
                     if (collision) continue;
                     found=true;
                     bestScore=candidate.score;
                     bestTransform={candidate.x-rb.left,candidate.y-rb.top,angle};
                     bestBounds=box;
-                    bestPolygon=std::move(outline);
+                    bestPolygon=transformed(local,{candidate.x,candidate.y,0});
                     break;
                 }
             }
             if (!found) return false;
             sheet.placements.push_back({part.id,instance,bestTransform});
-            occupied.push_back({std::move(bestPolygon),bestBounds});
+            auto collision=CollisionShape(bestPolygon);
+            occupied.push_back({std::move(bestPolygon),bestBounds,std::move(collision)});
             return true;
         }
         Trial contourTrial(const std::vector<Part>& parts, const Options& options, int order, bool bottomFirst, bool gridOnly=false)
@@ -194,6 +218,8 @@ namespace NestingService
                 last=right*bottom;
                 envelope+=last;
             }
+            // Bounding envelopes measure compactness, not consumed material:
+            // a part inside a cutout must not add its box area a second time.
             return std::make_tuple(trial.sheets.size(),last,envelope);
         }
     }
@@ -249,7 +275,11 @@ namespace NestingService
         }
         if (total>200) { fail("Contour jobs support up to 200 pieces per calculation."); return result; }
         for (const auto& part:parts)
-            if (part.outline.vertices.size()>64) { fail("Use up to 64 vertices per outline."); return result; }
+        {
+            if (part.outline.holes.size()>16) { fail("Use up to 16 holes per profile."); return result; }
+            for (const auto* boundary:boundaryRings(part.outline))
+                if (boundary->vertices.size()>64) { fail("Use up to 64 vertices per boundary ring."); return result; }
+        }
         Trial best;
         bool haveBest=false;
         for (int order=0;order<3;++order) for (bool bottomFirst:{false,true})

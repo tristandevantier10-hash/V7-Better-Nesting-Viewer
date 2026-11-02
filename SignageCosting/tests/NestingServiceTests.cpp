@@ -54,6 +54,38 @@ int main()
             "A rectangle must fit inside the concave part's empty recess.");
         verify(mixed,notch,small);
 
+        Polygon frame=rectangle(100,100);
+        frame.holes={transformed(rectangle(60,60),{20,20,0})};
+        std::vector<Part> cutouts{{701,frame,1,quarterTurns,"Frame"},{702,rectangle(60,60),1,quarterTurns,"Insert"}};
+        auto filled=NestingService::calculate(cutouts,small);
+        verify(cutouts,filled,small);
+        check(filled.method==Method::Contours && filled.layout.sheets.size()==1,"Insert uses cutout rather than another sheet.");
+        check(filled.layout.sheets[0].placed[0].contour->holes.size()==1,"Preview retains cutout rings.");
+        double material=0;
+        for (const auto& placed:filled.layout.sheets[0].placed) material+=area(*placed.contour);
+        check(std::abs(material-10000)<1e-6,"A filled frame uses exactly one sheet's area without double counting.");
+        cutouts[1].outline=rectangle(56,56);
+        NestingService::Options cutoutGap{100,100,2,0};
+        auto spacedCutout=NestingService::calculate(cutouts,cutoutGap);
+        verify(cutouts,spacedCutout,cutoutGap);
+        check(spacedCutout.layout.sheets.size()==1,"Search offsets both axes for cutout clearance.");
+        cutoutGap.clearance=2.1;
+        auto tooTight=NestingService::calculate(cutouts,cutoutGap);
+        verify(cutouts,tooTight,cutoutGap);
+        check(tooTight.layout.sheets.size()==2,"Clearance prevents an oversized insert using a hole.");
+        Polygon wideFrame=rectangle(100,60);
+        wideFrame.holes={transformed(rectangle(70,30),{15,15,0})};
+        std::vector<Part> rotatedCutouts{{711,wideFrame,1,{90},"Rotated frame"},{712,rectangle(30,70),1,{0},"Insert"}};
+        auto rotatedHole=NestingService::calculate(rotatedCutouts,{60,100});
+        verify(rotatedCutouts,rotatedHole,{60,100});
+        check(rotatedHole.layout.sheets.size()==1,"Cutout candidates follow parent rotation.");
+        Polygon multiple=rectangle(100,100);
+        multiple.holes={transformed(rectangle(30,60),{10,20,0}),transformed(rectangle(30,60),{60,20,0})};
+        std::vector<Part> multiParts{{721,multiple,1,{0},"Two cutouts"},{722,rectangle(30,60),2,{0},"Insert"}};
+        auto multiNest=NestingService::calculate(multiParts,small);
+        verify(multiParts,multiNest,small);
+        check(multiNest.layout.sheets.size()==1,"Both cutouts are reusable nesting space.");
+
         triangles.front().allowedRotations={0};
         auto fixed=NestingService::calculate(triangles,small);
         check(fixed.layout.sheets.size()==2,"Fixed orientation must not be overridden to save a sheet.");

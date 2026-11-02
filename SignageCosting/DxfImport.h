@@ -6,7 +6,7 @@ namespace DxfImport
 {
     struct Outline
     {
-        NestingGeometry::Polygon polygon; // Local coordinates in millimetres.
+        NestingGeometry::Polygon polygon; // Outer ring and cutouts, local millimetres.
         std::string name;
         bool circle=false;
     };

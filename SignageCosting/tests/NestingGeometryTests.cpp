@@ -67,6 +67,79 @@ int main()
         check(!fitsSheet(transformed(square,{-0.01,0,0}),10,10),"Reject negative placement.");
         check(fitsSheet(transformed(rectangle(2,2),{5,5,45}),10,10),"Arbitrary-angle transform.");
         check(methodFor({{1,square,1,{0}}})==Method::Rectangles,"Rectangle method dispatch.");
+        Polygon frame=rectangle(10,10);
+        frame.holes={transformed(rectangle(6,6),{2,2,0})};
+        check(validateOutline(frame).empty() && area(frame)==64,"Subtract cutout area.");
+        check(!isRectangle(frame) && methodFor({{3,frame,1,{0,90}}})==Method::Contours,"Frames never use rectangle packing.");
+        const auto plug=transformed(rectangle(4,4),{3,3,0});
+        check(!collide(frame,plug) && !collide(plug,frame),"Cutout interiors are empty in either argument order.");
+        check(!collide(frame,plug,1) && collide(frame,plug,1.01),"Clearance to inner walls.");
+        check(!collide(frame,frame.holes[0]) && collide(frame,frame.holes[0],0.01),"Exact cutout fit allows contact only at zero gap.");
+        check(collide(frame,transformed(rectangle(2,2),{1,4,0})),"Crossing a hole wall collides.");
+        check(collide(frame,frame),"Coincident frames still collide.");
+        Polygon innerFrame=transformed(rectangle(5,5),{2.5,2.5,0});
+        innerFrame.holes={transformed(rectangle(3,3),{3.5,3.5,0})};
+        check(!collide(frame,innerFrame,0.5),"A perforated part can also nest inside a cutout.");
+        auto reversedFrame=frame;
+        std::reverse(reversedFrame.vertices.begin(),reversedFrame.vertices.end());
+        std::reverse(reversedFrame.holes[0].vertices.begin(),reversedFrame.holes[0].vertices.end());
+        check(area(reversedFrame)==64 && !collide(reversedFrame,plug),"Hole winding is immaterial.");
+        for (double angle:{0.0,37.0,90.0,180.0,270.0})
+        {
+            const Transform pose{40,-15,angle};
+            check(!collide(transformed(frame,pose),transformed(plug,pose),1),"Rotate and translate holes with their parent.");
+            check(collide(transformed(frame,pose),transformed(plug,pose),1.01),"Rotated inner clearance.");
+        }
+        check(scanline(frame,5)==std::vector<double>({0,2,8,10}),"Preview fill excludes cutouts.");
+        check(scanline(frame,1)==std::vector<double>({0,10}) && scanline(frame,10).empty(),"Half-open scanline boundary convention.");
+        auto invalidHole=frame; invalidHole.holes[0]=transformed(rectangle(6,6),{0,2,0});
+        check(!validateOutline(invalidHole).empty(),"Reject holes touching outer boundary.");
+        invalidHole=frame; invalidHole.holes[0]=transformed(rectangle(6,6),{5,2,0});
+        rejects([&] { collide(invalidHole,plug); });
+        invalidHole=frame; invalidHole.holes.push_back(transformed(rectangle(2,2),{3,3,0}));
+        check(!validateOutline(invalidHole).empty(),"Reject nested hole rings.");
+        invalidHole=frame; invalidHole.holes.push_back(transformed(rectangle(2,2),{7,3,0}));
+        check(!validateOutline(invalidHole).empty(),"Reject intersecting holes.");
+        invalidHole=frame; invalidHole.holes[0].holes={rectangle(1,1)};
+        check(!validateOutline(invalidHole).empty(),"Reject recursive hole topology.");
+        Polygon slanted=rectangle(20,20);
+        slanted.holes={{{{5,5},{15,5},{10,15}}}};
+        check(!collide(slanted,transformed(rectangle(1,1),{9,8,0})),"Sloped hole edges.");
+        check(collide(slanted,transformed(rectangle(3,3),{5,10,0})),"Material beside a sloped hole.");
+        Polygon twoHoles=rectangle(20,10);
+        twoHoles.holes={transformed(rectangle(6,6),{2,2,0}),transformed(rectangle(6,6),{12,2,0})};
+        check(area(twoHoles)==128 && !collide(twoHoles,plug),"Multiple cutouts retain the material bridge.");
+        check(collide(twoHoles,transformed(rectangle(2,2),{9,4,0})),"Bridge between holes is occupied.");
+        auto scaledFrame=frame;
+        mapVertices(scaledFrame,[](Point p) { return Point{p.x*3,p.y*2}; });
+        check(area(scaledFrame)==384 && bounds(scaledFrame.holes[0]).right==24,"Resize outer and inner rings together.");
+        // Independent material oracle: a frame is exactly four solid strips.
+        const std::vector<Polygon> strips{rectangle(10,2),transformed(rectangle(10,2),{0,8,0}),
+            transformed(rectangle(2,6),{0,2,0}),transformed(rectangle(2,6),{8,2,0})};
+        const CollisionShape preparedFrame(frame),preparedProbe(rectangle(1,1));
+        for (int x=-2;x<=20;++x) for (int y=-2;y<=20;++y)
+        {
+            auto probe=transformed(rectangle(1,1),{x*0.5,y*0.5,0});
+            bool expected=false;
+            for (const auto& strip:strips) expected=expected || collide(strip,probe);
+            check(collide(frame,probe)==expected && collide(probe,frame)==expected,"Hole collision agrees with independent solid-strip oracle.");
+            const Point origin{12,-7},position{12+x*0.5,-7+y*0.5};
+            check(collide(preparedFrame,origin,preparedProbe,position)==expected &&
+                collide(preparedProbe,position,preparedFrame,origin)==expected,"Prepared collision preserves translated material and argument symmetry.");
+        }
+        const CollisionShape preparedPlug(rectangle(4,4));
+        check(!collide(preparedFrame,{},preparedPlug,{3,3},1) && collide(preparedFrame,{},preparedPlug,{3,3},1.01),
+            "Prepared geometry preserves inner clearance thresholds.");
+        rejects([&] { collide(preparedFrame,{},preparedPlug,{std::numeric_limits<double>::quiet_NaN(),0}); });
+        rejects([&] { CollisionShape invalid(Polygon{}); });
+        auto perforatedElbow=elbow;
+        perforatedElbow.holes={transformed(rectangle(1,1),{1,1,0})};
+        check(validateOutline(perforatedElbow).empty() && !collide(perforatedElbow,inNotch),"Concave outer outline with a hole.");
+        check(!collide(perforatedElbow,perforatedElbow.holes[0]),"Concave outer cutout remains empty.");
+        invalidHole=elbow; invalidHole.holes={inNotch};
+        check(!validateOutline(invalidHole).empty(),"A hole inside outer bounds but outside concave material is invalid.");
+        invalidHole=frame; invalidHole.holes[0].vertices[0].x=std::numeric_limits<double>::quiet_NaN();
+        check(!validateOutline(invalidHole).empty(),"Nonfinite hole geometry is rejected.");
         check(methodFor({{1,square,1,{0}},{2,elbow,1,{0}}})==Method::Contours,"Mixed job needs contours.");
         rejects([&] { methodFor({{1,elbow,1,{0}},{2,{},1,{0}}}); });
 

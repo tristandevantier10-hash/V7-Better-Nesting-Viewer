@@ -38,12 +38,12 @@ public:
                 drawing=false; message.clear(); return;
             }
         if (SDL_PointInRect(&point,&undoButton)) { undo(); return; }
-        if (SDL_PointInRect(&point,&clearButton)) { polygon.vertices.clear(); drawing=true; name="Custom outline"; message.clear(); return; }
+        if (SDL_PointInRect(&point,&clearButton)) { polygon={}; drawing=true; name="Custom outline"; message.clear(); return; }
         if (SDL_PointInRect(&point,&cancelButton)) { if (cancelled) cancelled(); return; }
         if (SDL_PointInRect(&point,&useButton)) { finish(); return; }
         if (SDL_PointInRect(&point,&canvas))
         {
-            if (!drawing) { polygon.vertices.clear(); drawing=true; name="Custom outline"; }
+            if (!drawing) { polygon={}; drawing=true; name="Custom outline"; }
             if (polygon.vertices.size()>=64) { message="Use up to 64 points per outline."; return; }
             // A 20-division grid makes straight edges easy to draw consistently.
             const double x=std::clamp(std::round((point.x-canvas.x)*20.0/canvas.w)/20.0,0.0,1.0);
@@ -101,10 +101,17 @@ public:
             renderer.drawLine(canvas.x+static_cast<int>(a.x*canvas.w),canvas.y+static_cast<int>(a.y*canvas.h),
                 canvas.x+static_cast<int>(b.x*canvas.w),canvas.y+static_cast<int>(b.y*canvas.h),green);
         }
+        for (const auto& hole:polygon.holes)
+            for (size_t i=0;i<hole.vertices.size();++i)
+            {
+                const auto a=hole.vertices[i],b=hole.vertices[(i+1)%hole.vertices.size()];
+                renderer.drawLine(canvas.x+static_cast<int>(a.x*canvas.w),canvas.y+static_cast<int>(a.y*canvas.h),
+                    canvas.x+static_cast<int>(b.x*canvas.w),canvas.y+static_cast<int>(b.y*canvas.h),green);
+            }
         button(undoButton,"Undo"); button(clearButton,"Clear");
         button(cancelButton,"Cancel"); button(useButton,"Use outline",true);
         renderer.pushClip({popup.x+20,popup.y+popup.h-94,popup.w-40,30});
-        text(renderer,message.empty() ? std::to_string(polygon.vertices.size())+" points · Simple outlines only" : message,
+        text(renderer,message.empty() ? std::to_string(polygon.vertices.size())+" points · "+std::to_string(polygon.holes.size())+" cutouts" : message,
             popup.x+20,popup.y+popup.h-92,LabelStyle::Small,message.empty() ? muted : SDL_Color{174,64,46,255});
         renderer.popClip();
     }
@@ -132,8 +139,8 @@ private:
         if (!errors.empty()) { message=errors.front(); return; }
         const auto box=NestingGeometry::bounds(polygon);
         auto normalized=polygon;
-        for (auto& point:normalized.vertices)
-        { point.x=(point.x-box.left)/(box.right-box.left); point.y=(point.y-box.top)/(box.bottom-box.top); }
+        NestingGeometry::mapVertices(normalized,[&](NestingGeometry::Point p)
+        { return NestingGeometry::Point{(p.x-box.left)/(box.right-box.left),(p.y-box.top)/(box.bottom-box.top)}; });
         if (accepted) accepted(normalized,name);
     }
     NestingGeometry::Polygon polygon;

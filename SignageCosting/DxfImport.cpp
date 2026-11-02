@@ -154,7 +154,7 @@ namespace DxfImport
                 if (!errors.empty()) throw std::runtime_error(name+": "+errors.front());
                 if (polygon.vertices.size()>64) throw std::runtime_error(name+": use at most 64 vertices per outline.");
                 raw.push_back({std::move(polygon),name,circle});
-                if (raw.size()>50) throw std::runtime_error("Import up to 50 outlines at a time.");
+                if (raw.size()>250) throw std::runtime_error("Import up to 250 boundary rings at a time.");
             };
             for (size_t index=0;index<entities.size();++index)
             {
@@ -250,19 +250,58 @@ namespace DxfImport
                 add(std::move(polygon),"DXF "+start.layer+" "+std::to_string(raw.size()+1));
             }
             if (raw.empty()) throw std::runtime_error("No supported closed cutting outlines were found.");
-            // Inner contours cannot yet be represented as holes. Reject the
-            // complete file instead of turning a hole into another solid part.
-            for (size_t i=0;i<raw.size();++i) for (size_t j=i+1;j<raw.size();++j)
-                if (collide(raw[i].polygon,raw[j].polygon))
-                    throw std::runtime_error("Nested, duplicated or overlapping outlines were found. Holes are not supported yet; import separate solid parts.");
-            for (auto& outline:raw)
+            // Build a containment forest independent of layer, entity order and
+            // winding. Odd depths are cutouts; even depths are separate parts.
+            const size_t none=raw.size();
+            std::vector<size_t> parent(raw.size(),none),depth(raw.size(),0);
+            auto contain=[&](size_t outer,size_t inner)
             {
+                if (parent[inner]==none || area(raw[outer].polygon)<area(raw[parent[inner]].polygon)) parent[inner]=outer;
+            };
+            for (size_t i=0;i<raw.size();++i) for (size_t j=i+1;j<raw.size();++j)
+            {
+                switch (ringRelation(raw[i].polygon,raw[j].polygon))
+                {
+                case RingRelation::Contains: contain(i,j); break;
+                case RingRelation::Inside: contain(j,i); break;
+                case RingRelation::Intersecting:
+                    throw std::runtime_error("DXF boundaries cross, touch or duplicate each other. Separate the closed cutting rings.");
+                default: break;
+                }
+            }
+            for (size_t i=0;i<raw.size();++i)
+            {
+                for (size_t ancestor=parent[i];ancestor!=none;ancestor=parent[ancestor]) ++depth[i];
+                if (depth[i]%2 && raw[i].circle)
+                {
+                    // Outer circles enclose the real disk. A circular cutout
+                    // must instead be inscribed, never overstating free space.
+                    const auto box=bounds(raw[i].polygon);
+                    const double cx=(box.left+box.right)/2,cy=(box.top+box.bottom)/2;
+                    const double shrink=std::cos(3.14159265358979323846/64);
+                    mapVertices(raw[i].polygon,[&](Point p) { return Point{cx+(p.x-cx)*shrink,cy+(p.y-cy)*shrink}; });
+                }
+            }
+            for (size_t i=0;i<raw.size();++i)
+                if (parent[i]!=none && ringRelation(raw[parent[i]].polygon,raw[i].polygon)!=RingRelation::Contains)
+                    throw std::runtime_error("Circular approximation leaves insufficient separation between nested DXF rings.");
+            std::vector<Outline> profiles;
+            for (size_t i=0;i<raw.size();++i)
+            {
+                if (depth[i]%2) continue;
+                auto outline=raw[i];
+                for (size_t j=0;j<raw.size();++j)
+                    if (parent[j]==i) outline.polygon.holes.push_back(raw[j].polygon);
+                if (outline.polygon.holes.size()>16) throw std::runtime_error("Use up to 16 holes per profile.");
+                const auto errors=validateOutline(outline.polygon);
+                if (!errors.empty()) throw std::runtime_error(errors.front());
                 const auto box=bounds(outline.polygon);
                 // Map CAD Y-up to the screen's Y-down coordinates, retaining size.
-                for (auto& point:outline.polygon.vertices)
-                { point.x-=box.left; point.y=box.bottom-point.y; }
+                mapVertices(outline.polygon,[&](Point p) { return Point{p.x-box.left,box.bottom-p.y}; });
+                profiles.push_back(std::move(outline));
             }
-            result.outlines=std::move(raw);
+            if (profiles.size()>50) throw std::runtime_error("Import up to 50 profiles at a time.");
+            result.outlines=std::move(profiles);
             if (skippedAnnotations) result.warnings.push_back("Text, dimensions and point annotations were skipped.");
         }
         catch (const std::exception& error)

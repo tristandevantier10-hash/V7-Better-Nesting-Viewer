@@ -152,32 +152,25 @@ public:
                     paper.y + static_cast<int>(std::round((part.y + part.height) * scale)) - top };
                 if (part.contour)
                 {
-                    // Scanline fill uses the actual outline, including concave
-                    // recesses; a bounding rectangle would hide interlocking.
-                    std::vector<SDL_FPoint> points;
-                    for (const auto& point:part.contour->vertices)
-                        points.push_back({static_cast<float>(paper.x+point.x*scale),static_cast<float>(paper.y+point.y*scale)});
+                    // Fill all rings together using even/odd crossings. Never
+                    // paint holes with paper colour: that would erase nested parts.
                     renderer.pushClip(paper);
                     for (int y=std::max(paper.y,piece.y);y<std::min(paper.y+paper.h,piece.y+piece.h+1);++y)
                     {
-                        const double scan=y+0.5;
-                        std::vector<double> intersections;
-                        for (size_t edge=0;edge<points.size();++edge)
-                        {
-                            const auto a=points[edge],b=points[(edge+1)%points.size()];
-                            if ((a.y<=scan && b.y>scan)||(b.y<=scan && a.y>scan))
-                                intersections.push_back(a.x+(scan-a.y)*(b.x-a.x)/(b.y-a.y));
-                        }
-                        std::sort(intersections.begin(),intersections.end());
+                        const auto intersections=NestingGeometry::scanline(*part.contour,(y+0.5-paper.y)/scale);
                         for (size_t edge=0;edge+1<intersections.size();edge+=2)
-                            renderer.drawLine(static_cast<int>(std::ceil(intersections[edge])),y,
-                                static_cast<int>(std::floor(intersections[edge+1])),y,colours[type%colours.size()]);
+                        {
+                            const int left=static_cast<int>(std::ceil(paper.x+intersections[edge]*scale-0.5));
+                            const int right=static_cast<int>(std::ceil(paper.x+intersections[edge+1]*scale-0.5))-1;
+                            if (left<=right) renderer.drawLine(left,y,right,y,colours[type%colours.size()]);
+                        }
                     }
-                    for (size_t edge=0;edge<points.size();++edge)
+                    for (const auto* boundary:NestingGeometry::boundaryRings(*part.contour))
+                     for (size_t edge=0;edge<boundary->vertices.size();++edge)
                     {
-                        const auto a=points[edge],b=points[(edge+1)%points.size()];
-                        renderer.drawLine(static_cast<int>(std::round(a.x)),static_cast<int>(std::round(a.y)),
-                            static_cast<int>(std::round(b.x)),static_cast<int>(std::round(b.y)),{239,248,243,255});
+                        const auto a=boundary->vertices[edge],b=boundary->vertices[(edge+1)%boundary->vertices.size()];
+                        renderer.drawLine(paper.x+static_cast<int>(std::round(a.x*scale)),paper.y+static_cast<int>(std::round(a.y*scale)),
+                            paper.x+static_cast<int>(std::round(b.x*scale)),paper.y+static_cast<int>(std::round(b.y*scale)),{239,248,243,255});
                     }
                     renderer.popClip();
                 }

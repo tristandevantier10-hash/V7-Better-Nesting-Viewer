@@ -47,6 +47,17 @@ int main()
         editor.begin(NestingGeometry::rectangle(1,1),"Rectangle",600,400);
         click(720,300); click(920,783);
         check(accepted==4 && saved.vertices.size()==64,"Circle preset must be accepted.");
+        auto frame=NestingGeometry::rectangle(10,10);
+        frame.holes={NestingGeometry::transformed(NestingGeometry::rectangle(6,4),{2,1,0})};
+        editor.begin(frame,"DXF frame",100,100);
+        click(920,783);
+        check(accepted==5 && saved.holes.size()==1 && std::abs(NestingGeometry::area(saved)-0.76)<1e-7,
+            "Accepting an imported profile preserves and normalizes cutouts.");
+        check(std::abs(NestingGeometry::bounds(saved.holes[0]).left-0.2)<1e-7,"Hole coordinates use the outer origin.");
+        editor.begin(saved,"DXF frame",100,100);
+        click(430,783); // Clear all imported geometry, then draw a replacement.
+        click(450,330); click(829,330); click(829,709); click(450,709); click(920,783);
+        check(accepted==6 && saved.holes.empty(),"Replacing an outline clears stale cutouts.");
         std::cout<<"Outline editor checks passed: presets, drawing, normalization, incomplete/crossing outlines and cancellation.\n";
         return 0;
     }

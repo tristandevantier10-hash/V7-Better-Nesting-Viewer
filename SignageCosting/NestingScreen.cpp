@@ -405,8 +405,8 @@ void NestingScreen::importDxfFile(const std::filesystem::path& path)
         const auto box=NestingGeometry::bounds(source.polygon);
         const double width=box.right-box.left,height=box.bottom-box.top;
         row->outline=source.polygon;
-        for (auto& point:row->outline.vertices)
-        { point.x=(point.x-box.left)/width; point.y=(point.y-box.top)/height; }
+        NestingGeometry::mapVertices(row->outline,[&](NestingGeometry::Point p)
+        { return NestingGeometry::Point{(p.x-box.left)/width,(p.y-box.top)/height}; });
         std::ostringstream w,h; w<<std::setprecision(10)<<width; h<<std::setprecision(10)<<height;
         row->width->setText(w.str()); row->height->setText(h.str()); row->quantity->setText("1");
         row->shapeName=source.circle ? "Circle" : source.name;
@@ -518,7 +518,8 @@ void NestingScreen::calculate()
                 return;
             }
             auto outline=customMode() ? row->outline : NestingGeometry::rectangle(1,1);
-            for (auto& point:outline.vertices) { point.x*=pw; point.y*=ph; }
+            NestingGeometry::mapVertices(outline,[&](NestingGeometry::Point p)
+            { return NestingGeometry::Point{p.x*pw,p.y*ph}; });
             const auto rotations=customMode()
                 ? (rotationSelector->getSelectedIndex()==0 ? std::vector<double>{0,90,180,270} : std::vector<double>{0})
                 : std::vector<double>{0,90};

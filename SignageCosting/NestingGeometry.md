@@ -20,16 +20,22 @@ independently of the rectangle placement strategy and the screen renderer.
 - All dimensions, sheet margins and part clearances use millimetres.
 - Outlines are simple convex or concave polygons, implicitly closed. An explicit
   repeated closing point and redundant collinear vertices are also accepted.
-- Holes, multiple disconnected outlines and curves are not supported in this
-  first stage. Self-crossing, self-touching and backtracking rings are rejected.
-  Future curve imports must flatten to polygons at a defined accuracy.
+- A polygon has one outer ring and zero or more disjoint, strictly internal hole
+  rings. Winding does not affect material or cutout interpretation. Touching,
+  crossing, overlapping or nested holes are invalid. Disconnected islands are
+  separate parts. Self-crossing, self-touching and backtracking rings are rejected.
 - Transforms rotate about the local origin, then translate. Positive rotation
   takes the positive X axis toward positive Y. Allowed rotations belong to each
   source part. Mirroring is not implied by a rotation.
 - A bounding box is only an early rejection check. Collision checks triangulate
-  concave polygons and test their actual occupied interiors.
+  concave polygons; profiles with holes use horizontal slab decomposition of all
+  boundary rings into material triangles. Cutout interiors remain unoccupied.
+- Contour search prepares collision geometry once per rotated outline and placed
+  part, then tests candidate translations without revalidation, polygon copying
+  or repeated triangulation. Convex disks remain single SAT cells even opposite
+  profiles with holes, and cell bounds reject separated material before SAT.
 - At zero clearance, boundary contact is allowed. Positive overlap is prohibited.
-  Positive clearance checks the minimum contour-to-contour distance.
+  Positive clearance checks minimum distance across outer and inner boundaries.
 - The coordinate/contact tolerance is `1e-7` mm. Coordinates must be finite and
   within `1e9` mm of the origin. Invalid geometry raises an error rather than
   being treated as free space.
@@ -53,7 +59,9 @@ allowed rotations, bounding-edge contacts and vertex contacts. Candidate positio
 are bounded to keep the search finite. Every accepted placement uses real contour
 collision tests, and the complete result is independently validated. This is a
 heuristic search; it does not prove an optimal sheet count. Contour requests are
-currently limited to 200 pieces and 64 vertices per outline. Rectangle jobs retain
+currently limited to 200 pieces, 16 holes per profile and 64 vertices per boundary
+ring. Cutout corner/centre candidates are reserved before the bounded contact
+search, including placement of a frame around an existing part. Rectangle jobs retain
 the 2,000-piece limit.
 
 The standalone screen defaults to Rectangles. Custom shapes reveals per-row outline
@@ -61,9 +69,13 @@ editing and quarter-turn/fixed rotation controls. The editor provides rectangle,
 triangle, L-shape and circle presets, plus a snapped drawing grid, undo, clear and cancel.
 Coordinates are normalized and scaled to that row's entered width/height. Rectangle
 and custom parts can be mixed. Geometry is retained when switching modes. The shared
-preview draws actual polygons and uses their area for utilisation.
+preview fills all rings together with even/odd scanlines, preserving nested parts
+regardless of drawing order. Utilisation and area-based ordering subtract holes.
+Layout ranking still compares sheet count and bounding envelopes: nested boxes
+are not added twice when measuring compactness. Imported cutouts survive editor
+acceptance and resizing; choosing a preset or drawing a replacement clears them.
 
-Holes, general curves, SVG imports, editable-job persistence and custom-shape quote entry
+General curves, SVG imports, editable-job persistence and custom-shape quote entry
 are not connected yet. Custom geometry must never be passed to the rectangle method
 as though its bounding box were the outline.
 
@@ -85,12 +97,34 @@ no contour collision, winding, containment, shared edges, clearances, arbitrary
 rotations, invalid rings, identity preservation for equal-sized sources, and the
 84-piece multi-sheet regression validated through the common geometry model.
 
+To run all six nesting suites from an x64 Visual Studio Developer PowerShell:
+
+```powershell
+./SignageCosting/tests/RunNestingTests.ps1
+```
+
+The runner locates installed SDL dependencies in the repository; pass
+`-DependencyRoot <path-to-installed-x64-windows>` to select another dependency tree.
+It builds into ignored `x64/NestingTests` and runs UI checks with the application's
+fonts using an SDL software surface, without opening a window. Tests include
+DXF containment/order/winding/units, invalid boundaries, conservative circular
+cutouts, arbitrary rotations, inner-wall clearances, multiple holes, an independent
+solid-strip collision oracle, import-to-nest, editor preservation and preview
+pixels in both drawing orders.
+The DXF suite also nests the checked-in circular sample alone and mixed with the
+rectangular frame on the default 2440 x 1220 mm sheet. Each calculation has a
+generous 10-second budget to catch repeated-decomposition performance regressions.
+
 ## Circles and DXF import
 
 Circle preset links width and height as a diameter. Circles use a conservative 64-sided envelope (area overestimate below 0.081%) for contour placement, collision checks and displayed utilisation. Convex outlines use direct SAT; concave outlines retain triangulation.
 
-Import DXF opens the Windows file chooser; dropping a DXF onto the Nesting page uses the same importer. ASCII DXF supports closed straight LWPOLYLINE, closed 2D POLYLINE, closed chains of LINE entities on the same layer, and CIRCLE. Each outline becomes one editable quantity row. Drawing units are converted to millimetres; unspecified units prompt for millimetres or inches. An untouched initial row is replaced, otherwise imports append. The complete file is checked before existing rows change.
+Import DXF opens the Windows file chooser; dropping a DXF onto the Nesting page uses the same importer. ASCII DXF supports closed straight LWPOLYLINE, closed 2D POLYLINE, closed chains of LINE entities on the same layer, and CIRCLE. Containment groups boundary rings independently of entity order, winding or layer: odd-depth rings are cutouts, even-depth islands are separate parts. Each outer profile plus its holes becomes one editable quantity row. Drawing units, origin normalization and CAD Y reflection apply to all its rings together. Unspecified units prompt for millimetres or inches. An untouched initial row is replaced, otherwise imports append. The complete file is checked before existing rows change.
 
-Limits: 8 MB, 50 rows, 64 vertices per outline; the contour calculation remains limited to 200 pieces. Binary DXF, blocks, arcs, splines, bulged polylines, nonflat outlines and holes are rejected with a message. Nested/overlapping contours are rejected to avoid treating holes as solid parts. Text/dimension/point annotations are skipped with a notice. No machine toolpaths are imported or generated.
+Circular outer rings retain the conservative circumscribed 64-sided envelope.
+Circular cutouts use an inscribed 64-sided ring so available space is never
+overstated. A fit close to a circular boundary may therefore need extra room.
+
+Limits: 8 MB, 250 imported boundary rings, 50 rows, 16 holes per profile, 64 vertices per boundary ring; the contour calculation remains limited to 200 pieces. Binary DXF, blocks, arcs, splines, bulged polylines and nonflat outlines are rejected with a message. Crossing, touching and duplicated DXF boundaries are rejected atomically because their containment is ambiguous. Text/dimension/point annotations are skipped with a notice. No machine toolpaths are imported or generated.
 
 References: [Autodesk LWPOLYLINE group codes](https://help.autodesk.com/cloudhelp/2017/ENU/AutoCAD-DXF/files/GUID-748FC305-F3F2-4F74-825A-61F04D757A50.htm), [Autodesk INSUNITS](https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-Core/files/GUID-A58A87BB-482B-4042-A00A-EEF55A2B4FD8.htm).
