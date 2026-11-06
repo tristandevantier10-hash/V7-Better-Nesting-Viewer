@@ -249,7 +249,7 @@ void Panel::collectTextBoxes(std::vector<TextBox*>& textBoxes)
 
         if (auto textBox = dynamic_cast<TextBox*>(child.get()))
         {
-            textBoxes.push_back(textBox);
+            if (textBox->isEnabled()) textBoxes.push_back(textBox);
             continue;
         }
 

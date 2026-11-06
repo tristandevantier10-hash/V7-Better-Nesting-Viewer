@@ -16,5 +16,6 @@ namespace NestingService
     };
     // Chooses the rectangle or contour calculation from actual geometry and
     // rotation/spacing constraints. Both return the same sheet/part structure.
+    Result findCapacity(NestingGeometry::Part part, const Options& options);
     Result calculate(const std::vector<NestingGeometry::Part>& parts, const Options& options);
 }

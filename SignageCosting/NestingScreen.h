@@ -6,6 +6,7 @@
 #include "Label.h"
 #include "NestingCore.h"
 #include "NestingService.h"
+#include "Material.h"
 #include <future>
 #include <array>
 #include <filesystem>
@@ -28,7 +29,10 @@ public:
     void render(Renderer& renderer) override;
 
 private:
-    void calculate();
+    void calculate(bool capacity = false);
+    void refreshStockOptions();
+    void selectStockVariant(int index, const std::string& preferredSize = {});
+    void selectStockSize(int index);
     void invalidate();
     void addSize();
     void arrangeWorkspace();
@@ -51,12 +55,15 @@ private:
     void importDxfFile(const std::filesystem::path& path);
     std::shared_ptr<NavigationPanel> navigation;
     std::shared_ptr<TextBox> sheetWidth, sheetHeight, cuttingGap, sheetMargin;
+    std::shared_ptr<ComboBox> stockVariant, stockSize;
+    std::vector<std::vector<SheetFormat>> stockFormats;
     std::shared_ptr<Panel> sizes;
     std::vector<std::shared_ptr<SizeRow>> rows;
     std::shared_ptr<Label> summary, details;
     std::shared_ptr<NestingPreviewPanel> preview;
     std::shared_ptr<NestingWorkspacePanel> workspace;
-    std::shared_ptr<Button> addButton, importButton, calculateButton;
+    std::shared_ptr<Button> addButton, importButton, calculateButton, capacityButton;
+    bool capacityCalculation = false;
     std::shared_ptr<Panel> rotationControls;
     std::shared_ptr<ComboBox> geometrySelector, rotationSelector;
     std::shared_ptr<NestingOutlineEditor> outlineEditor;

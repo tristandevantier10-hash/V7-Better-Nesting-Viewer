@@ -36,6 +36,36 @@ int main()
         check(interlocked.layout.sheets.front().placed.front().contour!=nullptr,"Preview must receive real outlines.");
         verify(triangles,interlocked,small);
 
+        // Coordinates from the custom 900 Triangles DXF, translated to the origin.
+        const Polygon customTriangle{{{899.9999997749759,0.0003117691857},
+            {0,0},{449.9997299341002,779.4230191226178}}};
+        const std::vector<Part> customTriangles{{202,customTriangle,4,quarterTurns,"Custom triangle"}};
+        const NestingService::Options narrowSheet{800,2300,0,0};
+        const auto circleCapacity=NestingService::findCapacity(
+            {203,circle(600),1,{0},"Circle"},{1225,50000,20,0});
+        check(circleCapacity.layout.isValid() && circleCapacity.layout.sheets.size()==1 &&
+            circleCapacity.layout.sheets.front().placed.size()>=160,
+            "Circle capacity must consider 80 rows of two on a 50 metre roll.");
+        const auto tiedCircleCapacity=NestingService::findCapacity(
+            {203,circle(600),1,{0},"Circle"},{1225,50000,10,0});
+        check(tiedCircleCapacity.layout.isValid() && tiedCircleCapacity.layout.sheets.size()==1 &&
+            tiedCircleCapacity.layout.sheets.front().placed.size()==162,
+            "Circle capacity must preserve the highest count when breaking a tie.");
+        for (const auto& piece:tiedCircleCapacity.layout.sheets.front().placed)
+            check(piece.y+piece.height<=49400.0001,"Equal-count layouts must leave the longer end offcut.");
+        const auto capacity=NestingService::findCapacity(customTriangles.front(),narrowSheet);
+        check(capacity.layout.isValid() && capacity.layout.sheets.size()==1 &&
+            capacity.layout.sheets.front().placed.size()==4,"Single-sheet capacity must find four interlocked triangles.");
+        const auto flushTriangles=NestingService::calculate(customTriangles,narrowSheet);
+        verify(customTriangles,flushTriangles,narrowSheet);
+        check(flushTriangles.layout.sheets.size()==1,"Four imported triangles must interlock on one narrow sheet.");
+        const NestingService::Options standardSheet{1220,2440,0,0};
+        const auto alignedTriangles=NestingService::calculate(customTriangles,standardSheet);
+        verify(customTriangles,alignedTriangles,standardSheet);
+        check(alignedTriangles.layout.sheets.size()==1,"Four imported triangles must fit on one standard sheet.");
+        for (const auto& piece:alignedTriangles.layout.sheets.front().placed)
+            check(piece.x+piece.width<780,"The interlocked triangle run must leave a full-length side offcut.");
+
         // Exact reported case: ten 500 mm triangles should form five full
         // squares when rotation is allowed, not ten separate half-squares.
         std::vector<Part> tenTriangles{{211,{{{0,0},{500,0},{0,500}}},10,quarterTurns,"Triangle"}};

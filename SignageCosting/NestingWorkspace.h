@@ -60,6 +60,11 @@ public:
             : renderer.getFontManager().getSmallFont();
         int width = 0, height = 0;
         TTF_SizeUTF8(font, caption.c_str(), &width, &height);
+        if (primary && width + 20 > bounds.w)
+        {
+            font = renderer.getFontManager().getSmallFont();
+            TTF_SizeUTF8(font, caption.c_str(), &width, &height);
+        }
         const int x = bounds.x + (bounds.w - width) / 2;
         renderer.pushClip(bounds);
         renderer.drawText(caption, x, bounds.y + (bounds.h - height) / 2,

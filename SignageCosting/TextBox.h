@@ -25,6 +25,7 @@ public:
     void setPasswordMode(bool enabled);
 
     void setTextCentered(bool centered);
+    void setSelectAllOnFocus(bool enabled);
 
     void setTextChangedCallback(
         std::function<void(const std::string&)> callback);
@@ -40,6 +41,12 @@ private:
     bool textCentered = false;
 
     bool allTextSelected = false;
+    bool selectAllOnFocus = false;
+    bool draggingSelection = false;
+    size_t selectionAnchor = 0;
+    size_t selectionEnd = 0;
+
+    size_t textIndexAt(int mouseX) const;
 
     Uint32 lastBlink = 0;
 

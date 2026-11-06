@@ -16,6 +16,8 @@ void TextBox::setText(const std::string& value)
 {
     text = value;
     allTextSelected = false;
+    selectionAnchor = selectionEnd = text.size();
+    draggingSelection = false;
 }
 
 void TextBox::setPlaceholder(const std::string& value)
@@ -38,9 +40,34 @@ void TextBox::setTextCentered(bool centered)
     textCentered = centered;
 }
 
+void TextBox::setSelectAllOnFocus(bool enabled)
+{
+    selectAllOnFocus = enabled;
+}
+
+size_t TextBox::textIndexAt(int mouseX) const
+{
+    const auto display = passwordMode ? std::string(text.size(), '*') : text;
+    const int padding = Metrics::ControlPaddingX;
+    const int left = getX() + padding + (textCentered
+        ? std::max(0, (getWidth() - 2 * padding - TextRenderer::getTextWidth(display)) / 2) : 0);
+    int previousWidth = 0;
+    for (size_t index = 0; index < text.size();)
+    {
+        size_t next = index + 1;
+        while (next < text.size() && (static_cast<unsigned char>(text[next]) & 0xC0) == 0x80)
+            ++next;
+        const int width = TextRenderer::getTextWidth(display.substr(0, next));
+        if (mouseX - left < (previousWidth + width) / 2) return index;
+        previousWidth = width;
+        index = next;
+    }
+    return text.size();
+}
+
 void TextBox::update(const SDL_Event& e)
 {
-    if (ComboBox::hasOpenDropdown())
+    if (!isEnabled() || ComboBox::hasOpenDropdown())
         return;
 
     Uint32 now = SDL_GetTicks();
@@ -67,18 +94,41 @@ void TextBox::update(const SDL_Event& e)
             mx < r.x + r.w &&
             my >= r.y &&
             my < r.y + r.h;
+        const bool gainedFocus = clickedInside && !hasFocus();
         setFocused(clickedInside);
-        if (clickedInside)
-            allTextSelected = false;
+        allTextSelected = clickedInside && !text.empty() && selectAllOnFocus &&
+            (gainedFocus || e.button.clicks >= 2);
+        draggingSelection = clickedInside;
+        selectionAnchor = selectionEnd = clickedInside ? textIndexAt(mx) : text.size();
     }
+
+    if (hasFocus() && draggingSelection && e.type == SDL_MOUSEMOTION &&
+        (e.motion.state & SDL_BUTTON_LMASK))
+    {
+        selectionEnd = textIndexAt(e.motion.x);
+        if (selectionEnd != selectionAnchor) allTextSelected = false;
+    }
+    if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
+        draggingSelection = false;
+
+    const auto eraseSelection = [this]()
+    {
+        if (!allTextSelected && selectionAnchor == selectionEnd) return false;
+        const size_t start = allTextSelected ? 0 : std::min(selectionAnchor, selectionEnd);
+        const size_t end = allTextSelected ? text.size() : std::max(selectionAnchor, selectionEnd);
+        text.erase(start, end - start);
+        allTextSelected = false;
+        selectionAnchor = selectionEnd = start;
+        return true;
+    };
 
     if (hasFocus() &&
         e.type == SDL_TEXTINPUT)
     {
-        if (allTextSelected)
-            text.clear();
-        allTextSelected = false;
-        text += e.text.text;
+        eraseSelection();
+        text.insert(selectionEnd, e.text.text);
+        selectionEnd += std::char_traits<char>::length(e.text.text);
+        selectionAnchor = selectionEnd;
 
         if (textChangedCallback)
             textChangedCallback(text);
@@ -95,22 +145,23 @@ void TextBox::update(const SDL_Event& e)
         else if ((e.key.keysym.sym == SDLK_BACKSPACE ||
                   e.key.keysym.sym == SDLK_DELETE) && !text.empty())
         {
-            if (allTextSelected)
+            if (!eraseSelection())
             {
-                text.clear();
-            }
-            else if (e.key.keysym.sym == SDLK_BACKSPACE)
-            {
-                // Remove the last UTF-8 code point.
-                size_t i = text.size() - 1;
-                while (i > 0 &&
-                    (static_cast<unsigned char>(text[i]) & 0xC0) == 0x80)
+                size_t start = selectionEnd, end = selectionEnd;
+                if (e.key.keysym.sym == SDLK_BACKSPACE && start > 0)
                 {
-                    --i;
+                    do { --start; }
+                    while (start > 0 && (static_cast<unsigned char>(text[start]) & 0xC0) == 0x80);
                 }
-                text.erase(i);
+                else if (e.key.keysym.sym == SDLK_DELETE && end < text.size())
+                {
+                    do { ++end; }
+                    while (end < text.size() && (static_cast<unsigned char>(text[end]) & 0xC0) == 0x80);
+                }
+                if (start == end) return;
+                text.erase(start, end - start);
+                selectionAnchor = selectionEnd = start;
             }
-            allTextSelected = false;
 
             if (textChangedCallback)
                 textChangedCallback(text);
@@ -125,7 +176,7 @@ void TextBox::render(Renderer& renderer)
 
     renderer.fillRoundedRect(
         getBounds(),
-        { 255,255,255,255 },
+        isEnabled() ? SDL_Color{255,255,255,255} : SDL_Color{246,248,250,255},
         Metrics::ControlRadius);
 
     SDL_Color borderColour =
@@ -157,10 +208,18 @@ void TextBox::render(Renderer& renderer)
     }
 
     const int textY = getY() + (getHeight() - Metrics::ControlTextHeight) / 2;
-    if (hasFocus() && allTextSelected && !text.empty())
+    const bool selected = hasFocus() && !text.empty() &&
+        (allTextSelected || selectionAnchor != selectionEnd);
+    int selectionX = textX, selectionWidth = 0;
+    renderer.pushClip(getBounds());
+    if (selected)
     {
+        const size_t start = allTextSelected ? 0 : std::min(selectionAnchor, selectionEnd);
+        const size_t end = allTextSelected ? text.size() : std::max(selectionAnchor, selectionEnd);
+        selectionX += TextRenderer::getTextWidth(displayText.substr(0, start));
+        selectionWidth = std::max(1, textX + TextRenderer::getTextWidth(displayText.substr(0, end)) - selectionX);
         renderer.fillRect(
-            { textX, textY, std::max(1, TextRenderer::getTextWidth(displayText)), Metrics::ControlTextHeight },
+            { selectionX, textY, selectionWidth, Metrics::ControlTextHeight },
             { 55, 115, 205, 255 });
     }
 
@@ -180,20 +239,19 @@ void TextBox::render(Renderer& renderer)
             textX,
             textY,
             LabelStyle::Normal,
-            hasFocus() && allTextSelected
-                ? SDL_Color{ 255,255,255,255 }
-                : DefaultTheme.darkText);
+            DefaultTheme.darkText);
+        if (selected)
+        {
+            renderer.pushClip({selectionX,textY,selectionWidth,Metrics::ControlTextHeight});
+            renderer.drawText(displayText,textX,textY,LabelStyle::Normal,SDL_Color{255,255,255,255});
+            renderer.popClip();
+        }
     }
 
-    if (hasFocus() && showCaret && !allTextSelected)
+    if (hasFocus() && showCaret && !selected)
     {
-        int caretX = contentLeft +
-            (textCentered
-                ? std::max(
-                    0,
-                    (contentWidth - TextRenderer::getTextWidth(displayText)) / 2)
-                : 0) +
-            TextRenderer::getTextWidth(displayText);
+        const int caretX = (text.empty() ? contentLeft : textX) +
+            TextRenderer::getTextWidth(displayText.substr(0, selectionEnd));
 
         SDL_SetRenderDrawColor(
             renderer.getSDLRenderer(),
@@ -209,6 +267,7 @@ void TextBox::render(Renderer& renderer)
             caretX,
             bounds.y + bounds.h - 6);
     }
+    renderer.popClip();
 }
 
 void TextBox::setTextChangedCallback(

@@ -27,6 +27,20 @@ namespace NestingService
                 a.bottom+gap < b.top-tolerance || b.bottom+gap < a.top-tolerance;
         }
         struct Occupied { Polygon polygon; Bounds box; CollisionShape collision; bool round; };
+        bool triangleLike(const Polygon& polygon)
+        {
+            if (!polygon.holes.empty()) return false;
+            if (polygon.vertices.size()==3) return true;
+            if (polygon.vertices.size()!=4) return false;
+            const auto box=bounds(polygon);
+            const double shortEdge=0.001*std::max(box.right-box.left,box.bottom-box.top);
+            for (size_t i=0;i<polygon.vertices.size();++i)
+            {
+                const auto a=polygon.vertices[i],b=polygon.vertices[(i+1)%polygon.vertices.size()];
+                if (std::hypot(b.x-a.x,b.y-a.y)<shortEdge) return true;
+            }
+            return false;
+        }
         bool circleEnvelope(const Polygon& polygon,const Bounds& box)
         {
             if (!polygon.holes.empty() || polygon.vertices.size()!=64) return false;
@@ -72,7 +86,7 @@ namespace NestingService
         }
         bool place(const Part& part, std::uint32_t instance, SheetLayout& sheet,
             std::vector<Occupied>& occupied, const Options& options, bool bottomFirst, bool gridOnly,
-            const std::vector<Variant>& variants)
+            const std::vector<Variant>& variants, bool leftAligned=false)
         {
             bool found = false;
             Transform bestTransform;
@@ -94,6 +108,7 @@ namespace NestingService
                 std::set<std::pair<double,double>> anchors;
                 auto add = [&](double x,double y)
                 {
+                    if (leftAligned && std::abs(x-options.margin)>tolerance) return;
                     if (anchors.size()>=2048 || x<options.margin-tolerance || y<options.margin-tolerance ||
                         x+width>sheet.width-options.margin+tolerance || y+height>sheet.height-options.margin+tolerance) return;
                     // Collapse roundoff from quarter-turn rotations only.
@@ -135,6 +150,50 @@ namespace NestingService
                 // Reserve simple edge/grid placements before detailed contacts
                 // fill the bounded candidate set (notably for circle outlines).
                 for (double y:ys) for (double x:xs) add(x,y);
+                if (!gridOnly && triangleLike(local))
+                    for (const auto& previous:occupied)
+                    {
+                        if (!triangleLike(previous.polygon)) continue;
+                        // Keep one axis aligned while sliding a vertex onto an edge.
+                        // Imported triangles can have nearly matching endpoints.
+                        for (bool transpose:{false,true})
+                        {
+                            const auto axis=[transpose](Point p) { return transpose ? p.y : p.x; };
+                            const auto slide=[transpose](Point p) { return transpose ? p.x : p.y; };
+                            const double low=transpose ? previous.box.top : previous.box.left;
+                            const double high=transpose ? previous.box.bottom : previous.box.right;
+                            const double span=transpose ? height : width;
+                            const double limit=transpose ? sheet.height : sheet.width;
+                            for (double fixed:{options.margin,limit-options.margin-span,low,high-span})
+                                for (bool movingEdge:{false,true})
+                                {
+                                    const auto& edges=movingEdge ? local.vertices : previous.polygon.vertices;
+                                    const auto& vertices=movingEdge ? previous.polygon.vertices : local.vertices;
+                                    const double direction=movingEdge ? -1.0 : 1.0;
+                                    for (size_t i=0;i<edges.size();++i)
+                                    {
+                                        const Point a=edges[i],b=edges[(i+1)%edges.size()];
+                                        const double run=axis(b)-axis(a);
+                                        if (std::abs(run)<=tolerance) continue;
+                                        const double slope=(slide(b)-slide(a))/run;
+                                        const double gap=options.clearance*std::hypot(1.0,slope);
+                                        for (Point vertex:vertices)
+                                        {
+                                            const double along=axis(vertex)+direction*fixed-axis(a);
+                                            const double contact=slide(a)+slope*along;
+                                            const double offset=direction*(contact-slide(vertex));
+                                            for (double position:{offset-gap,offset+gap})
+                                            {
+                                                const double projection=(along+direction*(position-offset)*slope/(1+slope*slope))/run;
+                                                if (projection < -tolerance || projection > 1+tolerance) continue;
+                                                if (transpose) add(position,fixed);
+                                                else add(fixed,position);
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+                    }
                 for (const auto& previous:occupied)
                 {
                     if (round && previous.round)
@@ -243,8 +302,10 @@ namespace NestingService
         {
             double width=0,height=0;
             std::vector<Placement> placements;
+            bool staggered=false;
         };
-        std::vector<Band> bandsFor(const Part& part,const std::vector<Variant>& variants,const Options& options)
+        std::vector<Band> bandsFor(const Part& part,const std::vector<Variant>& variants,const Options& options,
+            bool partialCircleBands=false)
         {
             std::vector<Band> bands;
             const double usableWidth=options.sheetWidth-2*options.margin;
@@ -275,13 +336,21 @@ namespace NestingService
                         {
                             const double pitch=(stagger ? width/std::cos(3.14159265358979323846/64) : width)+options.clearance;
                             const double rowPitch=stagger ? pitch*std::sqrt(3.0)/2 : pitch;
+                            if ((columns-1)*pitch+width>(transpose ? usableHeight : usableWidth)+tolerance &&
+                                partialCircleBands) break;
                             Band band;
-                            for (int i=0;i<part.quantity;++i)
+                            band.staggered=stagger;
+                            for (int i=0;static_cast<int>(band.placements.size())<part.quantity;++i)
                             {
                                 const int row=i/columns,column=i%columns;
                                 double x=column*pitch+(stagger && row%2 ? pitch/2 : 0),y=row*rowPitch;
                                 if (transpose) std::swap(x,y);
-                                append(band,a,i,x,y);
+                                if (partialCircleBands && (x+width>usableWidth+tolerance || y+height>usableHeight+tolerance))
+                                {
+                                    if ((transpose ? x+width>usableWidth+tolerance : y+height>usableHeight+tolerance)) break;
+                                    continue;
+                                }
+                                append(band,a,static_cast<int>(band.placements.size()),x,y);
                             }
                             finish(std::move(band));
                         }
@@ -489,6 +558,116 @@ namespace NestingService
         }
     }
 
+    Result findCapacity(NestingGeometry::Part part, const Options& options)
+    {
+        part.quantity=1;
+        auto best=calculate({part},options);
+        if (!best.layout.isValid() || best.layout.sheets.size()!=1) return best;
+
+        const int limit=best.method==NestingGeometry::Method::Rectangles ? 2000 : 200;
+        const double usableArea=(options.sheetWidth-2*options.margin)*(options.sheetHeight-2*options.margin);
+        const double areaBound=usableArea/NestingGeometry::area(part.outline);
+        int low=1;
+        int high=static_cast<int>(std::clamp(std::ceil(areaBound),1.0,static_cast<double>(limit)));
+        if (best.method==NestingGeometry::Method::Contours)
+        {
+            using namespace NestingGeometry;
+            const auto variants=prepareVariants({part});
+            const auto& rotations=variants.at(part.id);
+            Trial winner;
+            bool winnerSimple=false;
+            auto fill=[&](const std::vector<Variant>& allowed,bool bottomFirst,bool leftAligned,bool gridOnly)
+            {
+                Trial trial;
+                trial.sheets.push_back({options.sheetWidth,options.sheetHeight,{}});
+                trial.occupied.emplace_back();
+                auto& sheet=trial.sheets.front();
+                auto& occupied=trial.occupied.front();
+                for (int copy=0;copy<high;++copy)
+                    if (!place(part,static_cast<std::uint32_t>(copy),sheet,occupied,options,bottomFirst,gridOnly,allowed,leftAligned))
+                        break;
+                const bool simple=leftAligned || gridOnly;
+                if (winner.sheets.empty() || std::make_pair(occupied.size(),simple)>
+                    std::make_pair(winner.occupied.front().size(),winnerSimple) ||
+                    (occupied.size()==winner.occupied.front().size() && simple==winnerSimple &&
+                        trialScore(trial)<trialScore(winner)))
+                {
+                    winner=std::move(trial);
+                    winnerSimple=simple;
+                }
+            };
+            if (rotations.front().round)
+            {
+                part.quantity=high;
+                auto bands=bandsFor(part,rotations,options,true);
+                const auto score=[&](const Band& band)
+                {
+                    const double length=options.sheetHeight>=options.sheetWidth ? band.height : band.width;
+                    return std::make_tuple(band.placements.size(),!band.staggered,-length,-band.width*band.height);
+                };
+                const auto selected=std::max_element(bands.begin(),bands.end(),
+                    [&](const Band& a,const Band& b) { return score(a)<score(b); });
+                if (selected==bands.end()) return best;
+                winner.sheets.push_back({options.sheetWidth,options.sheetHeight,std::move(selected->placements)});
+                winner.occupied.emplace_back();
+                for (auto& placement:winner.sheets.front().placements)
+                {
+                    placement.transform.x+=options.margin;
+                    placement.transform.y+=options.margin;
+                    auto polygon=transformed(part.outline,placement.transform);
+                    const auto box=bounds(polygon);
+                    auto collision=CollisionShape(polygon);
+                    winner.occupied.front().push_back({std::move(polygon),box,std::move(collision),true});
+                }
+            }
+            else
+            {
+                fill(rotations,true,false,true);
+                for (size_t i=0;i<rotations.size();++i)
+                    for (size_t j=i+1;j<rotations.size();++j)
+                        if (std::abs(std::abs(std::remainder(rotations[i].angle-rotations[j].angle,360.0))-180.0)<=tolerance)
+                        {
+                            const std::vector<Variant> aligned{rotations[i],rotations[j]};
+                            fill(aligned,false,true,false);
+                            if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(aligned,true,false,false);
+                        }
+                if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,false,false,false);
+                if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,true,false,false);
+            }
+
+            const auto& placements=winner.sheets.front().placements;
+            if (placements.size()<=1) return best;
+            part.quantity=static_cast<int>(placements.size());
+            if (!validateLayout({part},winner.sheets,options.clearance,options.margin).empty()) return best;
+            auto& pieces=best.layout.sheets.front().placed;
+            pieces.clear();
+            for (size_t i=0;i<placements.size();++i)
+            {
+                const auto& placement=placements[i];
+                const auto& occupied=winner.occupied.front()[i];
+                const auto& box=occupied.box;
+                PlacedRect piece{box.left,box.top,box.right-box.left,box.bottom-box.top,false,part.id,placement.instanceIndex};
+                piece.contour=std::make_shared<const Polygon>(occupied.polygon);
+                piece.contourTransform=placement.transform;
+                pieces.push_back(std::move(piece));
+            }
+            return best;
+        }
+        while (low<high)
+        {
+            part.quantity=low+(high-low+1)/2;
+            auto trial=calculate({part},options);
+            if (trial.layout.isValid() && trial.layout.sheets.size()==1 &&
+                trial.layout.sheets.front().placed.size()==static_cast<size_t>(part.quantity))
+            {
+                low=part.quantity;
+                best=std::move(trial);
+            }
+            else high=part.quantity-1;
+        }
+        return best;
+    }
+
     Result calculate(const std::vector<NestingGeometry::Part>& parts, const Options& options) try
     {
         using namespace NestingGeometry;
@@ -559,6 +738,26 @@ namespace NestingService
         auto grid=contourTrial(parts,options,variants,0,true,true);
         if (grid.complete && (!haveBest || trialScore(grid)<trialScore(best)))
         { best=std::move(grid); haveBest=true; }
+        if (parts.size()==1 && parts.front().quantity>=3 &&
+            triangleLike(parts.front().outline))
+        {
+            const auto id=parts.front().id;
+            const auto& rotations=variants.at(id);
+            for (size_t i=0;i<rotations.size();++i)
+                for (size_t j=i+1;j<rotations.size();++j)
+                {
+                    const double difference=std::remainder(rotations[i].angle-rotations[j].angle,360.0);
+                    if (std::abs(std::abs(difference)-180.0)>tolerance) continue;
+                    // Try a common rotation axis for the entire run of triangles.
+                    const Variants aligned{{id,{rotations[i],rotations[j]}}};
+                    for (bool bottomFirst:{false,true})
+                    {
+                        auto candidate=contourTrial(parts,options,aligned,0,bottomFirst);
+                        if (candidate.complete && (!haveBest || trialScore(candidate)<trialScore(best)))
+                        { best=std::move(candidate); haveBest=true; }
+                    }
+                }
+        }
         for (bool vertical:{false,true})
         {
             auto structured=structuredTrial(parts,options,variants,vertical);
