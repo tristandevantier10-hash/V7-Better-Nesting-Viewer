@@ -20,7 +20,7 @@ public:
 
     void render(Renderer& renderer) override;
 
-    void renderOverlays(Renderer& renderer);
+    virtual void renderOverlays(Renderer& renderer);
 
     void add(std::shared_ptr<UIElement> element);
 

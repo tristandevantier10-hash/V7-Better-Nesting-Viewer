@@ -1,4 +1,5 @@
 #include "MainMenuScreen.h"
+#include "Button.h"
 #include "VerticalLayout.h"
 #include "HorizontalLayout.h"
 #include "Label.h"
@@ -11,46 +12,30 @@
 
 MainMenuScreen::MainMenuScreen()
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
     auto headerPanel = std::make_shared<DashboardBannerPanel>();
     headerPanel->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(headerPanel);
-    headerPanel->setDividerVisible(false);
-    headerPanel->setBottomAccentVisible(false);
 
-    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
-    titlePanel->setLayout(std::make_unique<VerticalLayout>());
-    configurePageHeaderTitle(titlePanel, Metrics::SpaceXS);
-    titlePanel->setPadding(Metrics::SpaceL);
-    headerPanel->addLayoutElement(titlePanel, SizePolicy::Fill);
+    addPageHeaderTitle(headerPanel, "DASHBOARD", "An Overview on the Jobs this month .", true);
 
-    auto dashboardLabel = std::make_shared<Label>();
-    dashboardLabel->setText("Dashboard");
-    dashboardLabel->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(dashboardLabel);
-
-    titlePanel->addLayoutElement(
-        dashboardLabel,
-        SizePolicy::Fixed,
-        30);
-
-    auto subtitleLabel = std::make_shared<Label>();
-    subtitleLabel->setText("Signage Costing Suite");
-    subtitleLabel->setStyle(LabelStyle::Small);
-    configurePageHeaderSubtitleLabel(subtitleLabel);
-
-    titlePanel->addLayoutElement(
-        subtitleLabel,
-        SizePolicy::Fixed,
-        18);
-
-    headerPanel->addLayoutElement(
-        std::make_shared<DashboardHeaderControls>(),
-        SizePolicy::Fixed,
-        236);
+    auto newCustomerButton = std::make_shared<Button>();
+    newCustomerButton->setText("+ New Customer");
+    newCustomerButton->setOnClick([this]()
+    {
+        if (newCustomerCallback)
+            newCustomerCallback();
+    });
+    auto secondaryCustomerButton = std::make_shared<Button>();
+    secondaryCustomerButton->setText("+ New Customer");
+    secondaryCustomerButton->setOnClick([this]()
+    {
+        if (newCustomerCallback)
+            newCustomerCallback();
+    });
+    addPageHeaderActions(headerPanel, newCustomerButton, secondaryCustomerButton);
 
     sidebarPanel = createPrimaryNavigationPanel(
         PrimaryNavigationRoute::Overview,
@@ -97,8 +82,9 @@ MainMenuScreen::MainMenuScreen()
 
     auto rightPanel = std::make_shared<Panel>();
     rightPanel->setLayout(std::make_unique<VerticalLayout>());
-    rightPanel->setPadding(Metrics::SpaceL);
-    rightPanel->setSpacing(Metrics::SpaceL);
+    rightPanel->setBackgroundColour({ 229, 229, 229, 255 });
+    rightPanel->setPadding(Metrics::WorkspaceGap);
+    rightPanel->setSpacing(Metrics::WorkspaceGap);
 
     dashboardContent = std::make_shared<DashboardContent>([this]()
     {
@@ -108,11 +94,11 @@ MainMenuScreen::MainMenuScreen()
 
     rightPanel->addLayoutElement(dashboardContent, SizePolicy::Fill);
 
-    contentPanel->addLayoutElement(headerPanel, SizePolicy::Fixed, 132);
+    auto workspaceBody = addWorkspaceLayout(*this, headerPanel);
+    workspaceBody->addLayoutElement(sidebarPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(contentPanel, SizePolicy::Fill);
     contentPanel->addLayoutElement(rightPanel, SizePolicy::Fill);
 
-    addLayoutElement(sidebarPanel, SizePolicy::Fixed, Metrics::SidebarWidth);
-    addLayoutElement(contentPanel, SizePolicy::Fill);
 
 }
 

@@ -1,4 +1,5 @@
 #include "NavigationPanel.h"
+#include "FontManager.h"
 #include "NavigationItem.h"
 #include "VerticalLayout.h"
 #include "Metrics.h"
@@ -31,6 +32,8 @@ namespace
     class DashboardNavigationBrand : public UIElement
     {
     public:
+        explicit DashboardNavigationBrand(int inset) : inset(inset) {}
+
         void render(Renderer& renderer) override
         {
             if (!visible)
@@ -38,26 +41,52 @@ namespace
 
             const SDL_Rect brandBand
             {
-                bounds.x - Metrics::SidebarPadding,
-                bounds.y - Metrics::SidebarPadding,
-                bounds.w + Metrics::SidebarPadding * 2,
-                bounds.h + Metrics::SidebarPadding + Metrics::SpaceS
+                bounds.x - inset,
+                bounds.y - inset,
+                bounds.w + inset * 2,
+                Metrics::HeaderHeight
             };
-            renderer.fillRect(brandBand, DefaultTheme.sidebarBackground);
+            renderer.fillRect(brandBand, SDL_Color{ 10, 10, 10, 255 });
+            renderer.drawImageCoverRegion(
+                "Assets/Images/Header Background.png",
+                0.0f, 0.0f, 1.0f / 3.0f, 0.65f,
+                brandBand);
 
-            const SDL_Rect logoRect
+            constexpr int logoHeight = 52;
+            constexpr int logoTextGap = 8;
+            constexpr int textRowHeight = 15;
+            const int blockHeight = logoHeight + logoTextGap + 2 * textRowHeight;
+            const int blockTop = (brandBand.h - blockHeight) / 2;
+            const int textTop = blockTop + logoHeight + logoTextGap;
+
+            renderer.drawImage(
+                "Assets/Images/E&G-Signs-cc-White.png",
+                { brandBand.x + 46, brandBand.y + blockTop, brandBand.w - 92, logoHeight },
+                true);
+
+            const SDL_Color white{ 255, 255, 255, 255 };
+            const auto drawBrandText = [&](const std::string& text, int y, TTF_Font* font)
             {
-                brandBand.x + 20,
-                brandBand.y + 18,
-                brandBand.w - 40,
-                brandBand.h - 40
+                int width = 0;
+                if (!font || TTF_SizeUTF8(font, text.c_str(), &width, nullptr) != 0)
+                    return;
+
+                renderer.drawText(text, brandBand.x + (brandBand.w - width) / 2,
+                    brandBand.y + y, font, white);
             };
-            renderer.drawImage("Assets/Images/EstiMate-White.png", logoRect, true);
-            renderer.fillRect(
-                { brandBand.x, brandBand.y + brandBand.h - 2, brandBand.w, 2 },
-                DefaultTheme.accent);
+            const auto& fonts = renderer.getFontManager();
+            drawBrandText("ESTIMATE ENGINE EST.2026", textTop, fonts.getBrandBlackFont());
+            drawBrandText("PROUDLY SOUTH AFRICAN", textTop + textRowHeight, fonts.getBrandLightFont());
         }
+
+    private:
+        int inset;
     };
+}
+
+std::shared_ptr<UIElement> createWorkspaceBrand()
+{
+    return std::make_shared<DashboardNavigationBrand>(0);
 }
 
 NavigationPanel::NavigationPanel()
@@ -65,6 +94,19 @@ NavigationPanel::NavigationPanel()
     setLayout(std::make_unique<VerticalLayout>());
 
     setSidebarStyle(true);
+}
+
+void NavigationPanel::renderOverlays(Renderer& renderer)
+{
+    Panel::renderOverlays(renderer);
+
+    if (showWorkspaceDivider)
+    {
+        const SDL_Rect sidebar = getBounds();
+        renderer.fillRect(
+            { sidebar.x + sidebar.w - 1, sidebar.y, 2, sidebar.h },
+            DefaultTheme.accent);
+    }
 }
 
 void NavigationPanel::addBrand()
@@ -82,10 +124,11 @@ void NavigationPanel::addDashboardBrand()
         return;
 
     hasBrand = true;
+    showWorkspaceDivider = true;
     addLayoutElement(
-        std::make_shared<DashboardNavigationBrand>(),
+        std::make_shared<DashboardNavigationBrand>(Metrics::SidebarPadding),
         SizePolicy::Fixed,
-        116);
+        Metrics::HeaderHeight - Metrics::SidebarPadding);
 }
 
 std::shared_ptr<NavigationItem> NavigationPanel::addItem(
@@ -174,5 +217,5 @@ void NavigationPanel::addHeading(
     addLayoutElement(
         heading,
         SizePolicy::Fixed,
-        40);
+        20);
 }

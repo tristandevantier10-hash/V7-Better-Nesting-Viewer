@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Panel.h"
+#include "NavigationPanel.h"
+#include "Button.h"
 #include "Metrics.h"
+#include "FontManager.h"
 #include "Renderer.h"
 #include "Label.h"
 #include "HorizontalLayout.h"
@@ -76,6 +79,7 @@ private:
 class PageHeaderContentPanel : public Panel
 {
 public:
+    bool framed = false;
     void addLayoutElement(
         std::shared_ptr<UIElement> element,
         SizePolicy policy = SizePolicy::Fill,
@@ -107,9 +111,43 @@ public:
     }
 
 protected:
-    void renderBackground(Renderer&) override
+    void renderBackground(Renderer& renderer) override
     {
-        // Header content floats over the optional banner image.
+        if (children.size() < 2)
+            return;
+
+        const auto titleLabel = std::dynamic_pointer_cast<Label>(children.front());
+        const auto subtitleLabel = std::dynamic_pointer_cast<Label>(children[1]);
+        if (!titleLabel || !subtitleLabel)
+            return;
+
+        const auto& fonts = renderer.getFontManager();
+        auto* subtitleFont = fonts.getHeaderSubtitleFont();
+        subtitleLabel->setCustomFont(subtitleFont);
+
+        int titleWidth = 0;
+        int subtitleWidth = 0;
+        TTF_SizeUTF8(fonts.getPageTitleFont(), titleLabel->getText().c_str(), &titleWidth, nullptr);
+        TTF_SizeUTF8(subtitleFont, subtitleLabel->getText().c_str(), &subtitleWidth, nullptr);
+        const SDL_Rect title = titleLabel->getBounds();
+        const SDL_Rect subtitle = children[1]->getBounds();
+        // The title font has more space below its visible lettering.
+        constexpr int opticalOffset = 5;
+        const int ruleY = (title.y + title.h + subtitle.y) / 2 - opticalOffset;
+        if (framed && title.w > 0)
+        {
+            renderer.drawRect(
+                { title.x - 12, title.y - 10,
+                    std::min(title.w, std::max(titleWidth, subtitleWidth) + 34),
+                    subtitle.y + subtitle.h - title.y + 20 },
+                SDL_Color{ 130, 135, 132, 255 });
+        }
+        if (title.w > 0)
+        {
+            renderer.fillRect(
+                { title.x, ruleY, std::min(title.w, std::max(titleWidth, subtitleWidth) + 10), 1 },
+                DefaultTheme.darkText);
+        }
     }
 };
 
@@ -147,37 +185,6 @@ private:
     float scale = 1.0f;
 };
 
-class DashboardHeaderControls : public UIElement
-{
-public:
-    void render(Renderer& renderer) override
-    {
-        if (!isVisible())
-            return;
-
-        const int centerY = bounds.y + bounds.h / 2;
-        const SDL_Rect statusPill{ bounds.x, centerY - 17, 148, 34 };
-        renderer.fillRoundedRect(statusPill, SDL_Color{ 247, 250, 247, 255 }, 17);
-        renderer.drawRoundedRect(statusPill, SDL_Color{ 224, 233, 221, 255 }, 17);
-        renderer.fillCircle(bounds.x + 16, centerY, 4, SDL_Color{ 91, 157, 72, 255 });
-        renderer.drawText("Workspace active", bounds.x + 28, centerY - 7,
-            LabelStyle::Small, SDL_Color{ 75, 91, 76, 255 });
-
-        const int dividerX = bounds.x + 164;
-        renderer.drawLine(dividerX, centerY - 17, dividerX, centerY + 17,
-            SDL_Color{ 229, 232, 235, 255 });
-
-        const int avatarX = dividerX + 15;
-        renderer.fillCircle(avatarX + 17, centerY, 17, SDL_Color{ 235, 242, 231, 255 });
-        renderer.drawText("EG", avatarX + 7, centerY - 7,
-            LabelStyle::Small, SDL_Color{ 62, 94, 54, 255 });
-        renderer.drawLine(avatarX + 42, centerY - 2, avatarX + 46, centerY + 2,
-            SDL_Color{ 111, 122, 130, 255 });
-        renderer.drawLine(avatarX + 46, centerY + 2, avatarX + 50, centerY - 2,
-            SDL_Color{ 111, 122, 130, 255 });
-    }
-};
-
 class DashboardBannerPanel : public PageHeaderPanel
 {
 protected:
@@ -188,7 +195,7 @@ protected:
         const SDL_Rect bounds = getBounds();
         renderer.drawImageCoverRegion(
             "Assets/Images/Header Background.png",
-            1.0f / 3.0f, 0.0f, 2.0f / 3.0f, 1.0f,
+            1.0f / 3.0f, 0.258f, 2.0f / 3.0f, 0.257f,
             bounds);
 
         renderer.fillRect(
@@ -199,7 +206,7 @@ protected:
 
 inline void configurePageHeader(
     const std::shared_ptr<Panel>& panel,
-    int padding = Metrics::SpaceM,
+    int padding = 32,
     int spacing = Metrics::SpaceXL)
 {
     panel->setHeaderStyle(true);
@@ -218,7 +225,8 @@ inline void configurePageHeaderTitleLabel(const std::shared_ptr<Label>& label)
 
 inline void configurePageHeaderSubtitleLabel(const std::shared_ptr<Label>& label)
 {
-    label->setTextTheme(TextTheme::DarkSecondary);
+    label->setStyle(LabelStyle::Normal);
+    label->setTextTheme(TextTheme::Dark);
     label->setAlignment(LabelAlignment::Left);
 }
 
@@ -232,13 +240,81 @@ inline void configurePageHeaderTitle(
     panel->setSpacing(spacing);
 }
 
-inline void addPageHeaderLogo(
-    const std::shared_ptr<Panel>& panel,
-    const std::string& imagePath = "Assets/Images/EstiMate.png",
-    float scale = 1.0f)
+inline void addPageHeaderTitle(
+    const std::shared_ptr<Panel>& header,
+    const std::string& heading,
+    const std::string& description, bool framed = false)
 {
-    panel->addLayoutElement(
-        std::make_shared<PageHeaderLogo>(imagePath, scale),
-        SizePolicy::Fixed,
-        PageHeaderLogoWidth);
+    auto titlePanel = std::make_shared<PageHeaderContentPanel>();
+    titlePanel->setLayout(std::make_unique<VerticalLayout>());
+    configurePageHeaderTitle(titlePanel);
+    titlePanel->framed = framed;
+
+    auto title = std::make_shared<Label>();
+    title->setText(heading);
+    configurePageHeaderTitleLabel(title);
+    titlePanel->addLayoutElement(title, SizePolicy::Fixed);
+
+    auto subtitle = std::make_shared<Label>();
+    subtitle->setText(description);
+    configurePageHeaderSubtitleLabel(subtitle);
+    titlePanel->addLayoutElement(subtitle, SizePolicy::Fixed);
+
+    header->addLayoutElement(titlePanel, SizePolicy::Fill);
+}
+
+inline void addPageHeaderActions(
+    const std::shared_ptr<Panel>& header,
+    const std::shared_ptr<Button>& primary,
+    const std::shared_ptr<Button>& secondary = nullptr)
+{
+    auto actions = std::make_shared<PageHeaderContentPanel>();
+    actions->setLayout(std::make_unique<VerticalLayout>());
+    actions->setSpacing(14);
+
+    if (primary)
+    {
+        primary->setStyle(Button::ButtonStyle::HeaderPrimary);
+        actions->addLayoutElement(primary, SizePolicy::Fixed, Metrics::ControlHeight);
+    }
+    if (secondary)
+    {
+        secondary->setStyle(Button::ButtonStyle::HeaderOutline);
+        actions->addLayoutElement(secondary, SizePolicy::Fixed, Metrics::ControlHeight);
+    }
+    header->addLayoutElement(actions, SizePolicy::Fixed, 144);
+}
+
+class WorkspaceMasthead : public Panel
+{
+public:
+    void render(Renderer& renderer) override
+    {
+        Panel::render(renderer);
+        const SDL_Rect row = getBounds();
+        renderer.fillRect(
+            { row.x, row.y + row.h - 2, row.w, 2 },
+            DefaultTheme.accent);
+        renderer.fillRect(
+            { row.x + Metrics::SidebarWidth - 1, row.y, 2, row.h },
+            DefaultTheme.accent);
+    }
+};
+
+inline std::shared_ptr<Panel> addWorkspaceLayout(
+    Panel& screen,
+    const std::shared_ptr<Panel>& header)
+{
+    screen.setLayout(std::make_unique<VerticalLayout>());
+
+    auto masthead = std::make_shared<WorkspaceMasthead>();
+    masthead->setLayout(std::make_unique<HorizontalLayout>());
+    masthead->addLayoutElement(createWorkspaceBrand(), SizePolicy::Fixed, Metrics::SidebarWidth);
+    masthead->addLayoutElement(header, SizePolicy::Fill);
+    screen.addLayoutElement(masthead, SizePolicy::Fixed, Metrics::HeaderHeight);
+
+    auto body = std::make_shared<Panel>();
+    body->setLayout(std::make_unique<HorizontalLayout>());
+    screen.addLayoutElement(body, SizePolicy::Fill);
+    return body;
 }

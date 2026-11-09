@@ -5,5 +5,6 @@ enum class PanelStyle
     Default,
     Header,
     Sidebar,
-    Card
+    Card,
+    Workspace
 };

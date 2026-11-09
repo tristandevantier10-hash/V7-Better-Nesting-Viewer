@@ -76,7 +76,7 @@ private:
     std::shared_ptr<Label> pageTitle;
     std::shared_ptr<Label> pageSubtitle;
 
-    std::shared_ptr<Panel> customerCard;
+    std::shared_ptr<Panel> resultsWorkspace;
 
     // --------------------------------------------------
     // KPI cards

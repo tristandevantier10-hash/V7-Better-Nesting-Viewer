@@ -9,10 +9,10 @@ CardPanel::CardPanel()
     setStyle(PanelStyle::Card);
     setLayout(std::make_unique<VerticalLayout>());
 
-    setPadding(Metrics::PanelPadding);
+    setPadding(Metrics::CardPadding);
     setSpacing(Metrics::SpaceS);
 
-    headerHeight = 36;
+    headerHeight = 30;
     layout->setTopInset(headerHeight);
 }
 
@@ -28,24 +28,16 @@ const std::string& CardPanel::getTitle() const
 
 void CardPanel::render(Renderer& renderer)
 {
-    // Flat white background
-    renderer.fillRect(
-        getBounds(),
-        SDL_Color{ 255,255,255,255 });
-
-    // Optional subtle border
-    renderer.drawRect(
-        getBounds(),
-        SDL_Color{ 235,235,235,255 });
+    renderBackground(renderer);
 
     // Title
     if (!title.empty())
     {
         renderer.drawText(
             title,
-            getX() + Metrics::PanelPadding,
-            getY() + 14,
-            renderer.getFontManager().getHeadingFont(),
+            getX() + Metrics::CardPadding,
+            getY() + Metrics::CardPadding,
+            renderer.getFontManager().getSectionFont(),
             SDL_Color{ 45,45,45,255 });
     }
 

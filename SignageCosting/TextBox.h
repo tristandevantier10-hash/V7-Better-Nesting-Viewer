@@ -11,6 +11,7 @@ class TextBox : public Panel
 public:
 
     TextBox();
+    void setCompactText(bool value) { compactText = value; }
 
     void update(const SDL_Event& e) override;
 
@@ -39,6 +40,7 @@ private:
     bool passwordMode = false;
 
     bool textCentered = false;
+    bool compactText = false;
 
     bool allTextSelected = false;
     bool selectAllOnFocus = false;

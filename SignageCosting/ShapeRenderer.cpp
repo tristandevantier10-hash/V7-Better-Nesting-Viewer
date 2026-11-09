@@ -91,190 +91,106 @@ void ShapeRenderer::fillCircle(
     }
 }
 
-void ShapeRenderer::fillRoundedRect(
-    const SDL_Rect& rect,
-    SDL_Color colour,
-    int radius)
+namespace
 {
-    SDL_SetRenderDrawBlendMode(
-        sdlRenderer,
-        SDL_BLENDMODE_BLEND);
-
-    SDL_SetRenderDrawColor(
-        sdlRenderer,
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a);
-
-    // Centre rectangle
-    SDL_Rect middle =
+    bool insideRoundedRect(float x, float y, int width, int height, int radius)
     {
-        rect.x + radius,
-        rect.y,
-        rect.w - radius * 2,
-        rect.h
-    };
+        if (x < 0 || y < 0 || x >= width || y >= height)
+            return false;
 
-    SDL_RenderFillRect(
-        sdlRenderer,
-        &middle);
-
-    // Left rectangle
-    SDL_Rect left =
-    {
-        rect.x,
-        rect.y + radius,
-        radius,
-        rect.h - radius * 2
-    };
-
-    SDL_RenderFillRect(
-        sdlRenderer,
-        &left);
-
-    // Right rectangle
-    SDL_Rect right =
-    {
-        rect.x + rect.w - radius,
-        rect.y + radius,
-        radius,
-        rect.h - radius * 2
-    };
-
-    SDL_RenderFillRect(
-        sdlRenderer,
-        &right);
-
-    fillCircle(
-        rect.x + radius,
-        rect.y + radius,
-        radius,
-        colour);
-
-    fillCircle(
-        rect.x + rect.w - radius - 1,
-        rect.y + radius,
-        radius,
-        colour);
-
-    fillCircle(
-        rect.x + radius,
-        rect.y + rect.h - radius - 1,
-        radius,
-        colour);
-
-    fillCircle(
-        rect.x + rect.w - radius - 1,
-        rect.y + rect.h - radius - 1,
-        radius,
-        colour);
-}
-
-void ShapeRenderer::drawRoundedRect(
-    const SDL_Rect& rect,
-    SDL_Color colour,
-    int radius)
-{
-    SDL_SetRenderDrawBlendMode(
-        sdlRenderer,
-        SDL_BLENDMODE_BLEND);
-
-    SDL_SetRenderDrawColor(
-        sdlRenderer,
-        colour.r,
-        colour.g,
-        colour.b,
-        colour.a);
-
-    SDL_Rect r = rect;
-
-    // Top
-    SDL_RenderDrawLine(
-        sdlRenderer,
-        r.x + radius,
-        r.y,
-        r.x + r.w - radius,
-        r.y);
-
-    // Bottom
-    SDL_RenderDrawLine(
-        sdlRenderer,
-        r.x + radius,
-        r.y + r.h - 1,
-        r.x + r.w - radius,
-        r.y + r.h - 1);
-
-    // Left
-    SDL_RenderDrawLine(
-        sdlRenderer,
-        r.x,
-        r.y + radius,
-        r.x,
-        r.y + r.h - radius);
-
-    // Right
-    SDL_RenderDrawLine(
-        sdlRenderer,
-        r.x + r.w - 1,
-        r.y + radius,
-        r.x + r.w - 1,
-        r.y + r.h - radius);
-
-    // Rounded corners
-    for (int dy = 0; dy <= radius; ++dy)
-    {
-        int dx = static_cast<int>(
-            std::sqrt(radius * radius - dy * dy));
-
-        // Top-left
-        SDL_RenderDrawPoint(
-            sdlRenderer,
-            r.x + radius - dx,
-            r.y + radius - dy);
-
-        // Top-right
-        SDL_RenderDrawPoint(
-            sdlRenderer,
-            r.x + r.w - radius + dx - 1,
-            r.y + radius - dy);
-
-        // Bottom-left
-        SDL_RenderDrawPoint(
-            sdlRenderer,
-            r.x + radius - dx,
-            r.y + r.h - radius + dy - 1);
-
-        // Bottom-right
-        SDL_RenderDrawPoint(
-            sdlRenderer,
-            r.x + r.w - radius + dx - 1,
-            r.y + r.h - radius + dy - 1);
+        const float dx = std::max({radius - x, x - (width - radius), 0.0f});
+        const float dy = std::max({radius - y, y - (height - radius), 0.0f});
+        return dx * dx + dy * dy <= static_cast<float>(radius) * radius;
     }
-}
 
-void ShapeRenderer::drawRoundedRing(
-    const SDL_Rect& rect,
-    SDL_Color colour,
-    int radius,
-    int thickness)
-{
-    for (int i = 0; i < thickness; ++i)
+    void paintRoundedRect(SDL_Renderer* renderer, const SDL_Rect& rect,
+        SDL_Color colour, int radius, int inset)
     {
-        SDL_Rect r =
+        if (rect.w <= 0 || rect.h <= 0 || colour.a == 0)
+            return;
+
+        radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+        const bool ring = inset > 0;
+        inset = std::min(inset, (std::min(rect.w, rect.h) + 1) / 2);
+        const int edge = std::max(radius, inset);
+        const int innerRadius = std::max(0, radius - inset);
+        const int innerWidth = rect.w - 2 * inset;
+        const int innerHeight = rect.h - 2 * inset;
+
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        const auto fill = [&](int x, int y, int width, int height)
         {
-            rect.x + i,
-            rect.y + i,
-            rect.w - i * 2,
-            rect.h - i * 2
+            if (width <= 0 || height <= 0) return;
+            SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
+            const SDL_Rect span{rect.x + x, rect.y + y, width, height};
+            SDL_RenderFillRect(renderer, &span);
         };
 
-        if (r.w <= 0 || r.h <= 0)
-            break;
+        // Straight runs are solid and need no sampling.
+        if (ring)
+        {
+            fill(edge, 0, rect.w - 2 * edge, inset);
+            const int bottom = std::max(inset, rect.h - inset);
+            fill(edge, bottom, rect.w - 2 * edge, rect.h - bottom);
+            fill(0, edge, inset, rect.h - 2 * edge);
+            const int right = std::max(inset, rect.w - inset);
+            fill(right, edge, rect.w - right, rect.h - 2 * edge);
+        }
+        else
+        {
+            fill(edge, 0, rect.w - 2 * edge, rect.h);
+            fill(0, edge, edge, rect.h - 2 * edge);
+            fill(rect.w - edge, edge, edge, rect.h - 2 * edge);
+        }
 
-        drawRoundedRect(
-            r,
-            colour,
-            std::max(1, radius - i));
+        // Sample only the corner blocks and mirror the coverage across the box.
+        constexpr int samples = 4;
+        constexpr int sampleCount = samples * samples;
+        for (int y = 0; y < edge; ++y)
+        {
+            for (int x = 0; x < edge; ++x)
+            {
+                int covered = 0;
+                for (int sy = 0; sy < samples; ++sy)
+                    for (int sx = 0; sx < samples; ++sx)
+                    {
+                        const float px = x + (sx + 0.5f) / samples;
+                        const float py = y + (sy + 0.5f) / samples;
+                        if (insideRoundedRect(px, py, rect.w, rect.h, radius) &&
+                            (!ring || !insideRoundedRect(px - inset, py - inset,
+                                innerWidth, innerHeight, innerRadius)))
+                            ++covered;
+                    }
+
+                if (!covered) continue;
+                const auto alpha = static_cast<Uint8>((colour.a * covered + sampleCount / 2) / sampleCount);
+                SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, alpha);
+                const int left = rect.x + x, right = rect.x + rect.w - x - 1;
+                const int top = rect.y + y, bottom = rect.y + rect.h - y - 1;
+                SDL_RenderDrawPoint(renderer, left, top);
+                if (right != left) SDL_RenderDrawPoint(renderer, right, top);
+                if (bottom != top)
+                {
+                    SDL_RenderDrawPoint(renderer, left, bottom);
+                    if (right != left) SDL_RenderDrawPoint(renderer, right, bottom);
+                }
+            }
+        }
     }
+}
+
+void ShapeRenderer::fillRoundedRect(const SDL_Rect& rect, SDL_Color colour, int radius)
+{
+    paintRoundedRect(sdlRenderer, rect, colour, radius, 0);
+}
+
+void ShapeRenderer::drawRoundedRect(const SDL_Rect& rect, SDL_Color colour, int radius)
+{
+    drawRoundedRing(rect, colour, radius, 1);
+}
+
+void ShapeRenderer::drawRoundedRing(const SDL_Rect& rect, SDL_Color colour, int radius, int thickness)
+{
+    if (thickness > 0)
+        paintRoundedRect(sdlRenderer, rect, colour, radius, thickness);
 }

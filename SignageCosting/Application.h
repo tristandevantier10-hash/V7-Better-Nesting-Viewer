@@ -35,7 +35,7 @@ public:
     Application();
     ~Application();
 
-    bool initialise();
+    bool initialise(bool developerStartup = false);
     void run();
     void shutdown();
 
@@ -63,6 +63,7 @@ private:
 
     void setSplashWindowSize();
     void restoreMainWindowSize();
+    void enterWorkspace();
 
     bool splashWindowResized = false;
 

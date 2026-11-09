@@ -54,6 +54,13 @@ int main()
         for (const auto& piece:tiedCircleCapacity.layout.sheets.front().placed)
             check(piece.y+piece.height<=49400.0001,"Equal-count layouts must leave the longer end offcut.");
         const auto capacity=NestingService::findCapacity(customTriangles.front(),narrowSheet);
+        const auto leftCapacity=NestingService::findCapacity(
+            {204,rectangle(100,100),1,{0},"Rectangle"},{210,210,0,5},true);
+        check(leftCapacity.layout.isValid() && leftCapacity.layout.sheets.size()==1 &&
+            leftCapacity.layout.sheets.front().placed.size()==2,
+            "Left-aligned capacity must return its own layout even when more pieces fit unrestricted.");
+        for (const auto& piece:leftCapacity.layout.sheets.front().placed)
+            check(std::abs(piece.x-5)<1e-7,"Left-aligned pieces must respect the left margin.");
         check(capacity.layout.isValid() && capacity.layout.sheets.size()==1 &&
             capacity.layout.sheets.front().placed.size()==4,"Single-sheet capacity must find four interlocked triangles.");
         const auto flushTriangles=NestingService::calculate(customTriangles,narrowSheet);

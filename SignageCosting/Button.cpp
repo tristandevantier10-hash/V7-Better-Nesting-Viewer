@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "Renderer.h"
+#include "FontManager.h"
 #include "iostream"
 #include "Metrics.h"
 
@@ -130,6 +131,38 @@ void Button::render(Renderer& renderer)
             bounds.y + (bounds.h - 20) / 2,
             text);
 
+        return;
+    }
+
+    if (style == ButtonStyle::HeaderPrimary || style == ButtonStyle::HeaderOutline)
+    {
+        const bool filled = style == ButtonStyle::HeaderPrimary;
+        const SDL_Color black{ 0, 0, 0, 255 };
+        const SDL_Color green{ 0, 160, 72, 255 };
+        constexpr int radius = 7;
+        if (filled)
+        {
+            const SDL_Color background = pressed ? green :
+                hovered ? SDL_Color{ 32, 32, 32, 255 } : black;
+            renderer.fillRoundedRect(bounds, background, radius);
+        }
+        else
+        {
+            if (hovered)
+                renderer.fillRoundedRect(bounds, DefaultTheme.successSurface, radius);
+            renderer.drawRoundedRect(bounds, green, radius);
+        }
+
+        auto* font = renderer.getFontManager().getSmallFont();
+        int width = 0;
+        int height = 0;
+        if (font && TTF_SizeUTF8(font, text.c_str(), &width, &height) == 0)
+        {
+            renderer.drawText(text,
+                bounds.x + (bounds.w - width) / 2,
+                bounds.y + (bounds.h - height) / 2,
+                font, filled ? DefaultTheme.lightText : black);
+        }
         return;
     }
 

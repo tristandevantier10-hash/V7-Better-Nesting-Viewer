@@ -24,7 +24,6 @@ NewJobScreen::NewJobScreen()
     // Root
     //==================================================
 
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
@@ -45,8 +44,6 @@ NewJobScreen::NewJobScreen()
                 navigationCallback(route);
         },
         true);
-    addLayoutElement(sidebar, SizePolicy::Fixed, Metrics::SidebarWidth);
-    addLayoutElement(contentPanel, SizePolicy::Fill);
 
     //==================================================
     // Right Side
@@ -58,12 +55,11 @@ NewJobScreen::NewJobScreen()
     rightContainer->setLayout(
         std::make_unique<VerticalLayout>());
 
-    rightContainer->setStyle(
-        PanelStyle::Card);
 
     rightContainer->setBorderVisible(false);
-    rightContainer->setPadding(Metrics::SpaceXL);
-    rightContainer->setSpacing(Metrics::SpaceL);
+    rightContainer->setStyle(PanelStyle::Workspace);
+    rightContainer->setPadding(Metrics::WorkspaceGap);
+    rightContainer->setSpacing(Metrics::WorkspaceGap);
 
     //==================================================
     // Header
@@ -78,7 +74,9 @@ NewJobScreen::NewJobScreen()
     configurePageHeader(pageHeader);
     pageHeader->setDividerVisible(false);
 
-    contentPanel->addLayoutElement(pageHeader, SizePolicy::Fixed, 132);
+    auto workspaceBody = addWorkspaceLayout(*this, pageHeader);
+    workspaceBody->addLayoutElement(sidebar, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(contentPanel, SizePolicy::Fill);
 
     auto titlePanel =
         std::make_shared<PageHeaderContentPanel>();
@@ -232,7 +230,7 @@ NewJobScreen::NewJobScreen()
     materialSection->setLayout(std::make_unique<VerticalLayout>());
     materialSection->setStyle(PanelStyle::Card);
     materialSection->setBorderVisible(true);
-    materialSection->setPadding(Metrics::SpaceXL);
+    materialSection->setPadding(Metrics::CardPadding);
     materialSection->setSpacing(Metrics::SpaceM);
 
     //==================================================
@@ -286,34 +284,34 @@ NewJobScreen::NewJobScreen()
         form->addCompactRow(
             "Material",
             material,
-            34);
+            Metrics::CompactControlHeight);
 
     variantRow =
         form->addCompactRow(
             "Variant",
             variant,
-            34);
+            Metrics::CompactControlHeight);
 
     formatRow =
         form->addCompactRow(
             "Format",
             formatSelector,
-            34);
+            Metrics::CompactControlHeight);
 
     form->addCompactRow(
         "Width (mm)",
         width,
-        34);
+        Metrics::CompactControlHeight);
 
     form->addCompactRow(
         "Height (mm)",
         height,
-        34);
+        Metrics::CompactControlHeight);
 
     form->addCompactRow(
         "Quantity",
         quantity,
-        34);
+        Metrics::CompactControlHeight);
 
     //==================================================
     // Material Editor Header
@@ -403,7 +401,7 @@ NewJobScreen::NewJobScreen()
     materialSection->addLayoutElement(
         inputArea,
         SizePolicy::Fixed,
-        234);
+        6 * Metrics::CompactControlHeight + 5 * Metrics::SpaceS);
 
     processChoicesPanel = std::make_shared<Panel>();
     processChoicesPanel->setLayout(std::make_unique<HorizontalLayout>());
@@ -417,7 +415,7 @@ NewJobScreen::NewJobScreen()
     workspace->addLayoutElement(
         materialSection,
         SizePolicy::Fixed,
-        424);
+        388);
 
     //==================================================
     // Job Items Section

@@ -33,9 +33,9 @@ void NavigationItem::render(Renderer& renderer)
             bounds.h - 4
         };
 
-        renderer.fillRect(
+        renderer.fillRoundedRect(
             selectedBackground,
-            selected ? DefaultTheme.sidebarSelected : DefaultTheme.navigationHover);
+            selected ? DefaultTheme.sidebarSelected : DefaultTheme.navigationHover, 5);
     }
 
     // ---------------------------------------------------------
@@ -46,15 +46,15 @@ void NavigationItem::render(Renderer& renderer)
     {
         SDL_Rect indicator =
         {
-            bounds.x + 2,
-            bounds.y,
+            bounds.x + 4,
+            bounds.y + 2,
             Metrics::NavigationIndicatorWidth,
-            bounds.h
+            bounds.h - 4
         };
 
-        renderer.fillRect(
+        renderer.fillRoundedRect(
             indicator,
-            DefaultTheme.accent);
+            DefaultTheme.accent, 2);
     }
 
     // ---------------------------------------------------------
@@ -88,36 +88,25 @@ void NavigationItem::render(Renderer& renderer)
 
     if (heading)
     {
-        constexpr int LeftPadding = 22;
-        constexpr int TopPadding = 10;
-        constexpr int RightPadding = LeftPadding;
-        constexpr int LabelGap = 8;
-
-        int headingWidth = 0;
-        int headingHeight = 0;
-        TTF_Font* headingFont = renderer.getFontManager().getSmallFont();
-        if (headingFont)
+        auto* font = renderer.getFontManager().getSectionFont();
+        int height = 0;
+        if (font && TTF_SizeUTF8(font, text.c_str(), nullptr, &height) == 0)
         {
-            TTF_SizeUTF8(headingFont, text.c_str(), &headingWidth, &headingHeight);
+            renderer.drawText(text, bounds.x + 7,
+                bounds.y + (bounds.h - height) / 2, font, DefaultTheme.lightText);
         }
-        (void)headingHeight;
-
-        const int lineX = bounds.x + LeftPadding + headingWidth + LabelGap;
-        const int lineWidth = bounds.x + bounds.w - RightPadding - lineX;
-        if (lineWidth > 0)
+        const SDL_Color green{ 0, 148, 74, 255 };
+        const int right = bounds.x + bounds.w - 7;
+        const int y = bounds.y + bounds.h - 1;
+        renderer.fillRect({ bounds.x + 7, y, bounds.w - 14, 1 }, green);
+        renderer.drawLine(right - 24, y - 4, right - 18, y - 16, green);
+        renderer.drawLine(right - 18, y - 16, right - 12, y - 4, green);
+        renderer.drawLine(right - 24, y - 4, right - 12, y - 4, green);
+        for (int row = 0; row < 12; ++row)
         {
-            renderer.fillRect(
-                { lineX, bounds.y + bounds.h / 2, lineWidth, 1 },
-                { 58, 64, 60, 255 });
+            const int inset = row / 2;
+            renderer.fillRect({ right - 13 + inset, y - 16 + row, 13 - 2 * inset, 1 }, green);
         }
-
-        renderer.drawText(
-            text,
-            bounds.x + LeftPadding,
-            bounds.y + TopPadding,
-            LabelStyle::Small,
-            textColour);
-
         return;
     }
 
@@ -130,8 +119,7 @@ void NavigationItem::render(Renderer& renderer)
     constexpr int IconSize = Metrics::NavigationIconSize;
     constexpr int IconTextGap = Metrics::NavigationIconGap;
 
-    TTF_Font* font =
-        renderer.getFontManager().getSmallFont();
+    auto* font = renderer.getFontManager().getNavigationFont();
 
     int textWidth = 0;
     int textHeight = 0;
@@ -158,7 +146,7 @@ void NavigationItem::render(Renderer& renderer)
 
     int textY =
         bounds.y +
-        (bounds.h - textHeight) / 2;
+        (bounds.h - textHeight) / 2 + 2;
 
     // ---------------------------------------------------------
     // Icon
@@ -174,10 +162,7 @@ void NavigationItem::render(Renderer& renderer)
             IconSize
         };
 
-        renderer.drawSVG(
-            iconPath,
-            iconRect,
-            textColour);
+        renderer.drawSVG(iconPath, iconRect, textColour);
     }
 
     // ---------------------------------------------------------

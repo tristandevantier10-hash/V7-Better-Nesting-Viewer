@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Renderer.h"
+#include "Metrics.h"
+#include "Theme.h"
 #include "FontManager.h"
 #include "Label.h"
 #include <array>
@@ -11,7 +13,7 @@ namespace NestingStyle
 {
     inline constexpr SDL_Color ink{ 24, 32, 46, 255 };
     inline constexpr SDL_Color muted{ 112, 123, 142, 255 };
-    inline constexpr SDL_Color border{ 225, 231, 238, 255 };
+    inline const SDL_Color& border = DefaultTheme.border;
     inline constexpr SDL_Color white{ 255, 255, 255, 255 };
     inline constexpr SDL_Color green{ 35, 111, 64, 255 };
     inline constexpr std::array<SDL_Color, 8> colours{{
@@ -36,8 +38,8 @@ namespace NestingStyle
 
     inline void card(Renderer& renderer, const SDL_Rect& rect)
     {
-        renderer.fillRoundedRect(rect, white, 7);
-        renderer.drawRoundedRect(rect, border, 7);
+        renderer.fillRoundedRect(rect, white, Metrics::CardRadius);
+        renderer.drawRoundedRect(rect, border, Metrics::CardRadius);
     }
 }
 

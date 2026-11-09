@@ -12,6 +12,7 @@ class ComboBox : public UIElement
 public:
 
     ComboBox();
+    void setCompactText(bool value) { compactText = value; }
     ~ComboBox() override;
 
     void update(const SDL_Event& e) override;
@@ -45,6 +46,7 @@ private:
     std::function<void(int)> onSelectionChanged;
 
     bool dropdownOpen = false;
+    bool compactText = false;
     int firstVisibleItem = 0;
     int hoveredItem = -1;
 

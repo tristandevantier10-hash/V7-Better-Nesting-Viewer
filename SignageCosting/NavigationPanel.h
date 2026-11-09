@@ -13,6 +13,7 @@ class NavigationPanel : public Panel
 public:
 
     NavigationPanel();
+    void renderOverlays(Renderer& renderer) override;
 
     std::shared_ptr<NavigationItem> addItem(
         const std::string& text,
@@ -29,9 +30,13 @@ public:
 
     void addBrand();
     void addDashboardBrand();
+    void showWorkspaceEdge() { showWorkspaceDivider = true; }
 
 private:
 
     std::vector<std::shared_ptr<NavigationItem>> items;
     bool hasBrand = false;
+    bool showWorkspaceDivider = false;
 };
+
+std::shared_ptr<UIElement> createWorkspaceBrand();

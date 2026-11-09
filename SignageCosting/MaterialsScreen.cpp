@@ -67,17 +67,14 @@ namespace
 
 MaterialsScreen::MaterialsScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
-    addLayoutElement(std::move(sharedNavigation), SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
     content->setLayout(std::make_unique<VerticalLayout>());
     content->setPadding(0);
     content->setSpacing(0);
-    addLayoutElement(content, SizePolicy::Fill);
 
     auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
@@ -88,7 +85,7 @@ MaterialsScreen::MaterialsScreen(std::shared_ptr<NavigationPanel> sharedNavigati
     configurePageHeaderTitle(titlePanel);
 
     auto title = std::make_shared<Label>();
-    title->setText("Materials");
+    title->setText("MATERIALS");
     title->setStyle(LabelStyle::Heading);
     configurePageHeaderTitleLabel(title);
     titlePanel->addLayoutElement(title, SizePolicy::Fixed, 34);
@@ -96,8 +93,12 @@ MaterialsScreen::MaterialsScreen(std::shared_ptr<NavigationPanel> sharedNavigati
     summaryLabel = std::make_shared<Label>();
     summaryLabel->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(summaryLabel);
-    titlePanel->addLayoutElement(summaryLabel, SizePolicy::Fixed, 22);
+    auto description = std::make_shared<Label>();
+    description->setText("Manage your material database.");
+    configurePageHeaderSubtitleLabel(description);
+    titlePanel->addLayoutElement(description, SizePolicy::Fixed);
     header->addLayoutElement(titlePanel, SizePolicy::Fill);
+    header->addLayoutElement(summaryLabel, SizePolicy::Fixed, 190);
 
     auto backButton = std::make_shared<Button>();
     backButton->setText("Back");
@@ -106,22 +107,26 @@ MaterialsScreen::MaterialsScreen(std::shared_ptr<NavigationPanel> sharedNavigati
         if (backCallback)
             backCallback();
     });
-    header->addLayoutElement(backButton, SizePolicy::Fixed, 100);
-    content->addLayoutElement(header, SizePolicy::Fixed, 132);
+    addPageHeaderActions(header, nullptr, backButton);
+    auto workspaceBody = addWorkspaceLayout(*this, header);
+    workspaceBody->addLayoutElement(sharedNavigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(content, SizePolicy::Fill);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
-    body->setPadding(Metrics::SpaceM);
-    body->setSpacing(Metrics::SpaceS);
+    body->setStyle(PanelStyle::Workspace);
+    body->setPadding(Metrics::WorkspaceGap);
+    body->setSpacing(Metrics::WorkspaceGap);
     content->addLayoutElement(body, SizePolicy::Fill);
 
     searchBox = std::make_shared<TextBox>();
+    searchBox->setCompactText(true);
     searchBox->setPlaceholder("Search materials, variants, category, type or use...");
     searchBox->setTextChangedCallback([this](const std::string& query)
     {
         filterMaterials(query);
     });
-    body->addLayoutElement(searchBox, SizePolicy::Fixed, Metrics::ControlHeight);
+    body->addLayoutElement(searchBox, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     materialsGrid = std::make_shared<DataGrid>();
     materialsGrid->addColumn("Material", 145);

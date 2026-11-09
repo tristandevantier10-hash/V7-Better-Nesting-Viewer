@@ -1,6 +1,7 @@
 #include "ComboBox.h"
 #include "Label.h"
 #include "Renderer.h"
+#include "FontManager.h"
 #include "Theme.h"
 #include "Metrics.h"
 #include <algorithm>
@@ -240,8 +241,8 @@ void ComboBox::renderOverlay(Renderer& renderer)
             ? SDL_Color{ 57, 104, 43, 255 }
             : DefaultTheme.darkText;
         renderer.drawText(items[index], row.x + Metrics::ControlPaddingX,
-            row.y + (row.h - Metrics::ControlTextHeight) / 2,
-            LabelStyle::Normal, textColour);
+            row.y + (row.h - (compactText ? TTF_FontHeight(renderer.getFontManager().getSmallFont()) : Metrics::ControlTextHeight)) / 2,
+            compactText ? LabelStyle::Small : LabelStyle::Normal, textColour);
 
         if (index == selectedIndex)
         {
@@ -295,7 +296,8 @@ void ComboBox::render(Renderer& renderer)
     renderer.drawText(
         getSelectedText(),
         getX() + Metrics::ControlPaddingX,
-        getY() + (getHeight() - Metrics::ControlTextHeight) / 2);
+        getY() + (getHeight() - (compactText ? TTF_FontHeight(renderer.getFontManager().getSmallFont()) : Metrics::ControlTextHeight)) / 2,
+        compactText ? LabelStyle::Small : LabelStyle::Normal, DefaultTheme.darkText);
 
     //==================================================
     // Dropdown Indicator

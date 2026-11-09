@@ -50,14 +50,14 @@ size_t TextBox::textIndexAt(int mouseX) const
     const auto display = passwordMode ? std::string(text.size(), '*') : text;
     const int padding = Metrics::ControlPaddingX;
     const int left = getX() + padding + (textCentered
-        ? std::max(0, (getWidth() - 2 * padding - TextRenderer::getTextWidth(display)) / 2) : 0);
+        ? std::max(0, (getWidth() - 2 * padding - TextRenderer::getTextWidth(display, compactText)) / 2) : 0);
     int previousWidth = 0;
     for (size_t index = 0; index < text.size();)
     {
         size_t next = index + 1;
         while (next < text.size() && (static_cast<unsigned char>(text[next]) & 0xC0) == 0x80)
             ++next;
-        const int width = TextRenderer::getTextWidth(display.substr(0, next));
+        const int width = TextRenderer::getTextWidth(display.substr(0, next), compactText);
         if (mouseX - left < (previousWidth + width) / 2) return index;
         previousWidth = width;
         index = next;
@@ -204,10 +204,12 @@ void TextBox::render(Renderer& renderer)
     {
         textX += std::max(
             0,
-            (contentWidth - TextRenderer::getTextWidth(alignedText)) / 2);
+            (contentWidth - TextRenderer::getTextWidth(alignedText, compactText)) / 2);
     }
 
-    const int textY = getY() + (getHeight() - Metrics::ControlTextHeight) / 2;
+    const auto textStyle = compactText ? LabelStyle::Small : LabelStyle::Normal;
+    const int textHeight = compactText ? TTF_FontHeight(renderer.getFontManager().getSmallFont()) : Metrics::ControlTextHeight;
+    const int textY = getY() + (getHeight() - textHeight) / 2;
     const bool selected = hasFocus() && !text.empty() &&
         (allTextSelected || selectionAnchor != selectionEnd);
     int selectionX = textX, selectionWidth = 0;
@@ -216,10 +218,10 @@ void TextBox::render(Renderer& renderer)
     {
         const size_t start = allTextSelected ? 0 : std::min(selectionAnchor, selectionEnd);
         const size_t end = allTextSelected ? text.size() : std::max(selectionAnchor, selectionEnd);
-        selectionX += TextRenderer::getTextWidth(displayText.substr(0, start));
-        selectionWidth = std::max(1, textX + TextRenderer::getTextWidth(displayText.substr(0, end)) - selectionX);
+        selectionX += TextRenderer::getTextWidth(displayText.substr(0, start), compactText);
+        selectionWidth = std::max(1, textX + TextRenderer::getTextWidth(displayText.substr(0, end), compactText) - selectionX);
         renderer.fillRect(
-            { selectionX, textY, selectionWidth, Metrics::ControlTextHeight },
+            { selectionX, textY, selectionWidth, textHeight },
             { 55, 115, 205, 255 });
     }
 
@@ -229,7 +231,7 @@ void TextBox::render(Renderer& renderer)
             placeholder,
             textX,
             textY,
-            LabelStyle::Normal,
+            textStyle,
             SDL_Color{ 150,150,150,255 });
     }
     else
@@ -238,12 +240,12 @@ void TextBox::render(Renderer& renderer)
             displayText,
             textX,
             textY,
-            LabelStyle::Normal,
+            textStyle,
             DefaultTheme.darkText);
         if (selected)
         {
-            renderer.pushClip({selectionX,textY,selectionWidth,Metrics::ControlTextHeight});
-            renderer.drawText(displayText,textX,textY,LabelStyle::Normal,SDL_Color{255,255,255,255});
+            renderer.pushClip({selectionX,textY,selectionWidth,textHeight});
+            renderer.drawText(displayText,textX,textY,textStyle,SDL_Color{255,255,255,255});
             renderer.popClip();
         }
     }
@@ -251,7 +253,7 @@ void TextBox::render(Renderer& renderer)
     if (hasFocus() && showCaret && !selected)
     {
         const int caretX = (text.empty() ? contentLeft : textX) +
-            TextRenderer::getTextWidth(displayText.substr(0, selectionEnd));
+            TextRenderer::getTextWidth(displayText.substr(0, selectionEnd), compactText);
 
         SDL_SetRenderDrawColor(
             renderer.getSDLRenderer(),

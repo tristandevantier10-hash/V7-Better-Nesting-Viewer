@@ -197,7 +197,7 @@ bool Application::loadSplashLogos()
     return true;
 }
 
-bool Application::initialise()
+bool Application::initialise(bool developerStartup)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -468,6 +468,13 @@ bool Application::initialise()
             ui.setScreen(&customerSelectionScreen);
         });
 
+    mainMenu.setNewCustomerCallback([this]()
+    {
+        customerSelectionScreen.setSelectionMode(false);
+        customerEditorScreen.clearEditor();
+        ui.setScreen(&customerEditorScreen);
+    });
+
     customerSelectionScreen.setNewCustomerCallback(
         [this]()
         {
@@ -631,8 +638,28 @@ bool Application::initialise()
             return true;
         });
 
-    state = AppState::Login;
-    ui.setScreen(&loginScreen);
+#ifdef _DEBUG
+    if (developerStartup)
+    {
+        std::cerr << "Developer startup enabled. Loading workspace data." << std::endl;
+        std::string error;
+        if (!DatabaseManager::initialise(nullptr, &error))
+        {
+            std::cerr << "Workspace startup failed: " << error << std::endl;
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Workspace startup failed",
+                error.c_str(), window);
+            return false;
+        }
+        enterWorkspace();
+    }
+    else
+#else
+    (void)developerStartup;
+#endif
+    {
+        state = AppState::Login;
+        ui.setScreen(&loginScreen);
+    }
 
     running = true;
 
@@ -721,9 +748,23 @@ void Application::setSplashWindowSize()
     splashWindowResized = true;
 }
 
+void Application::enterWorkspace()
+{
+    newJobScreen.initialiseMaterials();
+    newJobScreen.setJob(&currentJob);
+    mainMenu.refreshStatus();
+    mainMenu.setLabourRatesAvailable(
+        authenticationService.isAdmin() || mode == RunMode::Test);
+    customerSelectionScreen.refreshCustomers();
+    startupStage = StartupStage::Complete;
+    restoreMainWindowSize();
+    state = AppState::MainMenu;
+    ui.setScreen(&mainMenu);
+}
+
 void Application::restoreMainWindowSize()
 {
-    if (!window || !splashWindowResized)
+    if (!window)
         return;
 
     // Restore the normal application window.
@@ -874,27 +915,7 @@ void Application::update()
         {
             splashFadeAlpha = 255.0f;
 
-            newJobScreen.initialiseMaterials();
-
-            newJobScreen.setJob(
-                &currentJob);
-
-            mainMenu.refreshStatus();
-            mainMenu.setLabourRatesAvailable(
-                authenticationService.isAdmin() || mode == RunMode::Test);
-
-            customerSelectionScreen.refreshCustomers();
-
-            startupStage =
-                StartupStage::Complete;
-
-            restoreMainWindowSize();
-
-            state =
-                AppState::MainMenu;
-
-            ui.setScreen(
-                &mainMenu);
+            enterWorkspace();
 
             // Switch from fading OUT the splash
             // to fading IN the main menu.

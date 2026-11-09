@@ -92,12 +92,12 @@ void TextRenderer::drawText(
     SDL_DestroyTexture(texture);
 }
 
-int TextRenderer::getTextWidth(const std::string& text)
+int TextRenderer::getTextWidth(const std::string& text, bool small)
 {
     if (!fontManager)
         return 0;
 
-    TTF_Font* font = fontManager->getNormalFont();
+    TTF_Font* font = (small ? fontManager->getSmallFont() : fontManager->getNormalFont());
 
     if (!font)
         return 0;

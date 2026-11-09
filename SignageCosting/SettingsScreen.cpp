@@ -62,28 +62,21 @@ namespace
 
 SettingsScreen::SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
     auto navigation = std::move(sharedNavigation);
-    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
     content->setLayout(std::make_unique<VerticalLayout>());
     content->setPadding(0);
     content->setSpacing(0);
-    addLayoutElement(content, SizePolicy::Fill);
 
     auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
 
-    auto title = std::make_shared<Label>();
-    title->setText("Settings");
-    title->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(title);
-    header->addLayoutElement(title, SizePolicy::Fill);
+    addPageHeaderTitle(header, "SETTINGS", "Customization and preferences.");
 
     auto backButton = std::make_shared<Button>();
     backButton->setText("Back");
@@ -92,14 +85,17 @@ SettingsScreen::SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation
         if (backCallback)
             backCallback();
     });
-    header->addLayoutElement(backButton, SizePolicy::Fixed, 100);
-    content->addLayoutElement(header, SizePolicy::Fixed, 132);
+    addPageHeaderActions(header, nullptr, backButton);
+    auto workspaceBody = addWorkspaceLayout(*this, header);
+    workspaceBody->addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(content, SizePolicy::Fill);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
     body->setBorderVisible(false);
-    body->setPadding(Metrics::SpaceXL);
-    body->setSpacing(Metrics::SpaceL);
+    body->setStyle(PanelStyle::Workspace);
+    body->setPadding(Metrics::WorkspaceGap);
+    body->setSpacing(Metrics::WorkspaceGap);
     content->addLayoutElement(body, SizePolicy::Fill);
 
     auto introduction = std::make_shared<Label>();
@@ -125,7 +121,7 @@ SettingsScreen::SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation
             windowSize = makeOptions({ "Automatic", "1280 x 800", "1600 x 900" })),
         SizePolicy::Fixed,
         64);
-    body->addLayoutElement(layoutCard, SizePolicy::Fixed, 232);
+    body->addLayoutElement(layoutCard, SizePolicy::Fixed, 196);
 
     auto fontsCard = std::make_shared<CardPanel>();
     fontsCard->setTitle("Fonts");
@@ -144,7 +140,7 @@ SettingsScreen::SettingsScreen(std::shared_ptr<NavigationPanel> sharedNavigation
             textSize = makeOptions({ "Default", "Larger" })),
         SizePolicy::Fixed,
         64);
-    body->addLayoutElement(fontsCard, SizePolicy::Fixed, 232);
+    body->addLayoutElement(fontsCard, SizePolicy::Fixed, 196);
 
     auto actions = std::make_shared<Panel>();
     actions->setLayout(std::make_unique<HorizontalLayout>());

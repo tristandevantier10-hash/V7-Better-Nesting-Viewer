@@ -229,12 +229,10 @@ namespace
 
 QuoteHistoryScreen::QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
     auto navigation = std::move(sharedNavigation);
-    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
     content->setLayout(std::make_unique<VerticalLayout>());
@@ -244,11 +242,7 @@ QuoteHistoryScreen::QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNa
     auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    auto title = std::make_shared<Label>();
-    title->setText("Quotes");
-    title->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(title);
-    header->addLayoutElement(title, SizePolicy::Fill);
+    addPageHeaderTitle(header, "QUOTES", "An overview of all quotes.");
     countLabel = std::make_shared<Label>();
     countLabel->setStyle(LabelStyle::Small);
     configurePageHeaderSubtitleLabel(countLabel);
@@ -256,7 +250,6 @@ QuoteHistoryScreen::QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNa
     backButton = std::make_shared<Button>();
     backButton->setText("Back");
     backButton->setOnClick([this]() { if (backCallback) backCallback(); });
-    header->addLayoutElement(backButton, SizePolicy::Fixed, 100);
     overviewButton = std::make_shared<Button>();
     overviewButton->setText("View overview");
     overviewButton->setOnClick([this]()
@@ -265,20 +258,23 @@ QuoteHistoryScreen::QuoteHistoryScreen(std::shared_ptr<NavigationPanel> sharedNa
         if (row >= 0 && row < static_cast<int>(visibleQuoteIndices.size()) && viewOverviewCallback)
             viewOverviewCallback(QuoteDatabase::getAll()[visibleQuoteIndices[row]]);
     });
-    header->addLayoutElement(overviewButton, SizePolicy::Fixed, 150);
-    content->addLayoutElement(header, SizePolicy::Fixed, 132);
+    addPageHeaderActions(header, overviewButton, backButton);
+    auto workspaceBody = addWorkspaceLayout(*this, header);
+    workspaceBody->addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(content, SizePolicy::Fill);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
-    body->setPadding(Metrics::SpaceM);
-    body->setSpacing(Metrics::SpaceS);
+    body->setStyle(PanelStyle::Workspace);
+    body->setPadding(Metrics::WorkspaceGap);
+    body->setSpacing(Metrics::WorkspaceGap);
     content->addLayoutElement(body, SizePolicy::Fill);
-    addLayoutElement(content, SizePolicy::Fill);
 
     searchBox = std::make_shared<TextBox>();
+    searchBox->setCompactText(true);
     searchBox->setPlaceholder("Search by quote reference, customer, contact, status or date...");
     searchBox->setTextChangedCallback([this](const std::string& query) { filterQuotes(query); });
-    body->addLayoutElement(searchBox, SizePolicy::Fixed, Metrics::ControlHeight);
+    body->addLayoutElement(searchBox, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     auto listTitle = std::make_shared<Label>();
     listTitle->setText("QUOTE HISTORY");

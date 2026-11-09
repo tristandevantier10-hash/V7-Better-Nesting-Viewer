@@ -21,7 +21,8 @@
 
 namespace
 {
-    constexpr int StockControlHeight = 106;
+    constexpr int PieceRowsTop = 362;
+    constexpr int MaxRollLength = 50000;
     // Keep mouse input aligned with rows rendered at a scroll offset.
     class SizeListPanel : public Panel
     {
@@ -96,24 +97,17 @@ namespace
 NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     : navigation(std::move(sharedNavigation))
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
-    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
 
     auto content = std::make_shared<Panel>();
     content->setLayout(std::make_unique<VerticalLayout>());
     content->setPadding(0);
     content->setSpacing(0);
-    addLayoutElement(content, SizePolicy::Fill);
     auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    auto title = std::make_shared<Label>();
-    title->setText("Nesting");
-    title->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(title);
-    header->addLayoutElement(title, SizePolicy::Fill);
+    addPageHeaderTitle(header, "NESTING", "Advanced sheet nesting tool.");
     auto geometryLabel=std::make_shared<Label>();
     geometryLabel->setText("Geometry");
     geometryLabel->setStyle(LabelStyle::Small);
@@ -143,7 +137,9 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     rotationControls->setVisible(false);
     header->addLayoutElement(rotationControls,SizePolicy::Fixed,185);
     geometrySelector->setSelectionChangedCallback([this](int) { refreshGeometryMode(); });
-    content->addLayoutElement(header, SizePolicy::Fixed, 132);
+    auto workspaceBody = addWorkspaceLayout(*this, header);
+    workspaceBody->addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(content, SizePolicy::Fill);
 
     workspace = std::make_shared<NestingWorkspacePanel>();
     workspace->arrange = [this]() { arrangeWorkspace(); };
@@ -156,6 +152,7 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     {
         target = std::make_shared<TextBox>();
         target->setSelectAllOnFocus(true);
+        target->setCompactText(true);
         target->setText(value);
         target->setTextChangedCallback([this](const std::string&) { invalidate(); });
         workspace->add(target);
@@ -165,11 +162,20 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
     field("0", cuttingGap);
     field("0", sheetMargin);
     stockVariant = std::make_shared<ComboBox>();
+    stockVariant->setCompactText(true);
     stockVariant->setSelectionChangedCallback([this](int index) { selectStockVariant(index); });
     workspace->add(stockVariant);
     stockSize = std::make_shared<ComboBox>();
+    stockSize->setCompactText(true);
     stockSize->setSelectionChangedCallback([this](int index) { selectStockSize(index); });
     workspace->add(stockSize);
+    capacityMode = std::make_shared<ComboBox>();
+    capacityMode->setCompactText(true);
+    capacityMode->addItem("Best fit");
+    capacityMode->addItem("Left aligned");
+    capacityMode->setSelectedIndex(0);
+    capacityMode->setSelectionChangedCallback([this](int) { invalidate(); });
+    workspace->add(capacityMode);
     sizes = std::make_shared<SizeListPanel>();
     sizes->setLayout(std::make_unique<VerticalLayout>());
     sizes->setPadding(0);
@@ -204,38 +210,44 @@ NestingScreen::NestingScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 void NestingScreen::arrangeWorkspace()
 {
     const auto bounds = workspace->getBounds();
-    const int gap = 10;
-    const int leftWidth = std::clamp(static_cast<int>(bounds.w * 0.32), 280, 380);
+    const int gap = Metrics::WorkspaceGap;
+    const int leftWidth = std::clamp(static_cast<int>(bounds.w * 0.36), 300, 440);
     setupBounds = { bounds.x + gap, bounds.y + gap, leftWidth - gap, bounds.h - 2 * gap };
     const int rightX = setupBounds.x + setupBounds.w + gap;
-    metricsBounds = { rightX, bounds.y + gap, bounds.x + bounds.w - gap - rightX, 78 };
+    metricsBounds = { rightX, bounds.y + gap, bounds.x + bounds.w - gap - rightX, 70 };
     auto position = [](const std::shared_ptr<UIElement>& item, const SDL_Rect& rect)
     {
         item->setPosition(rect.x, rect.y);
         item->setSize(rect.w, rect.h);
     };
-    const int fieldWidth=(setupBounds.w-42)/2;
-    const int secondX=setupBounds.x+26+fieldWidth;
-    position(stockVariant, { setupBounds.x + 16, setupBounds.y + 94, setupBounds.w - 32, 34 });
-    position(stockSize, { secondX, setupBounds.y + 138, fieldWidth, 34 });
-    position(sheetWidth, { setupBounds.x + 16, setupBounds.y + 94 + StockControlHeight, fieldWidth, 34 });
-    position(sheetHeight, { secondX, setupBounds.y + 94 + StockControlHeight, fieldWidth, 34 });
-    position(cuttingGap, { setupBounds.x + 16, setupBounds.y + 162 + StockControlHeight, fieldWidth, 34 });
-    position(sheetMargin, { secondX, setupBounds.y + 162 + StockControlHeight, fieldWidth, 34 });
-    const int rowTop = setupBounds.y + 304 + StockControlHeight;
-    const int available = std::max(40, setupBounds.y + setupBounds.h - rowTop - 164);
+    const int fieldWidth=(setupBounds.w-66)/2;
+    const int secondX=setupBounds.x+38+fieldWidth;
+    position(stockVariant, { setupBounds.x + 138, setupBounds.y + 78, setupBounds.w - 164, 29 });
+    position(stockSize, { setupBounds.x + 138, setupBounds.y + 112, setupBounds.w - 164, 29 });
+    position(sheetWidth, { setupBounds.x + 26, setupBounds.y + 208, fieldWidth, 28 });
+    position(sheetHeight, { secondX, setupBounds.y + 208, fieldWidth, 28 });
+    position(cuttingGap, { setupBounds.x + 26, setupBounds.y + 257, fieldWidth, 28 });
+    position(sheetMargin, { secondX, setupBounds.y + 257, fieldWidth, 28 });
+    const int rowTop = setupBounds.y + PieceRowsTop;
+    const int available = std::max(32, setupBounds.h - PieceRowsTop - 190);
     const int rowsHeight = std::min(rows.empty() ? 64 :
         static_cast<int>(rows.size()) * (sizeRowHeight()+Metrics::SpaceS) - Metrics::SpaceS, available);
     std::static_pointer_cast<SizeListPanel>(sizes)->rowHeight=sizeRowHeight();
     sizes->setVisible(!rows.empty());
-    tableBounds = { setupBounds.x + 16, rowTop - 30, setupBounds.w - 32, rowsHeight + 38 };
+    tableBounds = { setupBounds.x + 26, rowTop - 30, setupBounds.w - 52, rowsHeight + 38 };
     position(sizes, { tableBounds.x + 1, rowTop, tableBounds.w - 2, rowsHeight });
-    const int half=(setupBounds.w-38)/2;
+    const int contentLeft=setupBounds.x+26;
+    const int contentWidth=setupBounds.w-52;
+    const int half=(contentWidth-10)/2;
+    const int actionRight=contentLeft+half+10;
+    const int actionRightWidth=contentWidth-half-10;
     std::static_pointer_cast<NestingPageButton>(addButton)->setCaption(rows.empty() ? "+  Add first item" : "+  Add item");
-    position(addButton, { setupBounds.x + 16, rowTop + rowsHeight + 20, half, 38 });
-    position(importButton, { setupBounds.x + 22 + half, rowTop + rowsHeight + 20, setupBounds.w-38-half, 38 });
-    position(calculateButton, { setupBounds.x + 16, setupBounds.y + setupBounds.h - 66, half, 48 });
-    position(capacityButton, { setupBounds.x + 22 + half, setupBounds.y + setupBounds.h - 66, setupBounds.w - 38 - half, 48 });
+    position(addButton, { contentLeft, rowTop + rowsHeight + 17, half, 32 });
+    position(importButton, { actionRight, rowTop + rowsHeight + 17, actionRightWidth, 32 });
+    const int capacityTop = rowTop + rowsHeight + 64;
+    position(calculateButton, { contentLeft, capacityTop + 75, half, 40 });
+    position(capacityMode, { contentLeft, capacityTop + 29, contentWidth, 29 });
+    position(capacityButton, { actionRight, capacityTop + 75, actionRightWidth, 40 });
     position(preview, { rightX, metricsBounds.y + metricsBounds.h + 12, metricsBounds.w,
         setupBounds.h - metricsBounds.h - 12 });
     preview->status = summary->getText();
@@ -244,22 +256,36 @@ void NestingScreen::arrangeWorkspace()
 void NestingScreen::paintWorkspace(Renderer& renderer)
 {
     using namespace NestingStyle;
-    renderer.fillRect(workspace->getBounds(), { 246, 248, 250, 255 });
+    renderer.fillRect(workspace->getBounds(), DefaultTheme.windowBackground);
     card(renderer, setupBounds);
     card(renderer, metricsBounds);
     const int x = setupBounds.x + 16;
     const int y = setupBounds.y;
-    text(renderer, "Sheet setup", x, y + 16, LabelStyle::Heading);
-    text(renderer, "All dimensions in mm", x, y + 49, LabelStyle::Small, muted);
-    const int secondX=setupBounds.x+26+(setupBounds.w-42)/2;
-    text(renderer, "Material variant", x, y + 74);
-    text(renderer, "Sheet size", x, y + 147);
-    text(renderer, "Sheet width", x, y + 74 + StockControlHeight);
-    text(renderer, "Sheet height", secondX, y + 74 + StockControlHeight);
-    text(renderer, "Cutting gap", x, y + 142 + StockControlHeight);
-    text(renderer, "Sheet margin", secondX, y + 142 + StockControlHeight);
-    renderer.drawLine(x, y + 226 + StockControlHeight, setupBounds.x + setupBounds.w - 16, y + 226 + StockControlHeight, border);
-    text(renderer, customMode() ? "Pieces & outlines" : "Piece sizes", x, y + 242 + StockControlHeight, LabelStyle::Normal);
+    auto* sectionFont = renderer.getFontManager().getSectionFont();
+    renderer.drawText("Sheet setup", x + 10, y + 16, sectionFont, ink);
+    const auto section = [&](int top, int height, const char* title)
+    {
+        const SDL_Rect group{x, y + top, setupBounds.w - 32, height};
+        constexpr int radius = 8;
+        const SDL_Color headingFill{242, 245, 248, 255};
+        renderer.fillRoundedRect(group, {250, 251, 253, 255}, radius);
+        renderer.fillRoundedRect({group.x, group.y, group.w, 25}, headingFill, radius);
+        renderer.fillRect({group.x + 1, group.y + 14, group.w - 2, 11}, headingFill);
+        renderer.drawRoundedRing(group, border, radius, 1);
+        renderer.drawText(title, group.x + 10, group.y + 5, sectionFont, ink);
+    };
+    section(50, 99, "Stock");
+    section(158, 137, "Dimensions");
+    section(tableBounds.y - y - 27, tableBounds.h + 73, customMode() ? "Pieces & outlines" : "Piece sizes");
+    section(capacityMode->getY() - y - 29, 66, "Capacity layout");
+    const bool roll = stockOptions.at(stockVariant->getSelectedIndex()).roll;
+    const int secondX=sheetHeight->getX();
+    text(renderer, "Material variant", x + 10, y + 85, LabelStyle::Small);
+    text(renderer, roll ? "Roll size" : "Sheet size", x + 10, y + 119, LabelStyle::Small);
+    text(renderer, roll ? "Roll width (mm)" : "Sheet width (mm)", x + 10, y + 191, LabelStyle::Small);
+    text(renderer, roll ? "Roll length (mm)" : "Sheet height (mm)", secondX, y + 191, LabelStyle::Small);
+    text(renderer, "Cutting gap (mm)", x + 10, y + 240, LabelStyle::Small);
+    text(renderer, "Sheet margin (mm)", secondX, y + 240, LabelStyle::Small);
     size_t total = 0;
     for (const auto& row : rows)
     {
@@ -273,9 +299,9 @@ void NestingScreen::paintWorkspace(Renderer& renderer)
     const std::string totals = std::to_string(rows.size()) + " sizes · " + std::to_string(total) + " pieces";
     int tw = 0, th = 0;
     TTF_SizeUTF8(renderer.getFontManager().getSmallFont(), totals.c_str(), &tw, &th);
-    text(renderer, totals, setupBounds.x + setupBounds.w - 16 - tw, y + 247 + StockControlHeight, LabelStyle::Small, muted);
+    text(renderer, totals, setupBounds.x + setupBounds.w - 26 - tw, tableBounds.y - 21, LabelStyle::Small, muted);
     renderer.fillRoundedRect(tableBounds, { 252, 253, 254, 255 }, 5);
-    renderer.drawRoundedRect(tableBounds, border, 5);
+    renderer.drawRoundedRing(tableBounds, border, 5, 1);
     const int colourWidth = 55, rowGap = 6;
     const int fieldWidth = (tableBounds.w - 2 - 48 - 28 - rowGap * 4) / 3;
     text(renderer, "Colour", tableBounds.x + 7, tableBounds.y + 8, LabelStyle::Small, muted);
@@ -292,8 +318,7 @@ void NestingScreen::paintWorkspace(Renderer& renderer)
         text(renderer,"or import a DXF profile.",tableBounds.x+12,tableBounds.y+65,LabelStyle::Small,muted);
         renderer.popClip();
     }
-    text(renderer, customMode() ? "Spacing applies inside cutouts too" : "Rotation allowed · Spacing in mm", x,
-        setupBounds.y + setupBounds.h - 99, LabelStyle::Small, muted);
+
     for (int index = 0; index < 4; ++index)
     {
         SDL_Rect cell{ metricsBounds.x + index * metricsBounds.w / 4, metricsBounds.y,
@@ -304,7 +329,7 @@ void NestingScreen::paintWorkspace(Renderer& renderer)
             renderer.getFontManager().getHeadingFont(), ink);
         const std::string label = std::array<const char*, 4>{ "Sheets", "Pieces", "Utilisation", "Waste" }[index];
         TTF_SizeUTF8(renderer.getFontManager().getSmallFont(), label.c_str(), &tw, &th);
-        text(renderer, label, cell.x + (cell.w - tw) / 2, cell.y + 47, LabelStyle::Small, muted);
+        text(renderer, label, cell.x + (cell.w - tw) / 2, cell.y + 42, LabelStyle::Small, muted);
     }
 }
 
@@ -334,6 +359,7 @@ void NestingScreen::addSize()
     {
         target = std::make_shared<TextBox>();
         target->setSelectAllOnFocus(true);
+        target->setCompactText(true);
         target->setText(value);
         target->setTextChangedCallback([this](const std::string&) { invalidate(); });
         fields->addLayoutElement(target, SizePolicy::Fill);
@@ -513,7 +539,7 @@ void NestingScreen::refreshStockOptions()
     std::sort(bases.begin(), bases.end());
     stockVariant->clear();
     stockVariant->addItem("Custom material");
-    stockFormats.assign(1, {});
+    stockOptions.assign(1, StockVariant{});
     int selected = 0;
     for (const auto& id : bases)
     {
@@ -523,12 +549,16 @@ void NestingScreen::refreshStockOptions()
             std::vector<SheetFormat> formats;
             for (const auto& format : variant.sheet_formats)
                 if (format.width > 0 && format.height > 0) formats.push_back(format);
+            const bool roll = !variant.roll_widths.empty();
+            if (roll)
+                for (int width : variant.roll_widths)
+                    if (width > 0) formats.push_back({width, MaxRollLength});
             if (formats.empty()) continue;
             const std::string name = material.name.empty() ? id : material.name;
             const std::string label = variant.label.empty() ? name : name + " / " + variant.label;
-            if (label == previousVariant) selected = static_cast<int>(stockFormats.size());
+            if (label == previousVariant) selected = static_cast<int>(stockOptions.size());
             stockVariant->addItem(label);
-            stockFormats.push_back(std::move(formats));
+            stockOptions.push_back({std::move(formats), roll});
         }
     }
     stockVariant->setSelectedIndex(selected);
@@ -539,29 +569,32 @@ void NestingScreen::selectStockVariant(int index, const std::string& preferredSi
 {
     stockSize->clear();
     stockSize->addItem("Custom size");
-    const auto& formats = stockFormats.at(index);
+    const auto& stock = stockOptions.at(index);
+    const auto& formats = stock.formats;
     int selected = formats.empty() || preferredSize == "Custom size" ? 0 : 1;
     for (size_t i = 0; i < formats.size(); ++i)
     {
         const auto& format = formats[i];
-        const auto label = std::to_string(format.width) + " x " + std::to_string(format.height);
+        const auto label = stock.roll ? std::to_string(format.width) + " mm" :
+            std::to_string(format.width) + " x " + std::to_string(format.height);
         stockSize->addItem(label);
         if (label == preferredSize) selected = static_cast<int>(i) + 1;
     }
     stockSize->setSelectedIndex(selected);
-    selectStockSize(selected);
+    selectStockSize(selected, stock.roll && !preferredSize.empty() && stockSize->getSelectedText() == preferredSize);
 }
 
-void NestingScreen::selectStockSize(int index)
+void NestingScreen::selectStockSize(int index, bool preserveRollLength)
 {
     const bool custom = index == 0;
     sheetWidth->setEnabled(custom);
-    sheetHeight->setEnabled(custom);
+    const auto& stock = stockOptions.at(stockVariant->getSelectedIndex());
+    sheetHeight->setEnabled(custom || stock.roll);
     if (!custom)
     {
-        const auto& format = stockFormats.at(stockVariant->getSelectedIndex()).at(index - 1);
+        const auto& format = stock.formats.at(index - 1);
         const auto width = std::to_string(format.width);
-        const auto height = std::to_string(format.height);
+        const auto height = preserveRollLength ? sheetHeight->getText() : std::to_string(format.height);
         const bool changed = sheetWidth->getText() != width || sheetHeight->getText() != height;
         sheetWidth->setText(width);
         sheetHeight->setText(height);
@@ -604,6 +637,12 @@ void NestingScreen::calculate(bool capacity)
     try
     {
         const double sw = readDimension(sheetWidth), sh = readDimension(sheetHeight);
+        if (stockOptions.at(stockVariant->getSelectedIndex()).roll && sh > MaxRollLength)
+        {
+            summary->setText("Roll length cannot exceed 50,000 mm.");
+            return;
+        }
+        const bool leftAligned = capacityMode->getSelectedIndex() == 1;
         double gap=0,margin=0;
         try
         {
@@ -658,10 +697,10 @@ void NestingScreen::calculate(bool capacity)
         calculationArea = usedArea;
         calculationSheetArea = sw * sh;
         calculationSizeCount = rows.size();
-        calculation = std::async(std::launch::async, [items, sw, sh, gap, margin, capacity]()
+        calculation = std::async(std::launch::async, [items, sw, sh, gap, margin, capacity, leftAligned]()
         {
             const NestingService::Options options{sw,sh,gap,margin};
-            if (capacity) return NestingService::findCapacity(items.front(),options);
+            if (capacity) return NestingService::findCapacity(items.front(),options,leftAligned);
             return NestingService::calculate(items,options);
         });
         summary->setText(capacity ? "Checking single-sheet capacity..." : "Calculating the combined layout...");

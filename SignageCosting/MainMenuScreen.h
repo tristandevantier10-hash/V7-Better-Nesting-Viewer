@@ -3,6 +3,7 @@
 #include "Screen.h"
 #include "Label.h"
 #include <functional>
+#include <utility>
 #include "NavigationPanel.h"
 #include "DashboardContent.h"
 
@@ -21,6 +22,7 @@ public:
     void setNestingCallback(std::function<void()> callback) { nestingCallback = callback; }
     void setQuotesCallback(std::function<void()> callback);
     void setCustomerDatabaseCallback(std::function<void()> callback);
+    void setNewCustomerCallback(std::function<void()> callback) { newCustomerCallback = std::move(callback); }
     void setMaterialsCallback(std::function<void()> callback);
     void setSettingsCallback(std::function<void()> callback);
     void setLabourRatesCallback(std::function<void()> callback);
@@ -48,6 +50,7 @@ private:
     std::function<void()> nestingCallback;
     std::function<void()> quotesCallback;
     std::function<void()> customerDatabaseCallback;
+    std::function<void()> newCustomerCallback;
     std::function<void()> materialsCallback;
     std::function<void()> settingsCallback;
     std::function<void()> labourRatesCallback;

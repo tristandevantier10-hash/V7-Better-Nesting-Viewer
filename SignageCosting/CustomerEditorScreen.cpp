@@ -15,7 +15,6 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     //==================================================
     // Root Layout
     //==================================================
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
@@ -28,18 +27,16 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     // Sidebar
     //==================================================
     auto navigation = std::move(sharedNavigation);
-    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
-    addLayoutElement(contentPanel, SizePolicy::Fill);
 
     //==================================================
     // Right Side Container
     //==================================================
     auto rightContainer = std::make_shared<Panel>();
     rightContainer->setLayout(std::make_unique<VerticalLayout>());
-    rightContainer->setStyle(PanelStyle::Card);
     rightContainer->setBorderVisible(false);
-    rightContainer->setPadding(Metrics::SpaceXL);
-    rightContainer->setSpacing(Metrics::SpaceL);
+    rightContainer->setStyle(PanelStyle::Workspace);
+    rightContainer->setPadding(Metrics::WorkspaceGap);
+    rightContainer->setSpacing(Metrics::WorkspaceGap);
 
     //==================================================
     // Page Header (Integrated into Main Area)
@@ -47,7 +44,9 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     auto pageHeader = std::make_shared<DashboardBannerPanel>();
     pageHeader->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(pageHeader);
-    contentPanel->addLayoutElement(pageHeader, SizePolicy::Fixed, 132);
+    auto workspaceBody = addWorkspaceLayout(*this, pageHeader);
+    workspaceBody->addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(contentPanel, SizePolicy::Fill);
 
     auto titlePanel = std::make_shared<PageHeaderContentPanel>();
     titlePanel->setLayout(std::make_unique<VerticalLayout>());
@@ -83,7 +82,6 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
         if (cancelCallback)
             cancelCallback();
     });
-    pageHeader->addLayoutElement(cancelButton, SizePolicy::Fixed, 100);
 
     saveButton = std::make_shared<Button>();
     saveButton->setText("Save");
@@ -92,7 +90,7 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
         if (saveCallback)
             saveCallback();
     });
-    pageHeader->addLayoutElement(saveButton, SizePolicy::Fixed, 100);
+    addPageHeaderActions(pageHeader, saveButton, cancelButton);
 
     contentPanel->addLayoutElement(rightContainer, SizePolicy::Fill);
 
@@ -101,8 +99,8 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     //==================================================
     auto editorPanel = std::make_shared<Panel>();
     editorPanel->setLayout(std::make_unique<VerticalLayout>());
-    editorPanel->setStyle(PanelStyle::Card); // Maintains uniform background formatting
-    editorPanel->setBorderVisible(false);
+    editorPanel->setStyle(PanelStyle::Card);
+    editorPanel->setPadding(Metrics::CardPadding);
     editorPanel->setSpacing(Metrics::SpaceS);
 
     rightContainer->addLayoutElement(
@@ -117,7 +115,8 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     editorPanel->addLayoutElement(companyLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     company = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(company, SizePolicy::Fixed, Metrics::ControlHeight);
+    company->setCompactText(true);
+    editorPanel->addLayoutElement(company, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     // Form Field: Contact Person
     auto contactLabel = std::make_shared<Label>();
@@ -127,7 +126,8 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     editorPanel->addLayoutElement(contactLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     contact = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(contact, SizePolicy::Fixed, Metrics::ControlHeight);
+    contact->setCompactText(true);
+    editorPanel->addLayoutElement(contact, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     // Form Field: Phone
     auto phoneLabel = std::make_shared<Label>();
@@ -137,7 +137,8 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     editorPanel->addLayoutElement(phoneLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     phone = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(phone, SizePolicy::Fixed, Metrics::ControlHeight);
+    phone->setCompactText(true);
+    editorPanel->addLayoutElement(phone, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     // Form Field: Email
     auto emailLabel = std::make_shared<Label>();
@@ -147,7 +148,8 @@ CustomerEditorScreen::CustomerEditorScreen(std::shared_ptr<NavigationPanel> shar
     editorPanel->addLayoutElement(emailLabel, SizePolicy::Fixed, Metrics::SmallRow);
 
     email = std::make_shared<TextBox>();
-    editorPanel->addLayoutElement(email, SizePolicy::Fixed, Metrics::ControlHeight);
+    email->setCompactText(true);
+    editorPanel->addLayoutElement(email, SizePolicy::Fixed, Metrics::CompactControlHeight);
 }
 
 void CustomerEditorScreen::setSaveCallback(std::function<void()> callback)

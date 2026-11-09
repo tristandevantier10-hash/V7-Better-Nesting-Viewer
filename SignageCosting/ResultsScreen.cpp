@@ -53,12 +53,13 @@ ResultsScreen::ResultsScreen()
         std::make_unique<VerticalLayout>());
 
     mainContainer->setBorderVisible(false);
-    mainContainer->setPadding(Metrics::SpaceXL);
-    mainContainer->setSpacing(Metrics::SpaceL);
+    mainContainer->setStyle(PanelStyle::Workspace);
+    mainContainer->setPadding(Metrics::WorkspaceGap);
+    mainContainer->setSpacing(Metrics::WorkspaceGap);
 
-    contentPanel->addLayoutElement(
-        mainContainer,
-        SizePolicy::Fill);
+    resultsWorkspace = std::make_shared<Panel>();
+    resultsWorkspace->setLayout(std::make_unique<VerticalLayout>());
+    contentPanel->addLayoutElement(resultsWorkspace, SizePolicy::Fill);
 
     // ==================================================
     // INITIAL PAGE
@@ -77,7 +78,7 @@ std::shared_ptr<Panel> ResultsScreen::createCard()
 
     card->setStyle(PanelStyle::Card);
     card->setBorderVisible(true);
-    card->setPadding(Metrics::PanelPadding);
+    card->setPadding(Metrics::CardPadding);
 
     card->setLayout(
         std::make_unique<VerticalLayout>());
@@ -102,6 +103,7 @@ void ResultsScreen::buildSidebar()
     sidebar->setPadding(
         Metrics::SidebarPadding);
 
+    sidebar->addDashboardBrand();
     sidebar->addHeading("RESULTS");
 
     const auto overviewItem = sidebar->addItem(
@@ -193,17 +195,18 @@ void ResultsScreen::buildSidebar()
 void ResultsScreen::buildHeader()
 {
     auto header =
-        std::make_shared<PageHeaderPanel>();
+        std::make_shared<DashboardBannerPanel>();
 
     header->setLayout(
         std::make_unique<HorizontalLayout>());
 
-    configurePageHeader(header, 0, Metrics::SpaceXL);
+    configurePageHeader(header);
 
-    mainContainer->addLayoutElement(
+    resultsWorkspace->addLayoutElement(
         header,
         SizePolicy::Fixed,
         Metrics::HeaderHeight);
+    resultsWorkspace->addLayoutElement(mainContainer, SizePolicy::Fill);
 
     // --------------------------------------------------
     // Left
@@ -215,8 +218,7 @@ void ResultsScreen::buildHeader()
     titlePanel->setLayout(
         std::make_unique<VerticalLayout>());
 
-    configurePageHeaderTitle(titlePanel, Metrics::SpaceS);
-    addPageHeaderLogo(header);
+    configurePageHeaderTitle(titlePanel);
 
     header->addLayoutElement(
         titlePanel,
@@ -226,7 +228,7 @@ void ResultsScreen::buildHeader()
         std::make_shared<Label>();
 
     pageTitle->setText(
-        "Results");
+        "RESULTS");
 
     pageTitle->setStyle(
         LabelStyle::Heading);
@@ -241,7 +243,7 @@ void ResultsScreen::buildHeader()
         std::make_shared<Label>();
 
     pageSubtitle->setText(
-        "Job costing summary and details");
+        "An overview of the job and its costs.");
 
     pageSubtitle->setStyle(
         LabelStyle::Small);
@@ -253,81 +255,7 @@ void ResultsScreen::buildHeader()
         SizePolicy::Fixed,
         26);
 
-    // --------------------------------------------------
-    // Customer Card
-    // --------------------------------------------------
 
-    customerCard =
-        createCard();
-
-    customerCard->setPadding(14);
-
-    header->addLayoutElement(
-        customerCard,
-        SizePolicy::Fixed,
-        330);
-
-    auto customerLayout =
-        std::make_shared<Panel>();
-
-    customerLayout->setLayout(
-        std::make_unique<VerticalLayout>());
-
-    customerLayout->setBorderVisible(false);
-
-    customerCard->addLayoutElement(
-        customerLayout,
-        SizePolicy::Fill);
-
-    auto customerTitle =
-        std::make_shared<Label>();
-
-    customerTitle->setText(
-        "Selected Customer");
-
-    customerTitle->setStyle(
-        LabelStyle::Small);
-
-    customerLayout->addLayoutElement(
-        customerTitle,
-        SizePolicy::Fixed,
-        22);
-
-    auto customerName =
-        std::make_shared<Label>();
-
-    customerName->setText(
-        "Customer");
-
-    customerName->setStyle(
-        LabelStyle::Heading);
-
-    customerLayout->addLayoutElement(
-        customerName,
-        SizePolicy::Fixed,
-        30);
-
-    auto customerContact =
-        std::make_shared<Label>();
-
-    customerContact->setText(
-        "");
-
-    customerLayout->addLayoutElement(
-        customerContact,
-        SizePolicy::Fixed,
-        22);
-
-    auto customerPhone =
-        std::make_shared<Label>();
-
-    customerPhone->setText(
-        "");
-
-    customerLayout->addLayoutElement(
-        customerPhone,
-        SizePolicy::Fixed,
-        22);
 }
 
 // ======================================================
@@ -921,7 +849,7 @@ void ResultsScreen::refreshView()
     }
     else if (pageSubtitle)
     {
-        pageSubtitle->setText("Job costing summary and details");
+        pageSubtitle->setText("An overview of the job and its costs.");
     }
 
     if (totalPriceValueLabel)
@@ -1138,6 +1066,7 @@ void ResultsScreen::render(
     renderBackground(renderer);
 
     renderChildren(renderer);
+    renderOverlays(renderer);
 }
 
 // ======================================================
@@ -1221,12 +1150,15 @@ void ResultsScreen::clearMainContainer()
     if (mainContainer)
     {
         mainContainer->clearChildren();
+        resultsWorkspace->clearChildren();
+        resultsWorkspace->addLayoutElement(mainContainer, SizePolicy::Fill);
     }
 }
 
 void ResultsScreen::showOverview()
 {
     clearMainContainer();
+    resultsWorkspace->clearChildren();
 
     buildHeader();
     buildKpiRow();

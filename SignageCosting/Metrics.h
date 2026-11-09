@@ -6,9 +6,8 @@ namespace Metrics
     // Main Layout
     //==================================================
 
-    constexpr int HeaderHeight = 104;
+    constexpr int HeaderHeight = 132;
     constexpr int SidebarWidth = 200;
-    constexpr int DashboardNavigationTopGap = 18;
 
     //==================================================
     // Standard Control Heights
@@ -22,7 +21,7 @@ namespace Metrics
     constexpr int ControlRadius = 8;
     constexpr int ControlPaddingX = 10;
     constexpr int DropdownOptionHeight = 36;
-    constexpr int NavigationItemHeight = 48;
+    constexpr int NavigationItemHeight = 28;
     constexpr int ButtonRadius = 8;
 
     //==================================================
@@ -34,9 +33,11 @@ namespace Metrics
     constexpr int SpaceM = 10;
     constexpr int SpaceL = 14;
     constexpr int SpaceXL = 20;
+    constexpr int WorkspaceGap = 12;
+    constexpr int CompactControlHeight = 30;
     constexpr int CardPadding = 16;
-    constexpr int CardRadius = 10;
-    constexpr int CardInnerRadius = 9;
+    constexpr int CardRadius = 7;
+    constexpr int CardInnerRadius = 7;
 
     //==================================================
     // Panel Padding
@@ -50,8 +51,8 @@ namespace Metrics
     // Navigation
     //==================================================
 
-    constexpr int NavigationIndent = 24;
-    constexpr int NavigationIndicatorWidth = 4;
-    constexpr int NavigationIconSize = 20;
-    constexpr int NavigationIconGap = SpaceM;
+    constexpr int NavigationIndent = 10;
+    constexpr int NavigationIndicatorWidth = 2;
+    constexpr int NavigationIconSize = 24;
+    constexpr int NavigationIconGap = 7;
 }

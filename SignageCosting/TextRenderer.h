@@ -28,7 +28,7 @@ public:
         int y,
         SDL_Color colour = DefaultTheme.text);
 
-    static int getTextWidth(const std::string& text);
+    static int getTextWidth(const std::string& text, bool small = false);
 
 private:
 

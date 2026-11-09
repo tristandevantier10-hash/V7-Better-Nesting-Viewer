@@ -32,7 +32,7 @@ private:
     void calculate(bool capacity = false);
     void refreshStockOptions();
     void selectStockVariant(int index, const std::string& preferredSize = {});
-    void selectStockSize(int index);
+    void selectStockSize(int index, bool preserveRollLength = false);
     void invalidate();
     void addSize();
     void arrangeWorkspace();
@@ -55,8 +55,13 @@ private:
     void importDxfFile(const std::filesystem::path& path);
     std::shared_ptr<NavigationPanel> navigation;
     std::shared_ptr<TextBox> sheetWidth, sheetHeight, cuttingGap, sheetMargin;
-    std::shared_ptr<ComboBox> stockVariant, stockSize;
-    std::vector<std::vector<SheetFormat>> stockFormats;
+    std::shared_ptr<ComboBox> stockVariant, stockSize, capacityMode;
+    struct StockVariant
+    {
+        std::vector<SheetFormat> formats;
+        bool roll = false;
+    };
+    std::vector<StockVariant> stockOptions;
     std::shared_ptr<Panel> sizes;
     std::vector<std::shared_ptr<SizeRow>> rows;
     std::shared_ptr<Label> summary, details;

@@ -31,7 +31,9 @@ public:
         FilterChip,
         Primary,
         Accent,
-        Secondary
+        Secondary,
+        HeaderPrimary,
+        HeaderOutline
     };
 
     void setStyle(ButtonStyle style)

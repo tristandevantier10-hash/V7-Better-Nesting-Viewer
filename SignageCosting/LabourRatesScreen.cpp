@@ -32,7 +32,6 @@ namespace
 
 LabourRatesScreen::LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavigation)
 {
-    setLayout(std::make_unique<HorizontalLayout>());
     setPadding(0);
     setSpacing(0);
 
@@ -46,26 +45,23 @@ LabourRatesScreen::LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavi
     auto header = std::make_shared<DashboardBannerPanel>();
     header->setLayout(std::make_unique<HorizontalLayout>());
     configurePageHeader(header);
-    auto title = std::make_shared<Label>();
-    title->setText("Labour Rates");
-    title->setStyle(LabelStyle::Heading);
-    configurePageHeaderTitleLabel(title);
-    header->addLayoutElement(title, SizePolicy::Fill);
+    addPageHeaderTitle(header, "LABOUR RATES", "Labour processes and costs.");
     auto back = std::make_shared<Button>();
     back->setText("Back");
     back->setOnClick([this]() { if (backCallback) backCallback(); });
-    header->addLayoutElement(back, SizePolicy::Fixed, 100);
-    content->addLayoutElement(header, SizePolicy::Fixed, 132);
+    addPageHeaderActions(header, nullptr, back);
+    auto workspaceBody = addWorkspaceLayout(*this, header);
+    workspaceBody->addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
+    workspaceBody->addLayoutElement(content, SizePolicy::Fill);
 
     auto body = std::make_shared<Panel>();
     body->setLayout(std::make_unique<VerticalLayout>());
     body->setBorderVisible(false);
-    body->setPadding(Metrics::SpaceXL);
-    body->setSpacing(Metrics::SpaceM);
+    body->setStyle(PanelStyle::Workspace);
+    body->setPadding(Metrics::WorkspaceGap);
+    body->setSpacing(Metrics::WorkspaceGap);
     content->addLayoutElement(body, SizePolicy::Fill);
 
-    addLayoutElement(navigation, SizePolicy::Fixed, Metrics::SidebarWidth);
-    addLayoutElement(content, SizePolicy::Fill);
 
     auto intro = std::make_shared<Label>();
     intro->setText("Choose the processes your company offers, set their rates, or add a custom process.");
@@ -74,6 +70,7 @@ LabourRatesScreen::LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavi
     body->addLayoutElement(intro, SizePolicy::Fixed, Metrics::LargeRow);
 
     grid = std::make_shared<DataGrid>();
+    grid->setRowHeight(Metrics::NormalRow);
     grid->addColumn("Process", 360);
     grid->addColumn("Rate", 150);
     grid->addColumn("Charged", 200);
@@ -85,17 +82,23 @@ LabourRatesScreen::LabourRatesScreen(std::shared_ptr<NavigationPanel> sharedNavi
     editor->setLayout(std::make_unique<HorizontalLayout>());
     editor->setBorderVisible(false);
     editor->setSpacing(Metrics::SpaceS);
+
     name = std::make_shared<TextBox>();
+    name->setCompactText(true);
     name->setPlaceholder("Process name");
+
     rate = std::make_shared<TextBox>();
+    rate->setCompactText(true);
     rate->setPlaceholder("Rate");
+
     unit = std::make_shared<ComboBox>();
+    unit->setCompactText(true);
     unit->addItem("Per m2"); unit->addItem("Per linear m");
     unit->addItem("Per item"); unit->addItem("Per job");
     editor->addLayoutElement(name, SizePolicy::Fill);
     editor->addLayoutElement(rate, SizePolicy::Fixed, 150);
     editor->addLayoutElement(unit, SizePolicy::Fixed, 190);
-    body->addLayoutElement(editor, SizePolicy::Fixed, Metrics::ControlHeight);
+    body->addLayoutElement(editor, SizePolicy::Fixed, Metrics::CompactControlHeight);
 
     auto actions = std::make_shared<Panel>();
     actions->setLayout(std::make_unique<HorizontalLayout>());

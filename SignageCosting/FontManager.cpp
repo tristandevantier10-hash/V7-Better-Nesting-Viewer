@@ -42,6 +42,12 @@ bool FontManager::initialise()
         TTF_OpenFont(
             "Fonts/BasisGrotesqueArabicPro-Bold.ttf",
             32);
+    sectionFont = TTF_OpenFont("Fonts/BasisGrotesqueArabicPro-Bold.ttf", 16);
+
+    headerSubtitleFont = TTF_OpenFont("Fonts/BasisGrotesqueArabicPro-Regular.ttf", 16);
+    brandBlackFont = TTF_OpenFont("Fonts/BasisGrotesqueArabicPro-Black.ttf", 11);
+    brandLightFont = TTF_OpenFont("Fonts/BasisGrotesqueArabicPro-Light.ttf", 11);
+    navigationFont = TTF_OpenFont("Fonts/BasisGrotesqueArabicPro-Light.ttf", 15);
 
     if (!headingFont)
         std::cerr << "Could not load heading font: " << TTF_GetError() << std::endl;
@@ -63,6 +69,36 @@ bool FontManager::initialise()
 
 void FontManager::shutdown()
 {
+    if (headerSubtitleFont)
+    {
+        TTF_CloseFont(headerSubtitleFont);
+        headerSubtitleFont = nullptr;
+    }
+
+    if (brandBlackFont)
+    {
+        TTF_CloseFont(brandBlackFont);
+        brandBlackFont = nullptr;
+    }
+
+    if (navigationFont)
+    {
+        TTF_CloseFont(navigationFont);
+        navigationFont = nullptr;
+    }
+
+    if (brandLightFont)
+    {
+        TTF_CloseFont(brandLightFont);
+        brandLightFont = nullptr;
+    }
+
+    if (sectionFont)
+    {
+        TTF_CloseFont(sectionFont);
+        sectionFont = nullptr;
+    }
+
     if (smallFont)
     {
         TTF_CloseFont(smallFont);
@@ -108,4 +144,9 @@ TTF_Font* FontManager::getHeadingFont() const
 TTF_Font* FontManager::getPageTitleFont() const
 {
     return pageTitleFont;
+}
+
+TTF_Font* FontManager::getSectionFont() const
+{
+    return sectionFont ? sectionFont : normalFont;
 }

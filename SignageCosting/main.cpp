@@ -1,9 +1,20 @@
-﻿#include <iostream>
+#include <iostream>
+#include <string_view>
 #include <windows.h>
 #include "Application.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+    const bool developerStartup =
+        argc == 2 && std::string_view(argv[1]) == "--dev-startup";
+#ifndef _DEBUG
+    if (developerStartup)
+    {
+        std::cerr << "--dev-startup requires a Debug build." << std::endl;
+        return 1;
+    }
+#endif
+
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -30,12 +41,15 @@ int main()
         "==================================================\n"
         << std::endl;
 
-    std::cout << "Press ENTER to continue...\n";
-    std::cin.get();
+    if (!developerStartup)
+    {
+        std::cout << "Press ENTER to continue..." << std::endl;
+        std::cin.get();
+    }
 
     Application app;
 
-    if (!app.initialise())
+    if (!app.initialise(developerStartup))
         return 1;
 
     app.run();

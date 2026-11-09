@@ -102,12 +102,12 @@ void Panel::renderBackground(Renderer& renderer)
 
         break;
 
+    case PanelStyle::Workspace:
+        renderer.fillRect(bounds, DefaultTheme.windowBackground);
+        break;
+
     case PanelStyle::Card:
 
-        renderer.fillRoundedRect(
-            { bounds.x, bounds.y + 2, bounds.w, bounds.h },
-            { 28, 39, 52, 14 },
-            Metrics::CardInnerRadius);
         renderer.fillRoundedRect(
             bounds,
             DefaultTheme.panelBackground,

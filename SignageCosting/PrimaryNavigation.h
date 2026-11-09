@@ -31,12 +31,8 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     panel->setSidebarStyle(true);
     panel->setBorderVisible(false);
     panel->setPadding(Metrics::SidebarPadding);
-    panel->setSpacing(Metrics::SpaceS);
-    panel->addDashboardBrand();
-    panel->addLayoutElement(
-        std::make_shared<UIElement>(),
-        SizePolicy::Fixed,
-        Metrics::DashboardNavigationTopGap);
+    panel->setSpacing(Metrics::SpaceXS);
+    panel->showWorkspaceEdge();
 
     if (newQuoteMode)
     {
@@ -50,7 +46,7 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
                 if (onNavigate)
                     onNavigate(PrimaryNavigationRoute::Overview);
             },
-            "Assets/Icons/back.svg",
+            "Assets/Icons/Sidebar/back.svg",
             true);
         panel->selectItem(cancelItem);
         return panel;
@@ -77,23 +73,30 @@ inline std::shared_ptr<NavigationPanel> createPrimaryNavigationPanel(
     };
 
     panel->addHeading("GENERAL");
-    addItem("Overview", PrimaryNavigationRoute::Overview, "Assets/Icons/overview.svg", true);
-    addItem("Nesting", PrimaryNavigationRoute::Nesting, "Assets/Icons/nesting.svg", true);
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, Metrics::SpaceXS);
+    addItem("Overview", PrimaryNavigationRoute::Overview, "Assets/Icons/Sidebar/overview.svg", true);
+    addItem("Nesting", PrimaryNavigationRoute::Nesting, "Assets/Icons/Sidebar/nesting.svg", true);
 
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, 8);
     panel->addHeading("QUOTES");
-    addItem("New Quote", PrimaryNavigationRoute::NewJob, "Assets/Icons/new_job.svg", true);
-    addItem("Quote History", PrimaryNavigationRoute::Quotes, "Assets/Icons/quotes.svg", true);
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, Metrics::SpaceXS);
+    addItem("New Quotes", PrimaryNavigationRoute::NewJob, "Assets/Icons/Sidebar/new_job.svg", true);
+    addItem("Quote History", PrimaryNavigationRoute::Quotes, "Assets/Icons/Sidebar/quotes.svg", true);
 
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, 8);
     panel->addHeading("MANAGE");
-    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, "Assets/Icons/materials.svg", true);
-    addItem("Customers", PrimaryNavigationRoute::CustomerDatabase, "Assets/Icons/customers.svg", true);
-    addItem("Labour Rates", PrimaryNavigationRoute::LabourRates, "Assets/Icons/labour.svg", true);
-    addItem("Settings", PrimaryNavigationRoute::Settings, "Assets/Icons/settings.svg", true);
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, Metrics::SpaceXS);
+    addItem("Materials", PrimaryNavigationRoute::MaterialDatabase, "Assets/Icons/Sidebar/materials.svg", true);
+    addItem("Customers", PrimaryNavigationRoute::CustomerDatabase, "Assets/Icons/Sidebar/customers.svg", true);
+    addItem("Labour Rates", PrimaryNavigationRoute::LabourRates, "Assets/Icons/Sidebar/labour.svg", true);
+    addItem("Settings", PrimaryNavigationRoute::Settings, "Assets/Icons/Sidebar/settings.svg", true);
 
     panel->addLayoutElement(
         std::make_shared<UIElement>(),
         SizePolicy::Fill);
-    addItem("Exit", PrimaryNavigationRoute::Exit, "Assets/Icons/exit.svg", true);
+    panel->addHeading("EXIT");
+    panel->addLayoutElement(std::make_shared<UIElement>(), SizePolicy::Fixed, Metrics::SpaceXS);
+    addItem("Close Esti-Mate", PrimaryNavigationRoute::Exit, "Assets/Icons/Sidebar/exit.svg", true);
 
     panel->selectItem(selectedItem);
 

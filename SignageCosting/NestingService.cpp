@@ -558,12 +558,13 @@ namespace NestingService
         }
     }
 
-    Result findCapacity(NestingGeometry::Part part, const Options& options)
+    Result findCapacity(NestingGeometry::Part part, const Options& options, bool forceLeftAligned)
     {
         part.quantity=1;
         auto best=calculate({part},options);
         if (!best.layout.isValid() || best.layout.sheets.size()!=1) return best;
 
+        if (forceLeftAligned) best.method=NestingGeometry::Method::Contours;
         const int limit=best.method==NestingGeometry::Method::Rectangles ? 2000 : 200;
         const double usableArea=(options.sheetWidth-2*options.margin)*(options.sheetHeight-2*options.margin);
         const double areaBound=usableArea/NestingGeometry::area(part.outline);
@@ -600,6 +601,9 @@ namespace NestingService
             {
                 part.quantity=high;
                 auto bands=bandsFor(part,rotations,options,true);
+                if (forceLeftAligned)
+                    bands.erase(std::remove_if(bands.begin(),bands.end(),
+                        [](const Band& band) { return band.staggered; }),bands.end());
                 const auto score=[&](const Band& band)
                 {
                     const double length=options.sheetHeight>=options.sheetWidth ? band.height : band.width;
@@ -622,17 +626,17 @@ namespace NestingService
             }
             else
             {
-                fill(rotations,true,false,true);
+                fill(rotations,true,forceLeftAligned,!forceLeftAligned);
                 for (size_t i=0;i<rotations.size();++i)
                     for (size_t j=i+1;j<rotations.size();++j)
                         if (std::abs(std::abs(std::remainder(rotations[i].angle-rotations[j].angle,360.0))-180.0)<=tolerance)
                         {
                             const std::vector<Variant> aligned{rotations[i],rotations[j]};
                             fill(aligned,false,true,false);
-                            if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(aligned,true,false,false);
+                            if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(aligned,true,forceLeftAligned,false);
                         }
-                if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,false,false,false);
-                if (winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,true,false,false);
+                if (!forceLeftAligned && winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,false,false,false);
+                if (!forceLeftAligned && winner.occupied.front().size()<static_cast<size_t>(high)) fill(rotations,true,false,false);
             }
 
             const auto& placements=winner.sheets.front().placements;

@@ -18,6 +18,9 @@
 
 namespace
 {
+    constexpr int StatusHeight = 66;
+    constexpr int DashboardGap = Metrics::WorkspaceGap;
+    constexpr float GlanceWidthRatio = 0.38f;
     const SDL_Color Ink = DefaultTheme.darkText;
     const SDL_Color Secondary = DefaultTheme.darkSecondaryText;
     const SDL_Color Border = DefaultTheme.border;
@@ -144,9 +147,10 @@ namespace
 
     void drawCheck(Renderer& renderer, int centerX, int centerY)
     {
-        renderer.fillCircle(centerX, centerY, 11, GreenSoft);
         renderer.drawLine(centerX - 5, centerY, centerX - 1, centerY + 4, Green);
         renderer.drawLine(centerX - 1, centerY + 4, centerX + 6, centerY - 4, Green);
+        renderer.drawLine(centerX - 5, centerY + 1, centerX - 1, centerY + 5, Green);
+        renderer.drawLine(centerX - 1, centerY + 5, centerX + 6, centerY - 3, Green);
     }
 
     void drawMetricIcon(Renderer& renderer, int kind, const SDL_Rect& bounds)
@@ -184,46 +188,49 @@ namespace
         Renderer& renderer,
         const SDL_Rect& card,
         TTF_Font* headingFont,
-        TTF_Font* normalFont,
+        TTF_Font* sectionFont,
         TTF_Font* smallFont)
     {
         renderer.fillRoundedRect(card, DefaultTheme.panelBackground, Metrics::CardRadius);
         renderer.drawRoundedRect(card, Border, Metrics::CardRadius);
-        renderer.drawText("System Status", card.x + Metrics::CardPadding, card.y + 12, headingFont, Ink);
 
-        const int contentY = card.y + 67;
-        const int summaryWidth = (std::max)(140, static_cast<int>(card.w * 0.22f));
-        const int separatorX = card.x + card.w - summaryWidth;
-        renderer.drawLine(separatorX, card.y + 28, separatorX, card.y + card.h - 22, Border);
+        const int centerY = card.y + card.h / 2;
+        const int titleX = card.x + 42;
+        renderer.fillCircle(card.x + 29, centerY + 11, 4, Green);
+        renderer.drawText("System status", titleX, centerY - 19, sectionFont, Ink);
+        renderer.drawText("All systems ready", titleX, centerY + 1, smallFont, Secondary);
 
-        const int statusWidth = (separatorX - card.x - 36) / 3;
+        const int countsX = card.x + card.w - 184;
+        const int checksX = card.x + 215;
+        constexpr int dividerHeight = 48;
+        const int dividerY = centerY - dividerHeight / 2;
+        renderer.fillRect({ checksX - 22, dividerY, 2, dividerHeight }, DefaultTheme.accent);
+        const int checkArea = countsX - checksX;
+        const int checkWidths[] = { checkArea * 31 / 100, checkArea * 28 / 100,
+            checkArea - checkArea * 31 / 100 - checkArea * 28 / 100 };
         const char* statuses[] = { "Materials loaded", "Pricing loaded", "Production pricing loaded" };
+        int checkX = checksX;
         for (int i = 0; i < 3; ++i)
         {
-            const int itemX = card.x + 18 + statusWidth * i;
-            drawCheck(renderer, itemX + 10, contentY + 1);
-            renderer.drawText(
-                statuses[i],
-                itemX + 28,
-                contentY - 8,
-                smallFont,
-                Secondary);
+            drawCheck(renderer, checkX + 11, centerY - 1);
+            renderer.drawText(statuses[i], checkX + 25, centerY - 8, smallFont, Secondary);
+            checkX += checkWidths[i];
+            if (i < 2)
+                renderer.fillRect({ checkX - 11, centerY - 11, 1, 22 }, Border);
         }
 
-        auto materials = MaterialDatabase::getBaseMaterials();
+        renderer.fillRect({ countsX, dividerY, 1, dividerHeight }, Border);
+        const auto materials = MaterialDatabase::getBaseMaterials();
         std::size_t variants = 0;
         for (const auto& id : materials)
             variants += MaterialDatabase::get(id).variants.size();
 
-        const int metricsX = separatorX + 12;
-        const int metricWidth = (card.x + card.w - metricsX - 16) / 2;
-        renderer.drawText("Materials", metricsX, card.y + 42, smallFont, Secondary);
-        renderer.drawText(std::to_string(materials.size()), metricsX, card.y + 67, headingFont, Ink);
-        renderer.drawText("Variants", metricsX + metricWidth, card.y + 42, smallFont, Secondary);
-        renderer.drawText(std::to_string(variants), metricsX + metricWidth, card.y + 67, headingFont, Ink);
-        (void)normalFont;
+        const int metricsX = countsX + 18;
+        renderer.drawText(std::to_string(materials.size()), metricsX, centerY - 22, headingFont, Ink);
+        renderer.drawText("Materials", metricsX, centerY + 5, smallFont, Secondary);
+        renderer.drawText(std::to_string(variants), metricsX + 88, centerY - 22, headingFont, Ink);
+        renderer.drawText("Variants", metricsX + 88, centerY + 5, smallFont, Secondary);
     }
-
     SDL_Color quoteStatusColor(const std::string& status)
     {
         if (status == "Accepted" || status == "Approved")
@@ -268,14 +275,14 @@ void DashboardContent::update(const SDL_Event& event)
         return;
 
     SDL_Point point{ event.button.x, event.button.y };
-    const int leftWidth = static_cast<int>((bounds.w - Metrics::SpaceL) * 0.41f);
-    const int lowerY = bounds.y + 156;
-    const int followUpY = lowerY + 301;
+    const int leftWidth = static_cast<int>((bounds.w - DashboardGap) * GlanceWidthRatio);
+    const int lowerY = bounds.y + StatusHeight + DashboardGap;
+    const int followUpY = lowerY + 317;
     const SDL_Rect recentCardArea{
-        bounds.x + leftWidth + Metrics::SpaceL,
+        bounds.x + leftWidth + DashboardGap,
         lowerY,
-        bounds.w - leftWidth - Metrics::SpaceL,
-        bounds.h - 156
+        bounds.w - leftWidth - DashboardGap,
+        bounds.h - StatusHeight - DashboardGap
     };
     const SDL_Rect followUpArea{
         bounds.x,
@@ -367,14 +374,14 @@ void DashboardContent::render(Renderer& renderer)
     const std::time_t currentTime = std::time(nullptr);
     localtime_s(&today, &currentTime);
 
-    constexpr int gap = Metrics::SpaceL;
-    const SDL_Rect statusCard{ bounds.x, bounds.y, bounds.w, 142 };
-    drawStatusCard(renderer, statusCard, headingFont, normalFont, smallFont);
+    constexpr int gap = DashboardGap;
+    const SDL_Rect statusCard{ bounds.x, bounds.y, bounds.w, StatusHeight };
+    drawStatusCard(renderer, statusCard, headingFont, fonts.getSectionFont(), smallFont);
 
     const int lowerY = bounds.y + statusCard.h + gap;
     const int lowerHeight = (std::max)(0, bounds.h - statusCard.h - gap);
-    const int columnGap = Metrics::SpaceL;
-    const int leftWidth = static_cast<int>((bounds.w - columnGap) * 0.41f);
+    const int columnGap = gap;
+    const int leftWidth = static_cast<int>((bounds.w - columnGap) * GlanceWidthRatio);
     const SDL_Rect glanceCard{ bounds.x, lowerY, leftWidth, lowerHeight };
     const SDL_Rect recentCard{ bounds.x + leftWidth + columnGap, lowerY,
         bounds.w - leftWidth - columnGap, lowerHeight };
